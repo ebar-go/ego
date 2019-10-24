@@ -2,7 +2,7 @@ package http
 
 import (
 	"testing"
-	"git.epetbar.com/go-package/ego/test"
+	"github.com/ebar-go/ego/test"
 	"fmt"
 	"net/http"
 	"net"

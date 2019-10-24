@@ -3,7 +3,7 @@ package log
 import (
 	"testing"
 	"os"
-	"git.epetbar.com/go-package/ego/test"
+	"github.com/ebar-go/ego/test"
 )
 
 // 准备日志管理器

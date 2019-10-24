@@ -4,7 +4,7 @@ package http
 
 import (
 	"encoding/json"
-	"git.epetbar.com/go-package/ego/library"
+	"github.com/ebar-go/ego/library"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"github.com/pkg/errors"

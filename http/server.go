@@ -3,7 +3,7 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"errors"
-	"git.epetbar.com/go-package/ego/log"
+	"github.com/ebar-go/ego/log"
 )
 
 type Server struct {

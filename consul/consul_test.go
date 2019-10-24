@@ -2,9 +2,9 @@ package consul
 
 import (
 	"testing"
-	"git.epetbar.com/go-package/ego/test"
+	"github.com/ebar-go/ego/test"
 	"fmt"
-	"git.epetbar.com/go-package/ego/library"
+	"github.com/ebar-go/ego/library"
 )
 
 func getClient() *Client {

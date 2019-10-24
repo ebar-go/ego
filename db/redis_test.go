@@ -3,7 +3,7 @@ package db
 import (
 	"testing"
 	"fmt"
-	"git.epetbar.com/go-package/ego/test"
+	"github.com/ebar-go/ego/test"
 	"github.com/go-redis/redis"
 )
 

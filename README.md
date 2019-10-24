@@ -6,29 +6,8 @@
 
 因为我们的包是在私有库里,所以比较麻烦。
 ### 方式一
-- 1.升级golang版本到最新的1.3
-
-- 2.配置go env 
-跳过私有域名
- ```GOPRIVATE="*.epetbar.com"```
- 
-- 3.配置GIT
 ```
-git config --global url."git@git.epetbar.com:".insteadOf "https://git.epetbar.com/"
-git config --global http.extraheader "PRIVATE-TOKEN: n2CwD7yiRz_jdCv2Ljuo"
-```
-
-- 4.安装
-```
-go get -u -v -insecure git.epetbar.com/go-package/ego
-```
-
-### 方式二
-先clone 下来，放在指定目录
-
-- 1.克隆项目
-```
-git clone git@git.epetbar.com:go-package/ego.git $GOPATH/src/git.epetbar.com/go-package/ego
+go get -u github.com/ebar-go/ego
 ```
 
 ## 目录结构
@@ -57,7 +36,7 @@ git clone git@git.epetbar.com:go-package/ego.git $GOPATH/src/git.epetbar.com/go-
 ```go
 package main
 import (
-	"git.epetbar.com/go-package/ego/http"
+	"github.com/ebar-go/ego/http"
 	"github.com/gin-gonic/gin"
 	"fmt"
 	)
@@ -87,7 +66,7 @@ func main() {
 ```go
 package main
 import (
-	"git.epetbar.com/go-package/ego/config"
+	"github.com/ebar-go/ego/config"
     "os"
 	"fmt"
 )
@@ -120,10 +99,10 @@ func main() {
 package main
 import (
 	consulapi "github.com/hashicorp/consul/api"
-	"git.epetbar.com/go-package/ego/consul"
-	"git.epetbar.com/go-package/ego/test"
+	"github.com/ebar-go/ego/consul"
+	"github.com/ebar-go/ego/test"
 	"fmt"
-	"git.epetbar.com/go-package/ego/library"
+	"github.com/ebar-go/ego/library"
 )
 func main() {
     config := consul.DefaultConfig()
@@ -159,10 +138,10 @@ func main() {
 package main
 import (
 	consulapi "github.com/hashicorp/consul/api"
-	"git.epetbar.com/go-package/ego/consul"
-	"git.epetbar.com/go-package/ego/test"
+	"github.com/ebar-go/ego/consul"
+	"github.com/ebar-go/ego/test"
 	"fmt"
-	"git.epetbar.com/go-package/ego/library"
+	"github.com/ebar-go/ego/library"
 )
 func main() {
     config := consul.DefaultConfig()
@@ -188,7 +167,7 @@ func main() {
 
 ```go
 package main
-import ("git.epetbar.com/go-package/ego/library"
+import ("github.com/ebar-go/ego/library"
     "fmt"
 )
 func main() {//
@@ -206,7 +185,7 @@ func main() {//
 ```go
 package main
 import (
-       	"git.epetbar.com/go-package/ego/log"
+       	"github.com/ebar-go/ego/log"
        	"os"
        )
 func main() {
@@ -223,7 +202,7 @@ func main() {
 ```go
 package main
 import (
-	"git.epetbar.com/go-package/ego/log"
+	"github.com/ebar-go/ego/log"
 	"os"
 )
 func main() {

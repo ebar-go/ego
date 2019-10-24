@@ -4,10 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"bytes"
 	"strings"
-	"git.epetbar.com/go-package/ego/library"
+	"github.com/ebar-go/ego/library"
 	"fmt"
 	"time"
-	"git.epetbar.com/go-package/ego/log"
+	"github.com/ebar-go/ego/log"
 )
 
 // bodyLogWriter 读取响应Writer
