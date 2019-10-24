@@ -1,4 +1,4 @@
-module git.epetbar.com/go-package/ego
+module github.com/ebar-go/ego
 
 go 1.12
 
