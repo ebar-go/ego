@@ -11,3 +11,4 @@ func ConnectMysql(dsn string) (*gorm.DB, error){
 	return client, err
 
 }
+
