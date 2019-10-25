@@ -118,9 +118,9 @@ func main() {
     }
     registration := consul.NewServiceRegistration()
     registration.ID = "epet-go-demo-2"
-    registration.Name = "epet-go-demo"
+    registration.Name = "project-demo"
     registration.Port = 8088
-    registration.Tags = []string{"epet-go-demo"}
+    registration.Tags = []string{"project-demo"}
     registration.Address = ip
     check := consul.NewServiceCheck()
     // 指定服务检查url
@@ -150,7 +150,7 @@ func main() {
     client := &consul.Client{
         Config:config,
     }
-    items, err := client.Discover("epet-go-demo")
+    items, err := client.Discover("project-demo")
     if err != nil {
     	panic(err)
     }
