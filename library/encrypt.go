@@ -2,9 +2,6 @@ package library
 
 import (
 	"encoding/hex"
-	"io"
-	"crypto/rand"
-	"encoding/base64"
 	"crypto/md5"
 	"crypto/sha1"
 	"fmt"
@@ -28,17 +25,6 @@ func GetHash(s string) string {
 
 //生成Guid字串
 func UniqueId() string {
-	uuidInstance, err := uuid.NewV4()
-	if err == nil {
-		return uuidInstance.String()
-	}
-
-	b := make([]byte, 48)
-
-	if _, err := io.ReadFull(rand.Reader, b); err != nil {
-		return ""
-	}
-
-	return GetMd5String(base64.URLEncoding.EncodeToString(b))
+	return uuid.NewV4().String()
 }
 
