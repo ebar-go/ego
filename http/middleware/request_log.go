@@ -1,4 +1,4 @@
-package http
+package middleware
 
 import (
 	"github.com/gin-gonic/gin"
@@ -47,8 +47,8 @@ func GetTraceId(c *gin.Context) string {
 	return traceId
 }
 
-// requestLogMiddleware gin的响应日志中间件
-func requestLogMiddleware(c *gin.Context) {
+// RequestLog gin的请求日志中间件
+func RequestLog(c *gin.Context) {
 	go handleAccessChannel()
 
 	t := time.Now()

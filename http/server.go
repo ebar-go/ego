@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"errors"
 	"github.com/ebar-go/ego/log"
+	"github.com/ebar-go/ego/http/middleware"
 )
 
 type Server struct {
@@ -20,7 +21,7 @@ func (server *Server)Init() error {
 	}
 	server.Router = gin.New()
 
-	server.Router.Use(requestLogMiddleware)
+	server.Router.Use(middleware.RequestLog)
 
 	if server.SystemLogHandler == nil {
 		server.SystemLogHandler = log.DefaultLogger()
