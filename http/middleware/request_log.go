@@ -3,11 +3,11 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"bytes"
-	"strings"
 	"github.com/ebar-go/ego/library"
 	"fmt"
 	"time"
 	"github.com/ebar-go/ego/log"
+	"github.com/ebar-go/ego/http/request"
 )
 
 // bodyLogWriter 读取响应Writer
@@ -16,10 +16,7 @@ type bodyLogWriter struct {
 	body *bytes.Buffer
 }
 
-const(
-	TraceID = "trace_id" // 全局trace_id
-	GatewayTrace = "gateway-trace" // 网关trace
-)
+
 
 // Write 读取响应数据
 func (w bodyLogWriter) Write(b []byte) (int, error) {
@@ -28,24 +25,6 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 }
 
 var accessChannel = make(chan string, 100)
-
-
-// 获取唯一traceId
-func GetTraceId(c *gin.Context) string {
-	traceIdInterface, exist := c.Get(TraceID)
-	traceId := ""
-	if exist == false {
-		traceId = c.GetHeader(GatewayTrace)
-		if strings.TrimSpace(traceId) == "" {
-			traceId = library.UniqueId()
-		}
-		c.Set(TraceID, traceId)
-	}else {
-		traceId = traceIdInterface.(string)
-	}
-
-	return traceId
-}
 
 // RequestLog gin的请求日志中间件
 func RequestLog(c *gin.Context) {
@@ -56,7 +35,7 @@ func RequestLog(c *gin.Context) {
 	c.Writer = blw
 
 	// 注册唯一ID
-	traceId := GetTraceId(c)
+	traceId := request.GetTraceId(c)
 
 
 	c.Next()

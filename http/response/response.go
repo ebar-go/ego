@@ -1,6 +1,6 @@
 // response 基于gin的Context,实现响应数据结构体
 // 集成全局traceID
-package http
+package response
 
 import (
 	"encoding/json"
@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"github.com/pkg/errors"
 	"net/http"
+	"github.com/ebar-go/ego/http/request"
 )
 
 // ErrorItem 错误项
@@ -37,15 +38,15 @@ type Pagination struct {
 	
 }
 
-// DefaultResponse 实例化response
-func DefaultResponse(context *gin.Context) *Response {
+// Default 实例化response
+func Default(context *gin.Context) *Response {
 	return &Response{
 		context:context,
 		StatusCode: 200,
 		Message: "",
 		Data: nil,
 		Meta: Meta{
-			TraceId: GetTraceId(context),
+			TraceId: request.GetTraceId(context),
 			RequestId: library.UniqueId(),
 		},
 		Errors: nil,
@@ -73,7 +74,7 @@ func (response *Response) String(format string, values ...interface{})  {
 }
 
 // 将response序列化
-func  StringifyResponse(response *http.Response) (string, error) {
+func  StringifyOriginResponse(response *http.Response) (string, error) {
 	if response == nil {
 		return "", errors.New("没有响应数据")
 	}
