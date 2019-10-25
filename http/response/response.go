@@ -3,12 +3,8 @@
 package response
 
 import (
-	"encoding/json"
 	"github.com/ebar-go/ego/library"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
-	"github.com/pkg/errors"
-	"net/http"
 	"github.com/ebar-go/ego/http/request"
 )
 
@@ -57,12 +53,6 @@ func Default(context *gin.Context) *Response {
 // 数据对象
 type Data map[string]interface{}
 
-// 将响应数据体字符串化
-func (object Response) stringify() string {
-	str, _ := json.Marshal(object)
-	return string(str)
-}
-
 // Json 输出json
 func (response *Response) Json()  {
 	response.context.JSON(200, response)
@@ -73,26 +63,4 @@ func (response *Response) String(format string, values ...interface{})  {
 	response.context.String(200, format, values)
 }
 
-// 将response序列化
-func  StringifyOriginResponse(response *http.Response) (string, error) {
-	if response == nil {
-		return "", errors.New("没有响应数据")
-	}
-
-	if response.StatusCode != 200 {
-		return "", errors.New("非200的上游返回")
-	}
-
-	data, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return "", errors.WithMessage(err, "读取响应数据失败:")
-	}
-
-	// 关闭响应
-	defer func() {
-		response.Body.Close()
-	}()
-
-	return string(data), nil
-}
 

@@ -189,10 +189,7 @@ import (
        	"os"
        )
 func main() {
-    logger := &log.Logger{
-    	Out: os.Stdout,
-    }
-    logger.Init()
+    logger := log.New()
     logger.Debug("test debug", 123, 456)
 }
 ```
@@ -204,17 +201,19 @@ package main
 import (
 	"github.com/ebar-go/ego/log"
 	"os"
+	"fmt"
 )
 func main() {
-    logger := &log.Logger{}	
-    file, err := os.OpenFile("/tmp/test.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+    logger := log.New()
+    filePath := "/var/log/system.log"
+    fmt.Println(filePath)
+    file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
     if err == nil {
-        logger.Out = file
-    } else {
-        panic(err)
-    }
-    logger.Init()
-    logger.Debug("test debug", 123, 456)
+    	logger.SetOutWriter(file)
+    }else {
+    	fmt.Println("err:" + err.Error())
+	}
+    logger.Info("test info", 123, 456)
 }
 ```
 
