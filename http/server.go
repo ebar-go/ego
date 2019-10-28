@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"errors"
 	"github.com/ebar-go/ego/http/middleware"
+	"github.com/ebar-go/ego/http/handler"
 )
 
 // Server Web服务管理器
@@ -21,7 +22,12 @@ func (server *Server)Init() error {
 
 	server.Router = gin.New()
 
+	// 请求日志
 	server.Router.Use(middleware.RequestLog)
+
+	// 404
+	server.Router.NoRoute(handler.NotFoundHandler)
+	server.Router.NoMethod(handler.NotFoundHandler)
 
 	server.initialize = true
 	return nil

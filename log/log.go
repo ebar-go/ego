@@ -9,20 +9,20 @@ import (
 // Logger 日志结构体
 //   - key 支持自定义日志的字段名称，默认是LoggerDefaultkey
 //   - Out 日志的输出目标,可以是文件,也可以是os.Stdout
-type logger struct {
+type Logger struct {
 	instance   *logrus.Logger // logrus实例
 	key string
 }
 
-var systemLogger *logger
+var systemLogger *Logger
 
 const (
 	defaultKey = "title" // 日志的默认字段名称 title : this is content
 )
 
 // New 获取默认的日志管理器，输出到控制台
-func New() *logger {
-	l := &logger{}
+func New() *Logger {
+	l := &Logger{}
 	l.instance = getDefaultLogInstance()
 	l.key = defaultKey
 
@@ -30,12 +30,12 @@ func New() *logger {
 }
 
 // SetSystemLogger 设置系统日志
-func SetSystemLogger(logger *logger)  {
+func SetSystemLogger(logger *Logger)  {
 	systemLogger = logger
 }
 
 // GetSystemLogger 获取系统日志
-func GetSystemLogger() *logger {
+func GetSystemLogger() *Logger {
 	if systemLogger == nil {
 		systemLogger = New()
 	}
@@ -44,12 +44,12 @@ func GetSystemLogger() *logger {
 }
 
 // SetOutWriter 设置输出,可以是文件，也可以是os.StdOut
-func (l *logger) SetOutWriter(out io.Writer)  {
+func (l *Logger) SetOutWriter(out io.Writer)  {
 	l.instance.Out = out
 }
 
 // SetKey 设置字段名称
-func (l *logger) SetKey(key string)  {
+func (l *Logger) SetKey(key string)  {
 	l.key = key
 }
 
@@ -63,26 +63,26 @@ func getDefaultLogInstance() *logrus.Logger {
 }
 
 // Debug 调试等级,记录title为日志备注，context为日志的message内容
-func (l *logger) Debug(title string, context ...interface{}) {
+func (l *Logger) Debug(title string, context ...interface{}) {
 	l.instance.WithField(l.key, title).Debug(context...)
 }
 
 // Info 信息等级,记录title为日志备注，context为日志的message内容
-func (l *logger) Info(title string, context ...interface{}) {
+func (l *Logger) Info(title string, context ...interface{}) {
 	l.instance.WithField(l.key, title).Info(context...)
 }
 
 // Warn 警告等级,记录title为日志备注，context为日志的message内容
-func (l *logger) Warn(title string, context ...interface{}) {
+func (l *Logger) Warn(title string, context ...interface{}) {
 	l.instance.WithField(l.key, title).Warn(context...)
 }
 
 // Error 错误等级,记录title为日志备注，context为日志的message内容
-func (l *logger) Error(title string, context ...interface{}) {
+func (l *Logger) Error(title string, context ...interface{}) {
 	l.instance.WithField(l.key, title).Error(context...)
 }
 
 // Fatal 中断等级,记录title为日志备注，context为日志的message内容
-func (l *logger) Fatal(title string, context ...interface{}) {
+func (l *Logger) Fatal(title string, context ...interface{}) {
 	l.instance.WithField(l.key, title).Fatal(context...)
 }

@@ -27,12 +27,10 @@ type Response struct {
 type Meta struct {
 	TraceId string `json:"trace_id"`
 	RequestId string `json:"request_id"`
-	Pagination Pagination `json:"pagination"`
+	Pagination library.Pagination `json:"pagination"`
 }
 
-type Pagination struct {
-	
-}
+
 
 // Default 实例化response
 func Default(context *gin.Context) *Response {
@@ -61,6 +59,19 @@ func (response *Response) Json()  {
 // String 输出字符串
 func (response *Response) String(format string, values ...interface{})  {
 	response.context.String(200, format, values)
+}
+
+// Error 错误输出
+func (response *Response) Error(statusCode int, message string)  {
+	response.StatusCode = statusCode
+	response.Message = message
+	response.context.JSON(200, response)
+}
+
+// Success 成功的输出
+func (response *Response) Success(data Data)  {
+	response.Data = data
+	response.context.JSON(200, response)
 }
 
 

@@ -49,7 +49,10 @@ func ParseToken(token string) (*Claims, error) {
 	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtSecret, nil
 	})
-	fmt.Println(1, tokenClaims, err)
+
+	if err != nil {
+		return nil, err
+	}
 
 	if tokenClaims != nil {
 		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
@@ -62,30 +65,30 @@ func ParseToken(token string) (*Claims, error) {
 
 // JWT gin的jwt中间件
 func JWT(c *gin.Context) {
-	var err error
+	var errRes error
 
 	// 获取token
 	token := c.GetHeader(JwtTokenHeader)
 
 	kv := strings.Split(token, " ")
 	if len(kv) != 2 || kv[0] != JwtTokenMethod {
-		err = TokenNotExist
+		errRes = TokenNotExist
 	} else {
 		token = kv[1]
-		claims, err := ParseToken(token)
-		if err != nil {
-			err = TokenValidateFailed
-		} else if time.Now().Unix() > claims.ExpiresAt {
-			err = TokenExpired
+
+		if claims, err := ParseToken(token);err != nil {
+			errRes = TokenValidateFailed
+		} else {
+			if time.Now().Unix() > claims.ExpiresAt {
+				errRes = TokenExpired
+			}
 		}
 	}
 
-	if err != nil {
+	fmt.Println("error:", errRes)
+	if errRes != nil {
 		responseWriter := response.Default(c)
-		responseWriter.StatusCode = 401
-		responseWriter.Message = err.Error()
-
-		c.JSON(401, responseWriter)
+		responseWriter.Error(401, errRes.Error())
 
 		c.Abort()
 		return
