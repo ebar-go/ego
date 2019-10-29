@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 	"github.com/ebar-go/ego/log"
-	"github.com/ebar-go/ego/http/request"
+	"github.com/ebar-go/ego/http/util"
 )
 
 // bodyLogWriter 读取响应Writer
@@ -35,7 +35,7 @@ func RequestLog(c *gin.Context) {
 	c.Writer = blw
 
 	// 注册唯一ID
-	traceId := request.GetTraceId(c)
+	traceId := util.GetTraceId(c)
 
 
 	c.Next()

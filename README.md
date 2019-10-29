@@ -62,6 +62,43 @@ func main() {
 }
 ```
 
+#### 中间件
+- JWT
+```go
+package main
+import (
+	"github.com/ebar-go/ego/http"
+	"github.com/gin-gonic/gin"
+	"fmt"
+	"github.com/ebar-go/ego/http/middleware"
+	"github.com/ebar-go/ego/http/request"
+	)
+func main() {
+    server := http.Server {
+        Address : "127.0.0.1:8088", // 可以读取apollo地址
+    }
+    err := server.Init()
+    if err != nil {
+    	panic(err)
+    }
+    // TODO 添加路由
+    server.Router.GET("/test", func(context *gin.Context) {
+        fmt.Println("hello,world")
+    })
+    
+    api := server.Router.Group("/api")
+    api.Use(middleware.JWT)
+    {
+    	api.GET("/user", func(context *gin.Context) {
+    		requestWriter := request.Default(context)
+    	    fmt.Println("获取用户信息")
+    	    fmt.Println(requestWriter.GetCurrentUser())
+    	})
+    }
+    err =server.Start()
+}
+```
+
 ### cache
 缓存模块,待定
 

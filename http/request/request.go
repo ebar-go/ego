@@ -3,6 +3,7 @@ package request
 import (
 	"github.com/gin-gonic/gin"
 	"strconv"
+	"github.com/ebar-go/ego/http/middleware"
 )
 
 type Request struct {
@@ -13,6 +14,16 @@ func Default(context *gin.Context) *Request {
 	return &Request{
 		context: context,
 	}
+}
+
+// GetCurrentUser 获取当前用户
+func (req *Request) GetCurrentUser() *middleware.User {
+	user, exist := req.context.Get(middleware.JwtUserKey)
+	if !exist {
+		return nil
+	}
+
+	return user.(*middleware.User)
 }
 
 // GetDefaultQueryInt 获取int参数,支持指定默认值

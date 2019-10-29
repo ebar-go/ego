@@ -5,7 +5,7 @@ package response
 import (
 	"github.com/ebar-go/ego/library"
 	"github.com/gin-gonic/gin"
-	"github.com/ebar-go/ego/http/request"
+	"github.com/ebar-go/ego/http/util"
 )
 
 // ErrorItem 错误项
@@ -40,7 +40,7 @@ func Default(context *gin.Context) *Response {
 		Message: "",
 		Data: nil,
 		Meta: Meta{
-			TraceId: request.GetTraceId(context),
+			TraceId: util.GetTraceId(context),
 			RequestId: library.UniqueId(),
 		},
 		Errors: nil,

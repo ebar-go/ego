@@ -33,6 +33,7 @@ var TokenExpired = errors.New("token expired")
 const (
 	JwtTokenMethod = "Bearer"
 	JwtTokenHeader = "Authorization"
+	JwtUserKey = "jwt_user"
 )
 
 // SetJwtSecret 设置jwt的秘钥
@@ -69,6 +70,7 @@ func JWT(c *gin.Context) {
 
 	// 获取token
 	token := c.GetHeader(JwtTokenHeader)
+	fmt.Println(token)
 
 	kv := strings.Split(token, " ")
 	if len(kv) != 2 || kv[0] != JwtTokenMethod {
@@ -76,16 +78,21 @@ func JWT(c *gin.Context) {
 	} else {
 		token = kv[1]
 
-		if claims, err := ParseToken(token);err != nil {
+		claims, err := ParseToken(token)
+		if err != nil {
 			errRes = TokenValidateFailed
+			fmt.Println(err)
 		} else {
 			if time.Now().Unix() > claims.ExpiresAt {
 				errRes = TokenExpired
+			}else {
+				// 存储用户信息
+				c.Set(JwtUserKey, &claims.User)
 			}
 		}
+
 	}
 
-	fmt.Println("error:", errRes)
 	if errRes != nil {
 		responseWriter := response.Default(c)
 		responseWriter.Error(401, errRes.Error())
@@ -93,6 +100,7 @@ func JWT(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
 
 	c.Next()
 }
