@@ -21,7 +21,7 @@ func (server *Server) Init() error {
 		return errors.New("请勿重复初始化Http Server")
 	}
 
-	server.Router = gin.Default()
+	server.Router = gin.New()
 
 	// 请求日志
 	server.Router.Use(middleware.RequestLog)
