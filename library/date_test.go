@@ -9,3 +9,5 @@ import (
 func TestGetTimeStr(t *testing.T) {
 	fmt.Println(GetTimeStr())
 }
+
+

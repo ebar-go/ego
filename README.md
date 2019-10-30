@@ -90,9 +90,9 @@ func main() {
     api.Use(middleware.JWT)
     {
     	api.GET("/user", func(context *gin.Context) {
-    		requestWriter := request.Default(context)
+    		
     	    fmt.Println("获取用户信息")
-    	    fmt.Println(requestWriter.GetCurrentUser())
+    	    fmt.Println(middleware.GetCurrentUser(context))
     	})
     }
     err =server.Start()
@@ -143,7 +143,6 @@ package main
 import (
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/ebar-go/ego/consul"
-	"github.com/ebar-go/ego/test"
 	"fmt"
 	"github.com/ebar-go/ego/library"
 )
@@ -182,7 +181,6 @@ package main
 import (
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/ebar-go/ego/consul"
-	"github.com/ebar-go/ego/test"
 	"fmt"
 	"github.com/ebar-go/ego/library"
 )
@@ -220,6 +218,21 @@ func main() {//
 }
 
 ```
+
+- 打印调试
+
+```go
+package main
+import (
+	"github.com/ebar-go/ego/library"
+)
+func main() {
+	// 打印调试
+    library.Debug(123, "aaa")
+}
+
+```
+
 
 ### log
 日志管理器
@@ -259,6 +272,10 @@ func main() {
     logger.Info("test info", 123, 456)
 }
 ```
+
+### HTTP请求
+- kong
+- http
 
 更多方法请查看测试用例
 

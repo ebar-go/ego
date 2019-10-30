@@ -11,10 +11,13 @@ require (
 	github.com/hashicorp/consul/api v1.2.0
 	github.com/jinzhu/gorm v1.9.11
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/magiconair/properties v1.8.1
 	github.com/pkg/errors v0.8.1
 	github.com/robfig/cron v1.2.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
+	github.com/stretchr/testify v1.4.0
 	github.com/tevid/gohamcrest v1.1.1 // indirect
 	github.com/zouyx/agollo v1.9.0
+	gopkg.in/yaml.v2 v2.2.4 // indirect
 )
