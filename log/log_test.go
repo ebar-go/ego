@@ -3,20 +3,20 @@ package log
 import (
 	"testing"
 	"os"
-	"github.com/ebar-go/ego/test"
 	"fmt"
 	"github.com/ebar-go/ego/library"
+	"github.com/stretchr/testify/assert"
 )
 
 
 // TestLogger_Init 测试初始化
 func TestLogger_New(t *testing.T) {
 	logger := New()
-	test.AssertNotNil(t, logger)
+	assert.NotNil(t, logger)
 }
 
 func TestGetSystemLogger(t *testing.T) {
-	test.AssertNotNil(t, GetSystemLogger())
+	assert.NotNil(t, GetSystemLogger())
 }
 
 func TestSetSystemLogger(t *testing.T) {
@@ -27,7 +27,7 @@ func TestLogger_SetKey(t *testing.T) {
 	logger := New()
 	key := "name"
 	logger.SetKey(key)
-	test.AssertEqual(t, key, logger.key)
+	assert.Equal(t, key, logger.key)
 }
 
 func TestLogger_SetOutWriter(t *testing.T) {
@@ -39,7 +39,7 @@ func TestLogger_SetOutWriter(t *testing.T) {
 		logger.SetOutWriter(file)
 	}
 
-	test.AssertEqual(t, file, logger.instance.Out)
+	assert.Equal(t, file, logger.instance.Out)
 }
 
 // TestLogger_Info 测试Info

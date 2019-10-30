@@ -9,6 +9,7 @@ import (
 	"errors"
 	"os"
 	"github.com/ebar-go/ego/http/response"
+	"github.com/ebar-go/ego/http/constant"
 )
 
 var jwtSecret []byte
@@ -30,13 +31,6 @@ var TokenNotExist = errors.New("token not exist")
 var TokenValidateFailed = errors.New("token validate failed")
 var TokenExpired = errors.New("token expired")
 
-const (
-	JwtTokenMethod = "Bearer"
-	JwtTokenHeader = "Authorization"
-	JwtUserKey = "jwt_user"
-	JwtExpiredTime = 600
-)
-
 // SetJwtSecret 设置jwt的秘钥
 func SetJwtSecret(secret []byte) {
 	jwtSecret = secret
@@ -45,7 +39,7 @@ func SetJwtSecret(secret []byte) {
 // GetEncodeToken 获取加密的token
 func GetEncodeToken(iss, secret string, expireTime int) (string, error) {
 	if expireTime == 0 {
-		expireTime = JwtExpiredTime
+		expireTime = constant.JwtExpiredTime
 	}
 	now := time.Now().Unix()
 	exp := now + int64(expireTime)
@@ -82,16 +76,27 @@ func ParseToken(token string) (*Claims, error) {
 	return nil, err
 }
 
+// GetCurrentUser 获取解析jwt后的用户信息
+func GetCurrentUser(ctx *gin.Context) interface{} {
+	user, exist := ctx.Get(constant.JwtUserKey)
+	if !exist {
+		return nil
+	}
+
+	return user
+}
+
+
 // JWT gin的jwt中间件
 func JWT(c *gin.Context) {
 	var errRes error
 
 	// 获取token
-	token := c.GetHeader(JwtTokenHeader)
+	token := c.GetHeader(constant.JwtTokenHeader)
 	fmt.Println(token)
 
 	kv := strings.Split(token, " ")
-	if len(kv) != 2 || kv[0] != JwtTokenMethod {
+	if len(kv) != 2 || kv[0] != constant.JwtTokenMethod {
 		errRes = TokenNotExist
 	} else {
 		token = kv[1]
@@ -105,15 +110,13 @@ func JWT(c *gin.Context) {
 				errRes = TokenExpired
 			}else {
 				// 存储用户信息
-				c.Set(JwtUserKey, &claims.User)
+				c.Set(constant.JwtUserKey, &claims.User)
 			}
 		}
-
 	}
 
 	if errRes != nil {
-		responseWriter := response.Default(c)
-		responseWriter.Error(401, errRes.Error())
+		response.Default().Error(c, constant.StatusUnauthorized, errRes.Error())
 
 		c.Abort()
 		return

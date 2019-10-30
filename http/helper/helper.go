@@ -1,26 +1,23 @@
-package util
+package helper
 
 import (
 	"github.com/gin-gonic/gin"
 	"strings"
 	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/http/constant"
 )
 
-const(
-	TraceID = "trace_id" // 全局trace_id
-	GatewayTrace = "gateway-trace" // 网关trace
-)
 
-// 获取唯一traceId
+// GetTraceId 获取唯一traceId
 func GetTraceId(c *gin.Context) string {
-	traceIdInterface, exist := c.Get(TraceID)
+	traceIdInterface, exist := c.Get(constant.TraceID)
 	traceId := ""
 	if exist == false {
-		traceId = c.GetHeader(GatewayTrace)
+		traceId = c.GetHeader(constant.GatewayTrace)
 		if strings.TrimSpace(traceId) == "" {
 			traceId = library.UniqueId()
 		}
-		c.Set(TraceID, traceId)
+		c.Set(constant.TraceID, traceId)
 	}else {
 		traceId = traceIdInterface.(string)
 	}

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 	"github.com/ebar-go/ego/log"
-	"github.com/ebar-go/ego/http/util"
 )
 
 // bodyLogWriter 读取响应Writer
@@ -15,8 +14,6 @@ type bodyLogWriter struct {
 	gin.ResponseWriter
 	body *bytes.Buffer
 }
-
-
 
 // Write 读取响应数据
 func (w bodyLogWriter) Write(b []byte) (int, error) {
@@ -33,10 +30,6 @@ func RequestLog(c *gin.Context) {
 	t := time.Now()
 	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 	c.Writer = blw
-
-	// 注册唯一ID
-	traceId := util.GetTraceId(c)
-
 
 	c.Next()
 
@@ -55,25 +48,11 @@ func RequestLog(c *gin.Context) {
 	accessLogMap["request_post_data"] = c.Request.PostForm.Encode()
 	accessLogMap["request_client_ip"] = c.ClientIP()
 	accessLogMap["cost_time"] = fmt.Sprintf("%v", latency)
-	accessLogMap["trace_id"] = traceId
 	accessLogMap["response_body"] = blw.body.String()
 	accessLogMap["status_code"] = blw.Status()
 
 	accessLogJson, _ := library.JsonEncode(accessLogMap)
-	fmt.Println(getArgs(c))
-
 	accessChannel <- accessLogJson
-}
-
-// 这个函数只返回json化之后的数据，且不处理错误，错误就返回空字符串
-func getArgs(c *gin.Context) string {
-	if c.ContentType() == "multipart/form-data" {
-		c.Request.ParseMultipartForm(32 << 20)
-	} else {
-		c.Request.ParseForm()
-	}
-	args, _ := library.JsonEncode(c.Request.Form)
-	return args
 }
 
 func handleAccessChannel() {
