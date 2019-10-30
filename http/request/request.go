@@ -38,7 +38,7 @@ func (req *Request) GetDefaultQueryInt(key string, defaultValue int) int{
 }
 
 // GetQueryInt 获取int参数
-func (req *Request) GetQueryInt(key string, defaultValue int) (int, error){
+func (req *Request) GetQueryInt(key string) (int, error){
 	param := req.context.Query(key)
 	result , err := strconv.Atoi(param)
 	if err != nil {

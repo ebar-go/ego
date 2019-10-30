@@ -34,11 +34,29 @@ const (
 	JwtTokenMethod = "Bearer"
 	JwtTokenHeader = "Authorization"
 	JwtUserKey = "jwt_user"
+	JwtExpiredTime = 600
 )
 
 // SetJwtSecret 设置jwt的秘钥
 func SetJwtSecret(secret []byte) {
 	jwtSecret = secret
+}
+
+// GetEncodeToken 获取加密的token
+func GetEncodeToken(iss, secret string, expireTime int) (string, error) {
+	if expireTime == 0 {
+		expireTime = JwtExpiredTime
+	}
+	now := time.Now().Unix()
+	exp := now + int64(expireTime)
+	claim := jwt.MapClaims{
+		"iss":       iss,
+		"iat":      now,
+		"exp": exp,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,claim)
+	tokenStr,err  := token.SignedString([]byte(secret))
+	return tokenStr, err
 }
 
 // ParseToken 解析Token
