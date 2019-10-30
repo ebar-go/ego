@@ -1,11 +1,14 @@
 package library
 
 import (
-	"encoding/hex"
 	"crypto/md5"
+	"crypto/rand"
 	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
-	"github.com/satori/go.uuid"
+
+	uuid "github.com/satori/go.uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 //生成32位md5字串
@@ -28,3 +31,28 @@ func UniqueId() string {
 	return uuid.NewV4().String()
 }
 
+// PasswordHash 通过bcrypt算法生成hash
+func PasswordHash(password string) (string, error) {
+	hashBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(hashBytes), err
+}
+
+// PasswordVerify 通过bcrypt算法验证hash
+func PasswordVerify(hash, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+// RandString 生成指定长度的随机字符串
+func RandString(num uint) (string, error) {
+	if num == 0 {
+		return "", nil
+	}
+	b := make([]byte, num/2)
+	n, err := rand.Read(b)
+	if uint(n) != num/2 || err != nil {
+		return "", err
+	}
+	str := hex.EncodeToString(b)
+	return str[0:num], nil
+}

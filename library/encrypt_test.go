@@ -1,9 +1,10 @@
 package library
 
 import (
-	"testing"
-	"github.com/ebar-go/ego/test"
 	"fmt"
+	"testing"
+
+	"github.com/ebar-go/ego/test"
 )
 
 func getMd5StringDataProvider() map[string]string {
@@ -26,4 +27,27 @@ func TestUniqueId(t *testing.T) {
 
 func TestGetHash(t *testing.T) {
 	fmt.Println(GetHash("123456"))
+}
+
+func TestPasswordHash(t *testing.T) {
+	combin, err := PasswordHash("123456")
+	if err != nil {
+		t.Error("PasswordHash 错误：", err)
+	}
+	fmt.Println(string(combin))
+	res := PasswordVerify(combin, "123456")
+	if res == false {
+		t.Error("PasswordHash 验证失败")
+	}
+}
+
+func TestRandString(t *testing.T) {
+	str, err := RandString(16)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(str) != 16 {
+		t.Error("长度错误:", len(str))
+	}
+	fmt.Println(str)
 }
