@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-// Struct2Map 支持结构体转化为map，在嵌套结构中不支持interface{}传值得结构体
+// Struct2Map 支持结构体转化为map，在嵌套结构中不支持interface{}传值的结构体
 func Struct2Map(obj interface{}) map[string]interface{} {
 	var node map[string]interface{}
 	objT := reflect.TypeOf(obj)
