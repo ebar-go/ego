@@ -2,8 +2,8 @@ package library
 
 import (
 	"testing"
-	"github.com/ebar-go/ego/test"
 	"fmt"
+	"github.com/magiconair/properties/assert"
 )
 
 func getMd5StringDataProvider() map[string]string {
@@ -16,7 +16,7 @@ func getMd5StringDataProvider() map[string]string {
 func TestGetMd5String(t *testing.T) {
 	items := getMd5StringDataProvider()
 	for key, value := range items {
-		test.AssertEqual(t, GetMd5String(key), value)
+		assert.Equal(t, GetMd5String(key), value, "加密错误")
 	}
 }
 
