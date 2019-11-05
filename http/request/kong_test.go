@@ -7,9 +7,9 @@ import (
 
 func TestKongRequest_NewRequest(t *testing.T) {
 	kong := Kong{
-		Iss:"",
-		Secret:"",
-		Address: "",
+		Iss:"common-openapi",
+		Secret:"Bf8DetEqOw4DOePtdOISWrwIyyboKH7h",
+		Address: "http://app-gateway.internal.epetbar.com:8000",
 	}
 
 	request, _ := kong.NewRequest("gott-wms","GET", "/v1/basicInformation/warehouse/list?ware_nos=163", nil)
