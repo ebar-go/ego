@@ -2,10 +2,10 @@ package config
 
 import (
 	"testing"
-	"github.com/ebar-go/ego/test"
 	"fmt"
 	"github.com/robfig/cron"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 )
 
 func getApollo() *Apollo {
@@ -21,7 +21,7 @@ func getApollo() *Apollo {
 func TestApollo_Init(t *testing.T) {
 	apollo := getApollo()
 	err := apollo.Init()
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 
 
 }
@@ -47,7 +47,7 @@ func TestApollo_ListenChangeEvent(t *testing.T) {
 func TestApollo_GetStringValue(t *testing.T) {
 	apollo := getApollo()
 	err := apollo.Init()
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	fmt.Println(apollo.GetStringValue("LOG_FILE",""))
 }

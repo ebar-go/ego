@@ -2,8 +2,8 @@ package library
 
 import (
 	"testing"
-	"github.com/ebar-go/ego/test"
 	"fmt"
+	"github.com/magiconair/properties/assert"
 )
 
 // TestNewPagination 测试分页
@@ -13,10 +13,10 @@ func TestNewPagination(t *testing.T) {
 	limit := 10
 	pagination := NewPagination(totalCount,currentPage,limit)
 
-	test.AssertEqual(t, totalCount, pagination.TotalCount)
-	test.AssertEqual(t, currentPage, pagination.CurrentPage)
-	test.AssertEqual(t, limit, pagination.Limit)
-	test.AssertEqual(t, 10 , pagination.TotalPages)
+	assert.Equal(t, totalCount, pagination.TotalCount)
+	assert.Equal(t, currentPage, pagination.CurrentPage)
+	assert.Equal(t, limit, pagination.Limit)
+	assert.Equal(t, 10 , pagination.TotalPages)
 	fmt.Println(pagination)
 
 

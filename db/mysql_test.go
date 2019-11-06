@@ -2,15 +2,15 @@ package db
 
 import (
 	"testing"
-	"github.com/ebar-go/ego/test"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 )
 
 
 func TestConnectMysql(t *testing.T) {
 	client, err := ConnectMysql("root:123456@tcp(192.168.0.212:3306)/epet_stock?charset=utf8&parseTime=True&loc=Local")
 	fmt.Println(err)
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	// 启用Logger，显示详细日志
 	client.LogMode(true)
