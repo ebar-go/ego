@@ -31,7 +31,7 @@ type Data map[string]interface{}
 type Response struct {
 	StatusCode interface{}     `json:"status_code"` // 兼容字符串与int
 	Message    string  `json:"message"`
-	Data       Data    `json:"data"`
+	Data       interface{}    `json:"data"`
 	Meta       Meta    `json:"meta"`
 	Errors     []ErrorItem `json:"errors"`
 }
@@ -49,7 +49,7 @@ type MapResponse struct {
 type Meta struct {
 	TraceId string `json:"trace_id"` // 全局唯一Code
 	RequestId string `json:"request_id"` // 当前请求code
-	Pagination library.Pagination `json:"pagination"` // 分页信息
+	Pagination *library.Pagination `json:"pagination"` // 分页信息
 }
 
 // Default 实例化response
@@ -73,34 +73,32 @@ func (response *Response) complete()  {
 			RequestId: library.UniqueId(),
 		}
 	}
+
 }
 
 // Json 输出json
-func (response *Response) Json(ctx *gin.Context)  {
+func Json(ctx *gin.Context, response *Response)  {
+
 	response.complete()
 	response.Meta.TraceId = helper.GetTraceId(ctx)
 	ctx.JSON(constant.StatusOk, response)
 }
 
-// String 输出字符串
-func (response *Response) String(ctx *gin.Context, format string, values ...interface{})  {
-	response.complete()
-	response.Meta.TraceId = helper.GetTraceId(ctx)
-	ctx.String(constant.StatusOk, format, values)
+// Success 成功的输出
+func Success(ctx *gin.Context, data interface{})  {
+	response := Default()
+	response.Data = data
+	Json(ctx, response)
 }
 
 // Error 错误输出
-func (response *Response) Error(ctx *gin.Context, statusCode int, message string)  {
+func Error(ctx *gin.Context, statusCode int, message string)  {
+	response := Default()
 	response.StatusCode = statusCode
 	response.Message = message
-	response.Json(ctx)
+	Json(ctx, response)
 }
 
-// Success 成功的输出
-func (response *Response) Success(ctx *gin.Context, data Data)  {
-	response.Data = data
-	response.Json(ctx)
-}
 
 // IsSuccess 是否已成功
 func (response *Response) IsSuccess() bool {
