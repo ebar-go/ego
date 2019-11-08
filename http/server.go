@@ -9,6 +9,8 @@ import (
 	"github.com/ebar-go/ego/log"
 	"path"
 	"github.com/sirupsen/logrus"
+	"net"
+	"strconv"
 )
 
 
@@ -18,6 +20,7 @@ type Server struct {
 	AppDebug bool
 	SystemName string
 	Address string
+	Port int
 	Router *gin.Engine
 	initialize bool
 	NotFoundHandler func(ctx *gin.Context)
@@ -28,6 +31,10 @@ type Server struct {
 func (server *Server)Init() error {
 	if server.initialize {
 		return errors.New("请勿重复初始化Http Server")
+	}
+
+	if server.Port == 0 {
+		return errors.New("端口号不能为0")
 	}
 
 	server.Router = gin.Default()
@@ -71,12 +78,29 @@ func (server *Server) initLogger() error {
 	requestPath := path.Join(server.LogPath, server.SystemName, constant.RequestLogPrefix + server.SystemName + constant.LogSuffix)
 
 	log.AppLogger = log.NewFileLogger(appPath)
-
 	if server.AppDebug {
 		log.AppLogger.SetLevel(logrus.DebugLevel)
 	}
+
+	log.AppLogger.SetSystemParam(log.LogSystemParam{
+		ServiceName: server.SystemName,
+		ServicePort: server.Port,
+		Channel: log.DefaultAppChannel,
+	})
+
 	log.SystemLogger = log.NewFileLogger(systemPath)
+	log.SystemLogger.SetSystemParam(log.LogSystemParam{
+		ServiceName: server.SystemName,
+		ServicePort: server.Port,
+		Channel: log.DefaultSystemChannel,
+	})
+
 	log.RequestLogger = log.NewFileLogger(requestPath)
+	log.RequestLogger.SetSystemParam(log.LogSystemParam{
+		ServiceName: server.SystemName,
+		ServicePort: server.Port,
+		Channel: log.DefaultRequestChannel,
+	})
 
 	return nil
 }
@@ -87,5 +111,5 @@ func (server *Server) Start() error {
 		return errors.New("请先初始化服务")
 	}
 
-	return server.Router.Run(server.Address)
+	return server.Router.Run(net.JoinHostPort(server.Address, strconv.Itoa(server.Port)))
 }

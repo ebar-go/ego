@@ -15,20 +15,7 @@ func TestLogger_New(t *testing.T) {
 	assert.NotNil(t, logger)
 }
 
-func TestGetSystemLogger(t *testing.T) {
-	assert.NotNil(t, GetSystemLogger())
-}
 
-func TestSetSystemLogger(t *testing.T) {
-	SetSystemLogger(New())
-}
-
-func TestLogger_SetKey(t *testing.T) {
-	logger := New()
-	key := "name"
-	logger.SetKey(key)
-	assert.Equal(t, key, logger.key)
-}
 
 func TestLogger_SetOutWriter(t *testing.T) {
 	logger := New()
@@ -44,29 +31,17 @@ func TestLogger_SetOutWriter(t *testing.T) {
 
 // TestLogger_Info 测试Info
 func TestLogger_Info(t *testing.T) {
-	New().Info("test")
+	logger := New()
+	logger.SetSystemParam(LogSystemParam{
+		Channel: "REQUEST",
+		ServiceName:"stock-manage",
+		ServicePort:9523,
+	})
+
+	traceId := library.UniqueId()
+	logger.Info("A group of walrus emerges from the ocean", logger.NewContext(traceId))
 }
 
-// TestLogger_Debug 测试Debug
-func TestLogger_Debug(t *testing.T) {
-	New().Debug("test debug", 123, 456)
-}
-
-// TestLogger_Warn 测试Warn
-func TestLogger_Warn(t *testing.T) {
-	New().Warn("test warn", 123, 456)
-}
-
-// TestLogger_Error 测试Error
-func TestLogger_Error(t *testing.T) {
-	New().Error("test error", 123, 456)
-}
-
-// TestLogger_Fatal 测试Fatal
-func TestLogger_Fatal(t *testing.T) {
-	t.SkipNow()
-	New().Fatal("test fatal", 123, 456)
-}
 
 func TestLoggerFile(t *testing.T)  {
 	var err error
@@ -82,6 +57,5 @@ func TestLoggerFile(t *testing.T)  {
 		fmt.Println("err:" + err.Error())
 	}
 
-	logger.Info("test info", 123, 456)
 }
 

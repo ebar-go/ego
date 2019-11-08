@@ -15,3 +15,10 @@ func GetTimeStr() string {
 func GetDefaultTimeFormat() string {
 	return defaultTimeFormat
 }
+
+// GetTimeStamp 获取时间戳
+func GetTimeStamp() int64 {
+	return time.Now().Local().Unix()
+}
+
+

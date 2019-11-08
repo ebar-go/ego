@@ -5,6 +5,11 @@ import (
 	"strings"
 	"github.com/ebar-go/ego/library"
 	"github.com/ebar-go/ego/http/constant"
+	"io/ioutil"
+	"fmt"
+	"bytes"
+	"net/http"
+	"encoding/json"
 )
 
 
@@ -23,4 +28,35 @@ func GetTraceId(c *gin.Context) string {
 	}
 
 	return traceId
+}
+
+func GetRequestBody(c *gin.Context) interface{} {
+
+	switch c.Request.Method {
+	case http.MethodGet:
+		return c.Request.URL.Query()
+
+	case http.MethodPost:
+		fallthrough
+	case http.MethodPut:
+		fallthrough
+	case http.MethodPatch:
+		var bodyBytes []byte // 我们需要的body内容
+
+		// 从原有Request.Body读取
+		bodyBytes, err := ioutil.ReadAll(c.Request.Body)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// 新建缓冲区并替换原有Request.body
+		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		var params interface{}
+		json.Unmarshal(bodyBytes, &params)
+		return params
+
+	}
+
+	return nil
 }
