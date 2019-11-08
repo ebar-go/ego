@@ -15,7 +15,7 @@ func GetTraceId(c *gin.Context) string {
 	if exist == false {
 		traceId = c.GetHeader(constant.GatewayTrace)
 		if strings.TrimSpace(traceId) == "" {
-			traceId = library.UniqueId()
+			traceId = constant.TraceIdPrefix + library.UniqueId()
 		}
 		c.Set(constant.TraceID, traceId)
 	}else {

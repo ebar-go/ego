@@ -13,11 +13,29 @@ import (
 	"github.com/ebar-go/ego/http/helper"
 )
 
+
+
 // ErrorItem 错误项
 type ErrorItem struct {
 	Key   string `json:"key"`
-	Value string `json:"value"`
+	Value string `json:"error"`
 }
+
+// ErrorItems 错误项
+type ErrorItems struct {
+	items []ErrorItem
+}
+
+// Push 添加错误项
+func (e *ErrorItems) Push(key, msg string) {
+	e.items = append(e.items, ErrorItem{Key:key, Value:msg})
+}
+
+// IsEmpty 查看错误项是否为空
+func (e *ErrorItems) IsEmpty() bool {
+	return len(e.items) == 0
+}
+
 
 // IResponse Response接口
 type IResponse interface {
@@ -31,7 +49,7 @@ type Data map[string]interface{}
 type Response struct {
 	StatusCode interface{}     `json:"status_code"` // 兼容字符串与int
 	Message    string  `json:"message"`
-	Data       Data    `json:"data"`
+	Data       interface{}    `json:"data"`
 	Meta       Meta    `json:"meta"`
 	Errors     []ErrorItem `json:"errors"`
 }
@@ -45,11 +63,16 @@ type MapResponse struct {
 	Errors     []ErrorItem `json:"errors"`
 }
 
-// Meta 元数据
-type Meta struct {
+type Trace struct {
 	TraceId string `json:"trace_id"` // 全局唯一Code
 	RequestId string `json:"request_id"` // 当前请求code
-	Pagination library.Pagination `json:"pagination"` // 分页信息
+}
+
+// Meta 元数据
+type Meta struct {
+	Trace Trace `json:"trace"`
+
+	Pagination *library.Pagination `json:"pagination"` // 分页信息
 }
 
 // Default 实例化response
@@ -59,9 +82,11 @@ func Default() *Response {
 		Message: "",
 		Data: nil,
 		Meta: Meta{
-			RequestId: library.UniqueId(),
+			Trace: Trace{
+				RequestId: constant.RequestIdPrefix + library.UniqueId(),
+			},
 		},
-		Errors: nil,
+		Errors: []ErrorItem{},
 
 	}
 }
@@ -70,36 +95,43 @@ func Default() *Response {
 func (response *Response) complete()  {
 	if &response.Meta == nil {
 		response.Meta = Meta{
-			RequestId: library.UniqueId(),
+			Trace: Trace{
+				RequestId: constant.RequestIdPrefix + library.UniqueId(),
+			},
 		}
 	}
+
 }
 
 // Json 输出json
-func (response *Response) Json(ctx *gin.Context)  {
+func Json(ctx *gin.Context, response *Response)  {
 	response.complete()
-	response.Meta.TraceId = helper.GetTraceId(ctx)
+	response.Meta.Trace.TraceId = helper.GetTraceId(ctx)
 	ctx.JSON(constant.StatusOk, response)
 }
 
-// String 输出字符串
-func (response *Response) String(ctx *gin.Context, format string, values ...interface{})  {
-	response.complete()
-	response.Meta.TraceId = helper.GetTraceId(ctx)
-	ctx.String(constant.StatusOk, format, values)
+// Success 成功的输出
+func Success(ctx *gin.Context, data interface{})  {
+	response := Default()
+	response.Data = data
+	Json(ctx, response)
 }
 
 // Error 错误输出
-func (response *Response) Error(ctx *gin.Context, statusCode int, message string)  {
+func Error(ctx *gin.Context, statusCode int, message string)  {
+	response := Default()
 	response.StatusCode = statusCode
 	response.Message = message
-	response.Json(ctx)
+	Json(ctx, response)
 }
 
-// Success 成功的输出
-func (response *Response) Success(ctx *gin.Context, data Data)  {
-	response.Data = data
-	response.Json(ctx)
+// Error 错误输出
+func ErrorWithItems(ctx *gin.Context, statusCode int, message string, e ErrorItems)  {
+	response := Default()
+	response.StatusCode = statusCode
+	response.Message = message
+	response.Errors = e.items
+	Json(ctx, response)
 }
 
 // IsSuccess 是否已成功

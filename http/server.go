@@ -3,8 +3,8 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"errors"
-	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/handler"
+	"github.com/ebar-go/ego/http/middleware"
 )
 
 // Server Web服务管理器

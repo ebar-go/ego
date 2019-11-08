@@ -10,6 +10,7 @@ type Pagination struct {
 	CurrentPage int `json:"current_page"`
 	TotalPages int `json:"total_pages"`
 	Link interface{} `json:"link"`
+	Items interface{} `json:"-"`
 }
 
 const (

@@ -3,8 +3,8 @@ package db
 import (
 	"testing"
 	"fmt"
-	"github.com/ebar-go/ego/test"
 	"github.com/go-redis/redis"
+	"github.com/stretchr/testify/assert"
 )
 
 // TestConnectRedis 测试连接
@@ -18,14 +18,14 @@ func TestConnectRedis(t *testing.T) {
 		DB:0,
 	})
 
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 
 
 	err = client.Set("key", "value", 0).Err()
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	val, err := client.Get("key").Result()
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 	fmt.Println("key", val)
 
 }

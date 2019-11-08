@@ -7,6 +7,12 @@ const (
 	JwtTokenHeader = "Authorization"
 	JwtUserKey     = "jwt_user"
 	JwtExpiredTime = 600
+
+)
+
+const (
+	TraceIdPrefix = "TraceId"
+	RequestIdPrefix = "RequestId"
 )
 
 const (

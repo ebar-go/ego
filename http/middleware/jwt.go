@@ -116,7 +116,7 @@ func JWT(c *gin.Context) {
 	}
 
 	if errRes != nil {
-		response.Default().Error(c, constant.StatusUnauthorized, errRes.Error())
+		response.Error(c, constant.StatusUnauthorized, errRes.Error())
 
 		c.Abort()
 		return
