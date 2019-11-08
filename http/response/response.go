@@ -16,7 +16,12 @@ import (
 // ErrorItem 错误项
 type ErrorItem struct {
 	Key   string `json:"key"`
-	Value string `json:"value"`
+	Value string `json:"error"`
+}
+
+// NewErrorItem 实例化错误项
+func NewErrorItem(key, msg string) ErrorItem {
+	return ErrorItem{Key:key, Value:msg}
 }
 
 // IResponse Response接口
