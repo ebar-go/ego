@@ -12,6 +12,7 @@ const (
 
 const (
 	DefaultLogPath = "/wwwlogs/"
+	DefaultSystemName = "system_name"
 	SystemLogPrefix = "system_"
 	RequestLogPrefix = "request_"
 	AppLogPrefix = "app_"

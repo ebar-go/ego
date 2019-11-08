@@ -61,6 +61,10 @@ func (server *Server) initLogger() error {
 		server.LogPath = constant.DefaultLogPath
 	}
 
+	if server.SystemName == "" {
+		server.SystemName = constant.DefaultSystemName
+	}
+
 
 	appPath := path.Join(server.LogPath, server.SystemName, constant.AppLogPrefix + server.SystemName + constant.LogSuffix)
 	systemPath := path.Join(server.LogPath, server.SystemName, constant.SystemLogPrefix + server.SystemName + constant.LogSuffix)
