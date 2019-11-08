@@ -13,16 +13,29 @@ import (
 	"github.com/ebar-go/ego/http/helper"
 )
 
+
+
 // ErrorItem 错误项
 type ErrorItem struct {
 	Key   string `json:"key"`
 	Value string `json:"error"`
 }
 
-// NewErrorItem 实例化错误项
-func NewErrorItem(key, msg string) ErrorItem {
-	return ErrorItem{Key:key, Value:msg}
+// ErrorItems 错误项
+type ErrorItems struct {
+	items []ErrorItem
 }
+
+// Push 添加错误项
+func (e *ErrorItems) Push(key, msg string) {
+	e.items = append(e.items, ErrorItem{Key:key, Value:msg})
+}
+
+// IsEmpty 查看错误项是否为空
+func (e *ErrorItems) IsEmpty() bool {
+	return len(e.items) == 0
+}
+
 
 // IResponse Response接口
 type IResponse interface {
@@ -50,10 +63,15 @@ type MapResponse struct {
 	Errors     []ErrorItem `json:"errors"`
 }
 
-// Meta 元数据
-type Meta struct {
+type Trace struct {
 	TraceId string `json:"trace_id"` // 全局唯一Code
 	RequestId string `json:"request_id"` // 当前请求code
+}
+
+// Meta 元数据
+type Meta struct {
+	Trace Trace `json:"trace"`
+
 	Pagination *library.Pagination `json:"pagination"` // 分页信息
 }
 
@@ -64,9 +82,11 @@ func Default() *Response {
 		Message: "",
 		Data: nil,
 		Meta: Meta{
-			RequestId: library.UniqueId(),
+			Trace: Trace{
+				RequestId: constant.RequestIdPrefix + library.UniqueId(),
+			},
 		},
-		Errors: nil,
+		Errors: []ErrorItem{},
 
 	}
 }
@@ -75,7 +95,9 @@ func Default() *Response {
 func (response *Response) complete()  {
 	if &response.Meta == nil {
 		response.Meta = Meta{
-			RequestId: library.UniqueId(),
+			Trace: Trace{
+				RequestId: constant.RequestIdPrefix + library.UniqueId(),
+			},
 		}
 	}
 
@@ -83,9 +105,8 @@ func (response *Response) complete()  {
 
 // Json 输出json
 func Json(ctx *gin.Context, response *Response)  {
-
 	response.complete()
-	response.Meta.TraceId = helper.GetTraceId(ctx)
+	response.Meta.Trace.TraceId = helper.GetTraceId(ctx)
 	ctx.JSON(constant.StatusOk, response)
 }
 
@@ -104,6 +125,14 @@ func Error(ctx *gin.Context, statusCode int, message string)  {
 	Json(ctx, response)
 }
 
+// Error 错误输出
+func ErrorWithItems(ctx *gin.Context, statusCode int, message string, e ErrorItems)  {
+	response := Default()
+	response.StatusCode = statusCode
+	response.Message = message
+	response.Errors = e.items
+	Json(ctx, response)
+}
 
 // IsSuccess 是否已成功
 func (response *Response) IsSuccess() bool {
