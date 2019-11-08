@@ -57,7 +57,7 @@ func RequestLog(c *gin.Context) {
 
 func handleAccessChannel() {
 	for accessLog := range accessChannel {
-		log.GetSystemLogger().Info("request_log", accessLog)
+		log.RequestLogger.Info("request_log", accessLog)
 	}
 
 	return

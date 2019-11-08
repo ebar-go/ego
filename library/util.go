@@ -37,9 +37,7 @@ func Round(f float64) int {
 func Debug(params ...interface{})  {
 	_, file, line, ok := runtime.Caller(1)
 	if ok {
-		fmt.Printf("[Trace]%s[%d]:\n", file, line)
-		fmt.Println(params...)
-		fmt.Println()
+		fmt.Printf("[Trace]%s[%d]:\n%v \n", file, line, params)
 	}
 }
 

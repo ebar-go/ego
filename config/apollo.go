@@ -38,3 +38,8 @@ func (apollo *Apollo) ListenChangeEvent() <-chan *agollo.ChangeEvent {
 func (apollo *Apollo) GetStringValue(key , defaultValue string) string {
 	return agollo.GetStringValue(key, defaultValue)
 }
+
+// GetBoolValue 获取bool配置
+func (apollo *Apollo) GetBoolValue(key string, defaultValue bool) bool {
+	return agollo.GetBoolValue(key, defaultValue)
+}

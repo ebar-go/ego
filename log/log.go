@@ -14,7 +14,6 @@ type Logger struct {
 	key string
 }
 
-var systemLogger *Logger
 
 const (
 	defaultKey = "title" // 日志的默认字段名称 title : this is content
@@ -29,18 +28,15 @@ func New() *Logger {
 	return l
 }
 
-// SetSystemLogger 设置系统日志
-func SetSystemLogger(logger *Logger)  {
-	systemLogger = logger
+// GetInstance 获取logrus实例
+func (l *Logger) GetInstance() *logrus.Logger  {
+	return l.instance
 }
 
-// GetSystemLogger 获取系统日志
-func GetSystemLogger() *Logger {
-	if systemLogger == nil {
-		systemLogger = New()
-	}
 
-	return systemLogger
+// SetLevel 设置日志等级
+func (l *Logger) SetLevel(level logrus.Level) {
+	l.instance.Level = level
 }
 
 // SetOutWriter 设置输出,可以是文件，也可以是os.StdOut
