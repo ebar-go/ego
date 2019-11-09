@@ -99,7 +99,7 @@ func (l *Logger) WithDefaultFields() *logrus.Entry {
 
 // Debug 调试等级
 func (l *Logger) Debug(message string, context LogContextInterface) {
-	l.WithDefaultFields().WithField("context", context).Debug(context)
+	l.WithDefaultFields().WithField("context", context).Debug(message)
 }
 
 // Info 信息等级
@@ -109,15 +109,15 @@ func (l *Logger) Info(message string, context LogContextInterface) {
 
 // Warn 警告等级
 func (l *Logger) Warn(message string, context LogContextInterface) {
-	l.WithDefaultFields().Warn(context)
+	l.WithDefaultFields().WithField("context", context).Warn(message)
 }
 
 // Error 错误等级
 func (l *Logger) Error(message string, context LogContextInterface) {
-	l.WithDefaultFields().Error(context)
+	l.WithDefaultFields().WithField("context", context).Error(message)
 }
 
 // Fatal 中断等级
 func (l *Logger) Fatal(message string, context LogContextInterface) {
-	l.WithDefaultFields().Fatal(context)
+	l.WithDefaultFields().WithField("context", context).Fatal(message)
 }

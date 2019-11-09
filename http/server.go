@@ -78,7 +78,7 @@ func (server *Server) initLogger() error {
 	requestPath := path.Join(server.LogPath, server.SystemName, constant.RequestLogPrefix + server.SystemName + constant.LogSuffix)
 
 	log.AppLogger = log.NewFileLogger(appPath)
-	if server.AppDebug {
+	if !server.AppDebug {
 		log.AppLogger.SetLevel(logrus.DebugLevel)
 	}
 
