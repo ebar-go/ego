@@ -41,6 +41,19 @@ func Debug(params ...interface{})  {
 	}
 }
 
+// Trace 返回trace日志
+func Trace() []string {
+	trace := []string{}
+	for i:=0; i<5; i++ {
+		_, file, line, ok := runtime.Caller(i)
+		if ok {
+			trace = append(trace, fmt.Sprintf("[Trace]%s[%d]: \n", file, line))
+		}
+	}
+
+	return trace
+}
+
 // ArrayUniqueInt 排重
 func ArrayUniqueInt(items []int) []int {
 	result := make([]int, 0, len(items))
