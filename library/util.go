@@ -37,10 +37,21 @@ func Round(f float64) int {
 func Debug(params ...interface{})  {
 	_, file, line, ok := runtime.Caller(1)
 	if ok {
-		fmt.Printf("[Trace]%s[%d]:\n", file, line)
-		fmt.Println(params...)
-		fmt.Println()
+		fmt.Printf("[Trace]%s[%d]:\n%v \n", file, line, params)
 	}
+}
+
+// Trace 返回trace日志
+func Trace() []string {
+	trace := []string{}
+	for i:=0; i<5; i++ {
+		_, file, line, ok := runtime.Caller(i)
+		if ok {
+			trace = append(trace, fmt.Sprintf("[Trace]%s[%d]: \n", file, line))
+		}
+	}
+
+	return trace
 }
 
 // ArrayUniqueInt 排重

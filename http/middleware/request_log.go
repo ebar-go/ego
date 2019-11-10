@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 	"github.com/ebar-go/ego/log"
+	"github.com/ebar-go/ego/http/helper"
 )
 
 // bodyLogWriter 读取响应Writer
@@ -21,43 +22,49 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-var accessChannel = make(chan string, 100)
+var accessChannel = make(chan log.LogContextInterface, 100)
 
 // RequestLog gin的请求日志中间件
 func RequestLog(c *gin.Context) {
 	go handleAccessChannel()
 
 	t := time.Now()
+	requestTime := library.GetTimeStamp()
 	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 	c.Writer = blw
 
+
+	requestBody := helper.GetRequestBody(c)
+	library.Debug(requestBody)
 	c.Next()
 
 
 	// after request
 	latency := time.Since(t)
+
+	logContext := log.RequestLogger.NewContext(helper.GetTraceId(c))
 	// 日志格式
-	accessLogMap := make(map[string]interface{})
 
-	accessLogMap["request_time"]      = latency
-	accessLogMap["request_method"]    = c.Request.Method
-	accessLogMap["request_uri"]       = c.Request.RequestURI
-	accessLogMap["request_proto"]     = c.Request.Proto
-	accessLogMap["request_ua"]        = c.Request.UserAgent()
-	accessLogMap["request_referer"]   = c.Request.Referer()
-	accessLogMap["request_post_data"] = c.Request.PostForm.Encode()
-	accessLogMap["request_client_ip"] = c.ClientIP()
-	accessLogMap["cost_time"] = fmt.Sprintf("%v", latency)
-	accessLogMap["response_body"] = blw.body.String()
-	accessLogMap["status_code"] = blw.Status()
+	logContext["request_uri"]       = c.Request.RequestURI
+	logContext["request_method"]    = c.Request.Method
 
-	accessLogJson, _ := library.JsonEncode(accessLogMap)
-	accessChannel <- accessLogJson
+	logContext["refer_service_name"]   = c.Request.Referer()
+	logContext["refer_request_host"] = c.ClientIP()
+	logContext["request_body"] = requestBody
+	logContext["request_time"]      = requestTime
+	logContext["response_time"]      = library.GetTimeStamp()
+	logContext["response_body"] = blw.body.String()
+	logContext["time_used"] = fmt.Sprintf("%v", latency)
+
+	logContext["header"] = c.Request.Header
+
+	accessChannel <- logContext
 }
 
 func handleAccessChannel() {
 	for accessLog := range accessChannel {
-		log.GetSystemLogger().Info("request_log", accessLog)
+
+		log.RequestLogger.Info("REQUEST LOG", accessLog)
 	}
 
 	return

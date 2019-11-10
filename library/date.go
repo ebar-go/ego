@@ -15,3 +15,14 @@ func GetTimeStr() string {
 func GetDefaultTimeFormat() string {
 	return defaultTimeFormat
 }
+
+// GetTimeStamp 获取时间戳
+func GetTimeStamp() int64 {
+	return time.Now().Local().Unix()
+}
+
+// GetLastMonthTimeStr 获取上个月的时间
+func GetLastMonthTimeStr() string {
+	return time.Now().Local().AddDate(0, -1, 0).Format(defaultTimeFormat)
+}
+

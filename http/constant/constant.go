@@ -11,6 +11,15 @@ const (
 )
 
 const (
+	DefaultLogPath = "/wwwlogs/"
+	DefaultSystemName = "system_name"
+	SystemLogPrefix = "system_"
+	RequestLogPrefix = "request_"
+	AppLogPrefix = "app_"
+	LogSuffix = ".log"
+)
+
+const (
 	TraceIdPrefix = "TraceId"
 	RequestIdPrefix = "RequestId"
 )

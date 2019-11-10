@@ -11,3 +11,4 @@ import (
 func NotFoundHandler(context *gin.Context)  {
 	response.Error(context, constant.StatusNotFound, fmt.Sprintf("404 Not Found: %s", context.Request.RequestURI))
 }
+

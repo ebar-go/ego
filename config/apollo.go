@@ -34,7 +34,17 @@ func (apollo *Apollo) ListenChangeEvent() <-chan *agollo.ChangeEvent {
 	return agollo.ListenChangeEvent()
 }
 
-// GetApolloStringValue 获取字符串配置
+// GetStringValue 获取字符串配置
 func (apollo *Apollo) GetStringValue(key , defaultValue string) string {
 	return agollo.GetStringValue(key, defaultValue)
+}
+
+// GetIntValue 获取整形配置
+func (apollo *Apollo) GetIntValue(key string , defaultValue int) int {
+	return agollo.GetIntValue(key, defaultValue)
+}
+
+// GetBoolValue 获取bool配置
+func (apollo *Apollo) GetBoolValue(key string, defaultValue bool) bool {
+	return agollo.GetBoolValue(key, defaultValue)
 }
