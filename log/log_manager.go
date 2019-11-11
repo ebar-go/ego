@@ -11,8 +11,6 @@ var AppLogger *Logger
 var SystemLogger *Logger
 var RequestLogger *Logger
 
-
-
 // App 应用日志
 func App() *Logger {
 	if AppLogger == nil {

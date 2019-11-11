@@ -1,6 +1,9 @@
 package library
 
-import "time"
+import (
+	"time"
+	"fmt"
+)
 
 const(
 	defaultTimeFormat = "2006-01-02 15:04:05"
@@ -26,3 +29,6 @@ func GetLastMonthTimeStr() string {
 	return time.Now().Local().AddDate(0, -1, 0).Format(defaultTimeFormat)
 }
 
+func GetTimeStampFloatStr() string {
+	return fmt.Sprintf("%.6f", float64(time.Now().Local().UnixNano()) / 1e9)
+}

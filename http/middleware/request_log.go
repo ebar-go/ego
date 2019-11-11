@@ -22,37 +22,32 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-var accessChannel = make(chan log.LogContextInterface, 100)
+var accessChannel = make(chan log.Context, 100)
 
 // RequestLog gin的请求日志中间件
 func RequestLog(c *gin.Context) {
 	go handleAccessChannel()
 
 	t := time.Now()
-	requestTime := library.GetTimeStamp()
+	requestTime := library.GetTimeStampFloatStr()
 	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 	c.Writer = blw
 
-
 	requestBody := helper.GetRequestBody(c)
-	library.Debug(requestBody)
 	c.Next()
-
 
 	// after request
 	latency := time.Since(t)
 
-	logContext := log.RequestLogger.NewContext(helper.GetTraceId(c))
+	logContext := log.NewContext(helper.GetTraceId(c))
 	// 日志格式
-
-	logContext["request_uri"]       = c.Request.RequestURI
-	logContext["request_method"]    = c.Request.Method
-
-	logContext["refer_service_name"]   = c.Request.Referer()
+	logContext["request_uri"] = c.Request.RequestURI
+	logContext["request_method"] = c.Request.Method
+	logContext["refer_service_name"] = c.Request.Referer()
 	logContext["refer_request_host"] = c.ClientIP()
 	logContext["request_body"] = requestBody
-	logContext["request_time"]      = requestTime
-	logContext["response_time"]      = library.GetTimeStamp()
+	logContext["request_time"] = requestTime
+	logContext["response_time"] = library.GetTimeStampFloatStr()
 	logContext["response_body"] = blw.body.String()
 	logContext["time_used"] = fmt.Sprintf("%v", latency)
 

@@ -14,7 +14,7 @@ func Recover(ctx *gin.Context)  {
 		if r := recover(); r != nil {
 			response.Error(ctx, constant.StatusError, "系统错误")
 
-			context := log.System().NewContext(helper.GetTraceId(ctx))
+			context := log.NewContext(helper.GetTraceId(ctx))
 			context["error"] = r
 			context["trace"] = library.Trace()
 
