@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/http/constant"
 )
 
 // Logger 日志结构体
@@ -19,7 +20,7 @@ type LogSystemParam struct {
 	Channel string `json:"channel"`
 }
 
-type LogContextInterface map[string]interface{}
+type Context map[string]interface{}
 
 const (
 	DefaultAppChannel = "APP" // 日志的数据来源
@@ -38,18 +39,6 @@ func New() *Logger {
 func (l *Logger) GetInstance() *logrus.Logger  {
 	return l.instance
 }
-
-// NewContext
-func (l *Logger) NewContext(traceId string ) LogContextInterface {
-	context := LogContextInterface{
-		"service_name": l.systemParams.ServiceName,
-		"service_port": l.systemParams.ServicePort,
-		"trace_id" : traceId,
-	}
-
-	return context
-}
-
 
 // SetLevel 设置日志等级
 func (l *Logger) SetLevel(level logrus.Level) {
@@ -82,7 +71,6 @@ func getDefaultLogInstance() *logrus.Logger {
 		  	TimestampFormat: library.GetDefaultTimeFormat(),
 	})
 
-
 	return instance
 }
 
@@ -96,28 +84,49 @@ func (l *Logger) WithDefaultFields() *logrus.Entry {
 	})
 }
 
+// NewContext 新的日志结构体
+func NewContext(traceId string) Context {
+	return Context{
+		constant.TraceID : traceId,
+	}
+}
+
+func (l *Logger) MergeSystemContext(context Context) Context {
+	result := library.MergeMaps(Context{
+		"service_name": l.systemParams.ServiceName,
+		"service_port": l.systemParams.ServicePort,
+	}, context)
+
+	if _, ok := result[constant.TraceID]; ok {
+		return result
+	}
+
+	result[constant.TraceID] = constant.TraceIdPrefix + library.UniqueId()
+	return result
+}
+
 
 // Debug 调试等级
-func (l *Logger) Debug(message string, context LogContextInterface) {
-	l.WithDefaultFields().WithField("context", context).Debug(message)
+func (l *Logger) Debug(message string, context Context) {
+	l.WithDefaultFields().WithField("context", l.MergeSystemContext(context)).Debug(message)
 }
 
 // Info 信息等级
-func (l *Logger) Info(message string, context LogContextInterface) {
-	l.WithDefaultFields().WithField("context", context).Info(message)
+func (l *Logger) Info(message string, context Context) {
+	l.WithDefaultFields().WithField("context", l.MergeSystemContext(context)).Info(message)
 }
 
 // Warn 警告等级
-func (l *Logger) Warn(message string, context LogContextInterface) {
-	l.WithDefaultFields().WithField("context", context).Warn(message)
+func (l *Logger) Warn(message string, context Context) {
+	l.WithDefaultFields().WithField("context", l.MergeSystemContext(context)).Warn(message)
 }
 
 // Error 错误等级
-func (l *Logger) Error(message string, context LogContextInterface) {
-	l.WithDefaultFields().WithField("context", context).Error(message)
+func (l *Logger) Error(message string, context Context) {
+	l.WithDefaultFields().WithField("context", l.MergeSystemContext(context)).Error(message)
 }
 
 // Fatal 中断等级
-func (l *Logger) Fatal(message string, context LogContextInterface) {
-	l.WithDefaultFields().WithField("context", context).Fatal(message)
+func (l *Logger) Fatal(message string, context Context) {
+	l.WithDefaultFields().WithField("context", l.MergeSystemContext(context)).Fatal(message)
 }

@@ -39,7 +39,7 @@ func TestLogger_Info(t *testing.T) {
 	})
 
 	traceId := library.UniqueId()
-	logger.Info("A group of walrus emerges from the ocean", logger.NewContext(traceId))
+	logger.Info("A group of walrus emerges from the ocean", Context{"trace_id": traceId})
 }
 
 
