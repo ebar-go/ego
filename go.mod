@@ -13,6 +13,7 @@ require (
 	github.com/gogap/errors v0.0.0-20160523102334-149c546090d0 // indirect
 	github.com/gogap/logs v0.0.0-20150329044033-31c6d1e28b2c
 	github.com/gogap/stack v0.0.0-20150131034635-fef68dddd4f8 // indirect
+	github.com/goinggo/mapstructure v0.0.0-20140717182941-194205d9b4a9 // indirect
 	github.com/hashicorp/consul/api v1.2.0
 	github.com/jinzhu/gorm v1.9.11
 	github.com/kr/pretty v0.1.0 // indirect

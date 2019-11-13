@@ -10,6 +10,7 @@ import (
 	"errors"
 	"strings"
 	"strconv"
+	"encoding/base64"
 )
 
 // JsonEncode json序列号
@@ -158,4 +159,12 @@ func MergeMaps(items ...map[string]interface{}) map[string]interface{} {
 	}
 
 	return result
+}
+
+func DecodeBase64Str(encoded string) string {
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return ""
+	}
+	return string(decoded)
 }

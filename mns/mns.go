@@ -120,6 +120,7 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 		case resp := <-respChan:
 			{
 				context := queue.GetLogContext("receiveMessage")
+				resp.MessageBody = library.DecodeBase64Str(resp.MessageBody)
 				context["messageBody"] = resp
 				log.Mq().Info("mns_receive", context)
 

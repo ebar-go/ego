@@ -7,7 +7,7 @@ import (
 
 // 测试获取时间
 func TestGetTimeStr(t *testing.T) {
-	fmt.Println(GetTimeStampFloat())
+	fmt.Println(GetTimeStampFloatStr())
 }
 
 

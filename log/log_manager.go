@@ -37,7 +37,7 @@ func (manager *SystemLogManager) Init() {
 	requestPath := path.Join(manager.LogPath, manager.SystemName, constant.RequestLogPrefix + manager.SystemName + constant.LogSuffix)
 
 	manager.app = NewFileLogger(appPath)
-	if !manager.AppDebug {
+	if manager.AppDebug {
 		manager.app.SetLevel(logrus.DebugLevel)
 	}
 
@@ -105,7 +105,7 @@ func Mq() *Logger {
 		systemLogManagerInstance.mq.SetSystemParam(LogSystemParam{
 			ServiceName: systemLogManagerInstance.SystemName,
 			ServicePort: systemLogManagerInstance.SystemPort,
-			Channel: DefaultRequestChannel,
+			Channel: DefaultMqChannel,
 		})
 	}
 
