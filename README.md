@@ -48,7 +48,8 @@ import (
 	)
 func main() {
     server := http.Server {
-        Address : "127.0.0.1:8088", // 可以读取apollo地址
+        Address : "127.0.0.1", // 可以读取apollo地址
+        Port:8088,
     }
     err := server.Init()
     if err != nil {
@@ -75,7 +76,8 @@ import (
 	)
 func main() {
     server := http.Server {
-        Address : "127.0.0.1:8088", // 可以读取apollo地址
+        Address : "127.0.0.1", // 可以读取apollo地址
+        Port:8088,
     }
     err := server.Init()
     if err != nil {
@@ -246,7 +248,7 @@ import (
        )
 func main() {
     logger := log.New()
-    logger.Debug("test debug", 123, 456)
+    logger.Debug("test debug", log.Context{"name":"123"})
 }
 ```
 
@@ -269,7 +271,7 @@ func main() {
     }else {
     	fmt.Println("err:" + err.Error())
 	}
-    logger.Info("test info", 123, 456)
+    logger.Debug("test debug", log.Context{"name":"123"})
 }
 ```
 

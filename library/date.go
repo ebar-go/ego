@@ -7,7 +7,13 @@ import (
 
 const(
 	defaultTimeFormat = "2006-01-02 15:04:05"
+	defaultDateFormat = "2006-01-02"
 )
+
+// GetDateStr 获取日期字符串
+func GetDateStr() string {
+	return time.Now().Local().Format(defaultDateFormat)
+}
 
 // GetTimeStr 获取时间字符串
 func GetTimeStr() string {

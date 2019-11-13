@@ -6,6 +6,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"github.com/satori/go.uuid"
+	"github.com/ebar-go/ego/http/constant"
 )
 
 //生成32位md5字串
@@ -23,8 +24,12 @@ func GetHash(s string) string {
 	return fmt.Sprintf("%x", result)
 }
 
-//生成Guid字串
+//UniqueId 生成Guid字串
 func UniqueId() string {
 	return uuid.NewV4().String()
 }
 
+// GetTraceId 获取全局ID
+func GetTraceId() string {
+	return constant.TraceIdPrefix + UniqueId()
+}

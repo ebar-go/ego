@@ -7,8 +7,6 @@ import (
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/constant"
 	"github.com/ebar-go/ego/log"
-	"path"
-	"github.com/sirupsen/logrus"
 	"net"
 	"strconv"
 )
@@ -72,35 +70,16 @@ func (server *Server) initLogger() error {
 		server.SystemName = constant.DefaultSystemName
 	}
 
-
-	appPath := path.Join(server.LogPath, server.SystemName, constant.AppLogPrefix + server.SystemName + constant.LogSuffix)
-	systemPath := path.Join(server.LogPath, server.SystemName, constant.SystemLogPrefix + server.SystemName + constant.LogSuffix)
-	requestPath := path.Join(server.LogPath, server.SystemName, constant.RequestLogPrefix + server.SystemName + constant.LogSuffix)
-
-	log.AppLogger = log.NewFileLogger(appPath)
-	if !server.AppDebug {
-		log.AppLogger.SetLevel(logrus.DebugLevel)
+	// 初始化系统日志管理器
+	systemLogManager := &log.SystemLogManager{
+		SystemName: server.SystemName,
+		SystemPort: server.Port,
+		LogPath: server.LogPath,
+		AppDebug: server.AppDebug,
 	}
 
-	log.AppLogger.SetSystemParam(log.LogSystemParam{
-		ServiceName: server.SystemName,
-		ServicePort: server.Port,
-		Channel: log.DefaultAppChannel,
-	})
-
-	log.SystemLogger = log.NewFileLogger(systemPath)
-	log.SystemLogger.SetSystemParam(log.LogSystemParam{
-		ServiceName: server.SystemName,
-		ServicePort: server.Port,
-		Channel: log.DefaultSystemChannel,
-	})
-
-	log.RequestLogger = log.NewFileLogger(requestPath)
-	log.RequestLogger.SetSystemParam(log.LogSystemParam{
-		ServiceName: server.SystemName,
-		ServicePort: server.Port,
-		Channel: log.DefaultRequestChannel,
-	})
+	systemLogManager.Init()
+	log.SetSystemLogManagerInstance(systemLogManager)
 
 	return nil
 }

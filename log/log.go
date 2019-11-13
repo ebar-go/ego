@@ -26,6 +26,7 @@ const (
 	DefaultAppChannel = "APP" // 日志的数据来源
 	DefaultSystemChannel = "SYSTEM"
 	DefaultRequestChannel = "REQUEST"
+	DefaultMqChannel = "mq"
 )
 
 // New 获取默认的日志管理器，输出到控制台
@@ -90,6 +91,7 @@ func NewContext(traceId string) Context {
 		constant.TraceID : traceId,
 	}
 }
+
 
 func (l *Logger) MergeSystemContext(context Context) Context {
 	result := library.MergeMaps(Context{

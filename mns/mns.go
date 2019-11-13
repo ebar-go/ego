@@ -2,9 +2,8 @@ package mns
 
 import(
 	ali_mns "github.com/aliyun/aliyun-mns-go-sdk"
-	"fmt"
-	"github.com/gogap/logs"
 	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/log"
 )
 
 // Conf 阿里云MNS 配置项
@@ -52,7 +51,7 @@ func (client *Client) ListenQueues() {
 			continue
 		}
 
-		item.ReceiveMessage(30)
+		go item.ReceiveMessage(30)
 	}
 }
 
@@ -99,8 +98,17 @@ func (queue *Queue) SendMessage(message string) (ali_mns.MessageSendResponse, er
 	return resp, err
 }
 
+func (queue *Queue) GetLogContext(actionName string) log.Context {
+	traceId := library.GetTraceId()
+	context := log.NewContext(traceId)
+	context["queue_name"] = queue.Name
+	context["receiveTime"] = library.GetTimeStr()
+	return context
+}
+
 // ReceiveMessage 接收消息并处理
 func (queue *Queue) ReceiveMessage(waitSeconds int64) {
+
 	if waitSeconds == 0 {
 		waitSeconds = 30
 	}
@@ -111,17 +119,22 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 		select {
 		case resp := <-respChan:
 			{
-				logs.Pretty("response:", resp)
+				context := queue.GetLogContext("receiveMessage")
+				context["messageBody"] = resp
+				log.Mq().Info("mns_receive", context)
 
 				if err := queue.Handler(resp.MessageBody); err != nil {
-					library.Debug(err)
+					library.Debug("处理消息失败:",queue.Name, err.Error() )
 
 					// TODO ChangeMessageVisibility
 				}else {
 					// 处理成功，删除消息
 					if err := queue.DeleteMessage(resp.ReceiptHandle); err != nil {
-						fmt.Println(err)
+						library.Debug("删除消息失败:",queue.Name, err.Error() )
+					}else {
+						library.Debug("删除消息成功:", queue.Name)
 					}
+
 					endChan <- 1
 				}
 
@@ -144,6 +157,5 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 
 // DeleteMessage 删除消息
 func (queue *Queue) DeleteMessage(receiptHandler string ) error{
-	library.Debug(receiptHandler)
 	return queue.instance.DeleteMessage(receiptHandler)
 }
