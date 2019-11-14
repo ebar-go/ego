@@ -83,11 +83,11 @@ func System() *Logger {
 
 // Request 请求日志
 func Request() *Logger {
-	if systemLogManagerInstance.app == nil {
-		systemLogManagerInstance.app = New()
+	if systemLogManagerInstance.request == nil {
+		systemLogManagerInstance.request = New()
 	}
 
-	return systemLogManagerInstance.app
+	return systemLogManagerInstance.request
 }
 
 // Mq 消息队列日志
