@@ -1,6 +1,8 @@
 package library
 
-import "math"
+import (
+	"math"
+)
 
 // Pagination 分页器
 type Pagination struct {
@@ -44,7 +46,31 @@ func NewPagination(totalCount, currentPage, limit int) (Pagination) {
 	}
 
 	return pagination
+}
 
+// NewPaginationWithSlice 根据切片分页
+func NewPaginationWithSlice(items []interface{}, currentPage, limit int) Pagination {
+	pagination := Pagination{
+		TotalCount: len(items),
+		CurrentPage: currentPage,
+		Limit: limit,
+	}
+
+	if pagination.Limit <= 0 {
+		pagination.Limit = defaultLimit
+	}
+
+	if pagination.CurrentPage <= 0 {
+		pagination.CurrentPage = defaultCurrentPage
+	}
+
+	pagination.TotalPages = int(math.Ceil(float64(pagination.TotalCount) / float64(pagination.Limit))) //page总数
+
+	low := pagination.GetOffset()
+	high := Min(pagination.TotalCount, low + pagination.Limit)
+	pagination.Items = items[low:high]
+	pagination.CurrentCount= len(items[low:high])
+	return pagination
 }
 
 // SetCurrentCount 设置当前页的数据项数量
