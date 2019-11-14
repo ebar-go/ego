@@ -39,7 +39,9 @@ func RequestLog(c *gin.Context) {
 	// after request
 	latency := time.Since(t)
 
-	logContext := log.NewContext(helper.GetTraceId(c))
+	logContext := log.Context{
+		"trace_id" : helper.GetTraceId(c),
+	}
 	// 日志格式
 	logContext["request_uri"] = c.Request.RequestURI
 	logContext["request_method"] = c.Request.Method

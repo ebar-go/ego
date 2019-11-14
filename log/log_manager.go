@@ -1,13 +1,9 @@
 package log
 
 import (
-	"os"
-	"fmt"
 	"github.com/ebar-go/ego/library"
-	"path/filepath"
 	"path"
 	"github.com/ebar-go/ego/http/constant"
-	"github.com/sirupsen/logrus"
 )
 
 var systemLogManagerInstance *SystemLogManager
@@ -23,7 +19,6 @@ type SystemLogManager struct {
 	request *Logger
 	mq *Logger
 	mqRotateDate string
-
 }
 
 func SetSystemLogManagerInstance(instance *SystemLogManager)  {
@@ -37,30 +32,25 @@ func (manager *SystemLogManager) Init() {
 	requestPath := path.Join(manager.LogPath, manager.SystemName, constant.RequestLogPrefix + manager.SystemName + constant.LogSuffix)
 
 	manager.app = NewFileLogger(appPath)
-	if manager.AppDebug {
-		manager.app.SetLevel(logrus.DebugLevel)
-	}
-
-	manager.app.SetSystemParam(LogSystemParam{
+	manager.app.SetSystemParam(SystemParam{
 		ServiceName: manager.SystemName,
 		ServicePort: manager.SystemPort,
 		Channel: DefaultAppChannel,
 	})
 
 	manager.system = NewFileLogger(systemPath)
-	manager.system.SetSystemParam(LogSystemParam{
+	manager.system.SetSystemParam(SystemParam{
 		ServiceName: manager.SystemName,
 		ServicePort: manager.SystemPort,
 		Channel: DefaultSystemChannel,
 	})
 
 	manager.request = NewFileLogger(requestPath)
-	manager.request.SetSystemParam(LogSystemParam{
+	manager.request.SetSystemParam(SystemParam{
 		ServiceName: manager.SystemName,
 		ServicePort: manager.SystemPort,
 		Channel: DefaultRequestChannel,
 	})
-
 }
 
 // App 应用日志
@@ -102,7 +92,7 @@ func Mq() *Logger {
 			systemLogManagerInstance.mqRotateDate + constant.LogSuffix)
 
 		systemLogManagerInstance.mq = NewFileLogger(mqPath)
-		systemLogManagerInstance.mq.SetSystemParam(LogSystemParam{
+		systemLogManagerInstance.mq.SetSystemParam(SystemParam{
 			ServiceName: systemLogManagerInstance.SystemName,
 			ServicePort: systemLogManagerInstance.SystemPort,
 			Channel: DefaultMqChannel,
@@ -116,26 +106,3 @@ func Mq() *Logger {
 	return systemLogManagerInstance.mq
 }
 
-
-// NewFileLogger 新的文件日志管理器
-func NewFileLogger(filePath string) *Logger {
-	er := New()
-
-	if !library.IsPathExist(filePath) {
-		err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
-		if err != nil{
-			library.Debug(err)
-			return er
-		}
-	}
-
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
-	if err == nil {
-		er.SetOutWriter(file)
-		fmt.Printf("初始化日志文件:%s,成功\n", filePath)
-	}else {
-		fmt.Println("err:" + err.Error())
-	}
-
-	return er
-}

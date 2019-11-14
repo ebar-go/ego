@@ -6,6 +6,8 @@ import (
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/constant"
 	"fmt"
+	"github.com/valyala/fasthttp"
+	"github.com/pkg/errors"
 )
 
 type Kong struct {
@@ -38,4 +40,40 @@ func (kong *Kong) NewRequest(router, method , uri string, body io.Reader) (*http
 	request.Header.Add(constant.JwtTokenHeader, fmt.Sprintf("%s %s", constant.JwtTokenMethod,jwtToken))
 
 	return request, nil
+}
+
+func (kong *Kong) NewFastHttpRequest(router, method, uri string) *fasthttp.Request{
+	url := fmt.Sprintf("%s/%s%s", kong.Address, router, uri)
+
+	req := fasthttp.AcquireRequest()
+
+
+	req.Header.SetContentType("application/json")
+	req.Header.SetMethod(method)
+
+	req.SetRequestURI(url)
+
+	// 生成kong的token
+	jwtToken , _ := middleware.GetEncodeToken(kong.Iss, kong.Secret, kong.TokenExpireTime)
+
+	req.Header.Add("Accept-Encoding", "charset=UTF-8")
+	req.Header.Add("Refer-Service-Name", kong.ReferServiceName)
+	req.Header.Add("Refer-Request-Host", kong.ReferRequestHost)
+	req.Header.Add("X-Service-User", kong.XServiceUser)
+	req.Header.Add(constant.JwtTokenHeader, fmt.Sprintf("%s %s", constant.JwtTokenMethod,jwtToken))
+
+	return req
+}
+
+func GetFastHttpResponse(request *fasthttp.Request) (string, error) {
+	defer fasthttp.ReleaseRequest(request) // 用完需要释放资源
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp) // 用完需要释放资源
+
+	if err := fasthttp.Do(request, resp); err != nil {
+		return "", errors.WithMessage(err, "请求失败")
+	}
+
+	return string(resp.Body()), nil
 }

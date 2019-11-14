@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/satori/go.uuid"
 	"github.com/ebar-go/ego/http/constant"
+	"hash/crc32"
 )
 
 //生成32位md5字串
@@ -32,4 +33,16 @@ func UniqueId() string {
 // GetTraceId 获取全局ID
 func GetTraceId() string {
 	return constant.TraceIdPrefix + UniqueId()
+}
+
+func HashCode(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
 }

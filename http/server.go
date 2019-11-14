@@ -59,7 +59,6 @@ func (server *Server)Init() error {
 	return nil
 }
 
-
 func (server *Server) initLogger() error {
 	// 初始化日志目录
 	if server.LogPath == "" {

@@ -12,6 +12,11 @@ const (
 )
 
 const (
+	EnvSystemName = "SYSTEM_NAME"
+	EnvSystemPort = "SYSTEM_PORT"
+)
+
+const (
 	DefaultLogPath = "/wwwlogs/"
 	DefaultSystemName = "system_name"
 	SystemLogPrefix = "system_"
