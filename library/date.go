@@ -10,14 +10,19 @@ const(
 	defaultDateFormat = "2006-01-02"
 )
 
+func GetTime() time.Time {
+	var cstZone = time.FixedZone("CST", 8*3600)       // 东八
+	return time.Now().In(cstZone)
+}
+
 // GetDateStr 获取日期字符串
 func GetDateStr() string {
-	return time.Now().Local().Format(defaultDateFormat)
+	return GetTime().Format(defaultDateFormat)
 }
 
 // GetTimeStr 获取时间字符串
 func GetTimeStr() string {
-	return time.Now().Local().Format(defaultTimeFormat)
+	return GetTime().Format(defaultTimeFormat)
 }
 
 // GetDefaultTimeFormat 获取默认时间格式
@@ -36,5 +41,5 @@ func GetLastMonthTimeStr() string {
 }
 
 func GetTimeStampFloatStr() string {
-	return fmt.Sprintf("%.6f", float64(time.Now().Local().UnixNano()) / 1e9)
+	return fmt.Sprintf("%.6f", float64(GetTime().UnixNano()) / 1e9)
 }
