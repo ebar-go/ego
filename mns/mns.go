@@ -5,6 +5,9 @@ import (
 	"github.com/ebar-go/ego/library"
 	"github.com/ebar-go/ego/log"
 	"encoding/json"
+	"encoding/base64"
+	"os"
+	"github.com/ebar-go/ego/http/constant"
 )
 
 // Conf 阿里云MNS 配置项
@@ -18,21 +21,105 @@ var client *Client
 
 // Client MNS客户端
 type Client struct {
+	conf Conf
 	instance ali_mns.MNSClient
 	queueItems map[string]*Queue
+	topicItems map[string]*Topic
+}
+
+type Topic struct {
+	Name string
+	instance ali_mns.AliMNSTopic
 }
 
 type Params struct {
 	Content interface{} `json:"content"`
 	Tag string `json:"tag"`
 	TraceId string `json:"trace_id"`
+	ReferServiceName string `json:"refer_service_name"`
+	Sign string `json:"sign"`
+}
+
+func (params Params) GenerateSign(key string) string {
+	return  library.GetMd5String(params.TraceId + key)
+}
+
+// GetTopic 获取主体
+func (client *Client) GetTopic(name string) *Topic {
+	if client.topicItems == nil {
+		client.topicItems = make(map[string]*Topic)
+	}
+
+	if _ , ok := client.topicItems[name]; !ok {
+		client.topicItems[name] = &Topic{
+			Name: name,
+			instance: ali_mns.NewMNSTopic(name, client.instance),
+		}
+	}
+
+	return client.topicItems[name]
+}
+
+func (params Params) generateSign(secretKey string)  {
+	if params.Sign == "" {
+		params.Sign = library.GetMd5String(params.TraceId + secretKey)
+	}
+}
+
+// PublishMessage 发布消息
+func (topic *Topic) PublishMessage(params Params, filterTag string) (*ali_mns.MessageSendResponse, error) {
+	bytes , err := json.Marshal(params)
+	if err != nil {
+		return nil, err
+	}
+
+	if params.ReferServiceName == "" {
+		params.ReferServiceName = os.Getenv(constant.SystemNameKey)
+	}
+
+	if params.TraceId == "" {
+		params.TraceId = library.UniqueId()
+	}
+
+	if params.Sign == "" {
+		params.Sign = params.GenerateSign(client.conf.AccessKeySecret)
+	}
+
+	request := ali_mns.MessagePublishRequest{
+		MessageBody: base64.StdEncoding.EncodeToString(bytes),
+		MessageTag: filterTag,
+	}
+	resp, err := topic.instance.PublishMessage(request)
+	if err != nil {
+		return nil, err
+	}
+
+	logContext := log.Context{
+		"action" : "publishMessage",
+		"publish_time" : library.GetTimeStr(),
+		"msectime" : library.GetTimeStampFloatStr(),
+		"message_id" : resp.MessageId,
+		"status_code" : resp.Code,
+		"topic_name" : topic.Name,
+		"message_tag" : params.Tag,
+		"global_trace_id" : library.GetTraceId(),
+		"trace_id": params.TraceId,
+		"filter_tag" : filterTag,
+		"sign" : params.Sign,
+	}
+	log.Mq().Info("publishMessage", logContext)
+
+	return &resp, nil
 }
 
 // InitClient 初始化客户端
 func InitClient(conf Conf) *Client {
 	if client == nil {
-		client = &Client{}
+		client = &Client{
+			conf:conf,
+		}
 		client.queueItems = make(map[string]*Queue)
+		client.topicItems = make(map[string]*Topic)
 	}
 
 	client.instance = ali_mns.NewAliMNSClient(conf.Url,

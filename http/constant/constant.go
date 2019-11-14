@@ -7,6 +7,7 @@ const (
 	JwtTokenHeader = "Authorization"
 	JwtUserKey     = "jwt_user"
 	JwtExpiredTime = 600
+	SystemNameKey = "SYSTEM_NAME"
 
 )
 
