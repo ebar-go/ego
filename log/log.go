@@ -19,17 +19,9 @@ type Logger struct {
 type SystemParam struct {
 	ServiceName string `json:"service_name"`
 	ServicePort int    `json:"service_port"`
-	Channel     string `json:"channel"`
 }
 
 type Context map[string]interface{}
-
-const (
-	DefaultAppChannel     = "APP" // 日志的数据来源
-	DefaultSystemChannel  = "SYSTEM"
-	DefaultRequestChannel = "REQUEST"
-	DefaultMqChannel      = "mq"
-)
 
 // New 获取默认的日志管理器，输出到控制台
 func New() *Logger {
@@ -99,16 +91,12 @@ func getDefaultLogInstance() *logrus.Logger {
 
 // withFields 携带字段
 func (l *Logger) withFields(context Context) *logrus.Entry {
-	if l.systemParams.Channel == "" {
-		l.systemParams.Channel = DefaultAppChannel
-	}
 
 	if _, ok := context["trace_id"]; !ok {
 		context["trace_id"] = library.GetTraceId()
 	}
 
 	return l.instance.WithFields(logrus.Fields{
-		"channel": l.systemParams.Channel,
 		"context": library.MergeMaps(Context{
 			"service_name": l.systemParams.ServiceName,
 			"service_port": l.systemParams.ServicePort,

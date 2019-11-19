@@ -25,6 +25,7 @@ type User struct {
 	UID  int    `json:"uid"`
 	ACID string `json:"acId"`
 	Name string `json:"name"`
+	Verification int `json:"verification"`
 }
 
 var TokenNotExist = errors.New("token not exist")

@@ -19,10 +19,16 @@ const (
 const (
 	DefaultLogPath = "/wwwlogs/"
 	DefaultSystemName = "system_name"
-	SystemLogPrefix = "system_"
-	RequestLogPrefix = "request_"
-	AppLogPrefix = "app_"
+	SystemLogPrefix = "system-"
+	RequestLogPrefix = "request-"
+	AppLogPrefix = "app-"
+	MqLogPrefix = "mq-"
 	LogSuffix = ".log"
+
+	AppLogComponentName = "app"
+	TraceLogComponentName = "trace"
+	MqLogComponentName = "mq"
+	SystemLogComponentName = "phplogs"
 )
 
 const (
