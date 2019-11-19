@@ -9,6 +9,8 @@ const (
 	JwtExpiredTime = 600
 	SystemNameKey = "SYSTEM_NAME"
 
+	DefaultMaxResponseSize = 1000
+
 )
 
 const (

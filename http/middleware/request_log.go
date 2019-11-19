@@ -50,6 +50,10 @@ func RequestLog(c *gin.Context) {
 	latency := time.Since(t)
 
 	logContext := log.Context{}
+
+
+	responseBody := blw.body.String()
+	maxRequestCount := library.Min(blw.body.Len() - 1, constant.DefaultMaxResponseSize)
 	// 日志格式
 	logContext["trace_id"] = traceId
 	logContext["request_uri"] = c.Request.RequestURI
@@ -59,7 +63,7 @@ func RequestLog(c *gin.Context) {
 	logContext["request_body"] = requestBody
 	logContext["request_time"] = requestTime
 	logContext["response_time"] = library.GetTimeStampFloatStr()
-	logContext["response_body"] = blw.body.String()
+	logContext["response_body"] = responseBody[0:maxRequestCount]
 	logContext["time_used"] = fmt.Sprintf("%v", latency)
 	logContext["header"] = c.Request.Header
 
