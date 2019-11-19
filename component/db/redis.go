@@ -3,7 +3,7 @@ package db
 
 import (
 	"github.com/go-redis/redis"
-	"fmt"
+	"github.com/ebar-go/ego/library"
 )
 
 
@@ -12,7 +12,7 @@ func  ConnectRedis(option *redis.Options) (*redis.Client, error){
 	client := redis.NewClient(option)
 
 	pong, err := client.Ping().Result()
-	fmt.Println(pong, err)
+	library.Debug(pong)
 
 	return client, err
 }

@@ -1,50 +1,51 @@
 /**
 Apollo配置初始化、监听配置变动、获取配置
  */
-package config
+package apollo
 
 import (
 	"github.com/zouyx/agollo"
 )
 
 // Apollo apollo配置项
-type Apollo struct {
+type Conf struct {
 	AppId string `json:"appId"`
 	Cluster string `json:"cluster"`
 	Namespace string `json:"namespaceName"`
 	Ip string `json:"ip"`
 }
 
-// InitApollo 初始化apollo配置
-func (apollo *Apollo) Init() error {
+// Init 初始化apollo配置
+func Init(conf Conf) error {
 	agollo.InitCustomConfig(func () (*agollo.AppConfig, error) {
 		return &agollo.AppConfig{
-			AppId:         apollo.AppId,
-			Cluster:       apollo.Cluster,
-			Ip:            apollo.Ip,
-			NamespaceName: apollo.Namespace,
+			AppId:         conf.AppId,
+			Cluster:       conf.Cluster,
+			Ip:            conf.Ip,
+			NamespaceName: conf.Namespace,
 		}, nil
 	})
 
 	return agollo.Start()
 }
 
+
 // ListenApolloChangeEvent 监听配置变动
-func (apollo *Apollo) ListenChangeEvent() <-chan *agollo.ChangeEvent {
+func ListenChangeEvent() <-chan *agollo.ChangeEvent {
 	return agollo.ListenChangeEvent()
 }
 
 // GetStringValue 获取字符串配置
-func (apollo *Apollo) GetStringValue(key , defaultValue string) string {
+func GetStringValue(key , defaultValue string) string {
 	return agollo.GetStringValue(key, defaultValue)
 }
 
 // GetIntValue 获取整形配置
-func (apollo *Apollo) GetIntValue(key string , defaultValue int) int {
+func GetIntValue(key string , defaultValue int) int {
 	return agollo.GetIntValue(key, defaultValue)
 }
 
 // GetBoolValue 获取bool配置
-func (apollo *Apollo) GetBoolValue(key string, defaultValue bool) bool {
+func GetBoolValue(key string, defaultValue bool) bool {
 	return agollo.GetBoolValue(key, defaultValue)
 }

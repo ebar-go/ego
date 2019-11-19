@@ -51,7 +51,7 @@ func (topic *Topic) PublishMessage(params Params, filterTag string) (*ali_mns.Me
 		"status_code" : resp.Code,
 		"topic_name" : topic.Name,
 		"message_tag" : params.Tag,
-		"global_trace_id" : library.GetTraceId(),
+		"global_trace_id" : library.NewTraceId(),
 		"trace_id": params.TraceId,
 		"filter_tag" : filterTag,
 		"sign" : params.Sign,

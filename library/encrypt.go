@@ -30,8 +30,8 @@ func UniqueId() string {
 	return uuid.NewV4().String()
 }
 
-// GetTraceId 获取全局ID
-func GetTraceId() string {
+// NewTraceId 生成全局ID
+func NewTraceId() string {
 	return constant.TraceIdPrefix + UniqueId()
 }
 

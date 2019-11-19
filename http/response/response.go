@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"strconv"
 	"github.com/ebar-go/ego/http/constant"
-	"github.com/ebar-go/ego/http/helper"
+	"github.com/ebar-go/ego/component/trace"
 )
 
 
@@ -75,6 +75,10 @@ type Meta struct {
 	Pagination *library.Pagination `json:"pagination"` // 分页信息
 }
 
+func getRequestId() string {
+	return constant.RequestIdPrefix + library.UniqueId()
+}
+
 // Default 实例化response
 func Default() *Response {
 	return &Response{
@@ -83,7 +87,8 @@ func Default() *Response {
 		Data: nil,
 		Meta: Meta{
 			Trace: Trace{
-				RequestId: constant.RequestIdPrefix + library.UniqueId(),
+				RequestId: getRequestId(),
+				TraceId: trace.GetTraceId(),
 			},
 		},
 		Errors: []ErrorItem{},
@@ -96,7 +101,8 @@ func (response *Response) complete()  {
 	if &response.Meta == nil {
 		response.Meta = Meta{
 			Trace: Trace{
-				RequestId: constant.RequestIdPrefix + library.UniqueId(),
+				RequestId: getRequestId(),
+				TraceId: trace.GetTraceId(),
 			},
 		}
 	}
@@ -106,7 +112,6 @@ func (response *Response) complete()  {
 // Json 输出json
 func Json(ctx *gin.Context, response *Response)  {
 	response.complete()
-	response.Meta.Trace.TraceId = helper.GetTraceId(ctx)
 	ctx.JSON(constant.StatusOk, response)
 }
 

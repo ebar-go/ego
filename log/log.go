@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"fmt"
+	"github.com/ebar-go/ego/component/trace"
 )
 
 // Logger 日志结构体
@@ -93,7 +94,7 @@ func getDefaultLogInstance() *logrus.Logger {
 func (l *Logger) withFields(context Context) *logrus.Entry {
 
 	if _, ok := context["trace_id"]; !ok {
-		context["trace_id"] = library.GetTraceId()
+		context["trace_id"] = trace.GetTraceId()
 	}
 
 	return l.instance.WithFields(logrus.Fields{

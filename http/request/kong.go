@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/valyala/fasthttp"
 	"github.com/pkg/errors"
+	"github.com/ebar-go/ego/component/trace"
 )
 
 type Kong struct {
@@ -47,7 +48,6 @@ func (kong *Kong) NewFastHttpRequest(router, method, uri string) *fasthttp.Reque
 
 	req := fasthttp.AcquireRequest()
 
-
 	req.Header.SetContentType("application/json")
 	req.Header.SetMethod(method)
 
@@ -60,12 +60,14 @@ func (kong *Kong) NewFastHttpRequest(router, method, uri string) *fasthttp.Reque
 	req.Header.Add("Refer-Service-Name", kong.ReferServiceName)
 	req.Header.Add("Refer-Request-Host", kong.ReferRequestHost)
 	req.Header.Add("X-Service-User", kong.XServiceUser)
+	req.Header.Add(constant.GatewayTrace, trace.GetTraceId())
 	req.Header.Add(constant.JwtTokenHeader, fmt.Sprintf("%s %s", constant.JwtTokenMethod,jwtToken))
 
 	return req
 }
 
-func GetFastHttpResponse(request *fasthttp.Request) (string, error) {
+// Send 发送http请求，得到响应
+func Send(request *fasthttp.Request) (string, error) {
 	defer fasthttp.ReleaseRequest(request) // 用完需要释放资源
 
 	resp := fasthttp.AcquireResponse()
