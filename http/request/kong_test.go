@@ -7,12 +7,12 @@ import (
 
 func TestKongRequest_NewRequest(t *testing.T) {
 	kong := Kong{
-		Iss:"common-openapi",
-		Secret:"Bf8DetEqOw4DOePtdOISWrwIyyboKH7h",
-		Address: "http://app-gateway.internal.epetbar.com:8000",
+		Iss:"xxx",
+		Secret:"123",
+		Address: "aaa",
 	}
 
-	request, _ := kong.NewRequest("gott-wms","GET", "/v1/basicInformation/warehouse/list?ware_nos=163", nil)
+	request, _ := kong.NewRequest("user","GET", "test", nil)
 
 	resp, err := DefaultClient().Do(request)
 	library.Debug(resp, err)

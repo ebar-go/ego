@@ -1,14 +1,15 @@
 package request
 
 import (
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/ebar-go/ego/component/trace"
+	"github.com/ebar-go/ego/http/constant"
+	"github.com/pkg/errors"
+	"github.com/valyala/fasthttp"
 	"io"
 	"net/http"
-	"github.com/ebar-go/ego/http/middleware"
-	"github.com/ebar-go/ego/http/constant"
-	"fmt"
-	"github.com/valyala/fasthttp"
-	"github.com/pkg/errors"
-	"github.com/ebar-go/ego/component/trace"
+	"time"
 )
 
 type Kong struct {
@@ -18,8 +19,25 @@ type Kong struct {
 	ReferRequestHost string
 	GatewayTrace string
 	XServiceUser string
-	TokenExpireTime int // jwt过滤地址
+	TokenExpireTime int // jwt过滤时间
 	Address string // kong网关地址
+}
+
+// GetEncodeToken 获取加密的token
+func (kong Kong) GenerateToken() (string, error) {
+	if kong.TokenExpireTime == 0 {
+		kong.TokenExpireTime = constant.JwtExpiredTime
+	}
+	now := time.Now().Unix()
+	exp := now + int64(kong.TokenExpireTime)
+	claim := jwt.MapClaims{
+		"iss":       kong.Iss,
+		"iat":      now,
+		"exp": exp,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,claim)
+	tokenStr,err  := token.SignedString([]byte(kong.Secret))
+	return tokenStr, err
 }
 
 // NewRequest
@@ -32,7 +50,7 @@ func (kong *Kong) NewRequest(router, method , uri string, body io.Reader) (*http
 
 
 	// 生成kong的token
-	jwtToken , _ := middleware.GetEncodeToken(kong.Iss, kong.Secret, kong.TokenExpireTime)
+	jwtToken , _ := kong.GenerateToken()
 
 	request.Header.Add("Accept-Encoding", "charset=UTF-8")
 	request.Header.Add("Refer-Service-Name", kong.ReferServiceName)
@@ -54,7 +72,7 @@ func (kong *Kong) NewFastHttpRequest(router, method, uri string) *fasthttp.Reque
 	req.SetRequestURI(url)
 
 	// 生成kong的token
-	jwtToken , _ := middleware.GetEncodeToken(kong.Iss, kong.Secret, kong.TokenExpireTime)
+	jwtToken , _ := kong.GenerateToken()
 
 	req.Header.Add("Accept-Encoding", "charset=UTF-8")
 	req.Header.Add("Refer-Service-Name", kong.ReferServiceName)

@@ -5,8 +5,8 @@ const (
 	GatewayTrace   = "gateway-trace" // 网关trace
 	JwtTokenMethod = "Bearer"
 	JwtTokenHeader = "Authorization"
-	JwtUserKey     = "jwt_user"
-	JwtExpiredTime = 600
+	JwtClaimsKey     = "jwt_claims"
+	JwtExpiredTime = 3600
 	SystemNameKey = "SYSTEM_NAME"
 
 	DefaultMaxResponseSize = 1000
