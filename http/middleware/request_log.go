@@ -7,7 +7,12 @@ import (
 	"fmt"
 	"time"
 	"github.com/ebar-go/ego/log"
-	"github.com/ebar-go/ego/http/util"
+	"net/http"
+	"io/ioutil"
+	"encoding/json"
+	"github.com/ebar-go/ego/component/trace"
+	"github.com/ebar-go/ego/http/constant"
+	"strings"
 )
 
 // bodyLogWriter 读取响应Writer
@@ -16,70 +21,85 @@ type bodyLogWriter struct {
 	body *bytes.Buffer
 }
 
-
-
 // Write 读取响应数据
 func (w bodyLogWriter) Write(b []byte) (int, error) {
 	w.body.Write(b)
 	return w.ResponseWriter.Write(b)
 }
 
-var accessChannel = make(chan string, 100)
-
 // RequestLog gin的请求日志中间件
 func RequestLog(c *gin.Context) {
-	go handleAccessChannel()
-
 	t := time.Now()
+	requestTime := library.GetTimeStampFloatStr()
 	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 	c.Writer = blw
 
-	// 注册唯一ID
-	traceId := util.GetTraceId(c)
+	requestBody := getRequestBody(c)
 
+	// 从头部信息获取
+	traceId := c.GetHeader(constant.GatewayTrace)
+	if strings.TrimSpace(traceId) == "" {
+		traceId = library.NewTraceId()
+	}
+	trace.SetTraceId(traceId)
+	defer trace.DeleteTraceId()
 
 	c.Next()
 
-
 	// after request
 	latency := time.Since(t)
+
+	logContext := log.Context{}
+
+
+	responseBody := blw.body.String()
+	maxRequestCount := library.Min(blw.body.Len() - 1, constant.DefaultMaxResponseSize)
 	// 日志格式
-	accessLogMap := make(map[string]interface{})
+	logContext["trace_id"] = traceId
+	logContext["request_uri"] = c.Request.RequestURI
+	logContext["request_method"] = c.Request.Method
+	logContext["refer_service_name"] = c.Request.Referer()
+	logContext["refer_request_host"] = c.ClientIP()
+	logContext["request_body"] = requestBody
+	logContext["request_time"] = requestTime
+	logContext["response_time"] = library.GetTimeStampFloatStr()
+	logContext["response_body"] = responseBody[0:maxRequestCount]
+	logContext["time_used"] = fmt.Sprintf("%v", latency)
+	logContext["header"] = c.Request.Header
 
-	accessLogMap["request_time"]      = latency
-	accessLogMap["request_method"]    = c.Request.Method
-	accessLogMap["request_uri"]       = c.Request.RequestURI
-	accessLogMap["request_proto"]     = c.Request.Proto
-	accessLogMap["request_ua"]        = c.Request.UserAgent()
-	accessLogMap["request_referer"]   = c.Request.Referer()
-	accessLogMap["request_post_data"] = c.Request.PostForm.Encode()
-	accessLogMap["request_client_ip"] = c.ClientIP()
-	accessLogMap["cost_time"] = fmt.Sprintf("%v", latency)
-	accessLogMap["trace_id"] = traceId
-	accessLogMap["response_body"] = blw.body.String()
-	accessLogMap["status_code"] = blw.Status()
+	go log.Request().Info("REQUEST LOG", logContext)
 
-	accessLogJson, _ := library.JsonEncode(accessLogMap)
-	fmt.Println(getArgs(c))
-
-	accessChannel <- accessLogJson
 }
 
-// 这个函数只返回json化之后的数据，且不处理错误，错误就返回空字符串
-func getArgs(c *gin.Context) string {
-	if c.ContentType() == "multipart/form-data" {
-		c.Request.ParseMultipartForm(32 << 20)
-	} else {
-		c.Request.ParseForm()
+// GetRequestBody 获取请求参数
+func getRequestBody(c *gin.Context) interface{} {
+
+	switch c.Request.Method {
+	case http.MethodGet:
+		return c.Request.URL.Query()
+
+	case http.MethodPost:
+		fallthrough
+	case http.MethodPut:
+		fallthrough
+	case http.MethodPatch:
+		var bodyBytes []byte // 我们需要的body内容
+
+		// 从原有Request.Body读取
+		bodyBytes, err := ioutil.ReadAll(c.Request.Body)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		// 新建缓冲区并替换原有Request.body
+		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		var params interface{}
+		json.Unmarshal(bodyBytes, &params)
+		return params
+
 	}
-	args, _ := library.JsonEncode(c.Request.Form)
-	return args
+
+	return nil
 }
 
-func handleAccessChannel() {
-	for accessLog := range accessChannel {
-		log.GetSystemLogger().Info("request_log", accessLog)
-	}
-
-	return
-}

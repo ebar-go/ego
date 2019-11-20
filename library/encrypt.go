@@ -7,8 +7,10 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"github.com/ebar-go/ego/http/constant"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
+	"hash/crc32"
 )
 
 //生成32位md5字串
@@ -26,7 +28,7 @@ func GetHash(s string) string {
 	return fmt.Sprintf("%x", result)
 }
 
-//生成Guid字串
+//UniqueId 生成Guid字串
 func UniqueId() string {
 	return uuid.NewV4().String()
 }
@@ -55,4 +57,21 @@ func RandString(num uint) (string, error) {
 	}
 	str := hex.EncodeToString(b)
 	return str[0:num], nil
+}
+
+// NewTraceId 生成全局ID
+func NewTraceId() string {
+	return constant.TraceIdPrefix + UniqueId()
+}
+
+func HashCode(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
 }

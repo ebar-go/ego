@@ -2,104 +2,91 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
+
 	"github.com/dgrijalva/jwt-go"
+	"github.com/ebar-go/ego/http/constant"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/gin-gonic/gin"
-	"os"
 	"strings"
-	"time"
 )
 
-var jwtSecret []byte
+var jwtAuth = new(JwtAuth)
 
-// Claims Jwt自定义结构体
-type Claims struct {
-	User User
-	jwt.StandardClaims
+// JwtAuth jwt
+type JwtAuth struct {
+	SigningKey []byte
 }
 
-// User 用户数据
-type User struct {
-	UID  int    `json:"uid"`
-	ACID string `json:"acId"`
-	Name string `json:"name"`
+// SetJwtSigningKey 设置jwt的秘钥
+func SetJwtSigningKey(key []byte) {
+	jwtAuth.SigningKey = key
 }
 
 var TokenNotExist = errors.New("token not exist")
 var TokenValidateFailed = errors.New("token validate failed")
-var TokenExpired = errors.New("token expired")
 
-const (
-	JwtTokenMethod = "Bearer"
-	JwtTokenHeader = "Authorization"
-	JwtUserKey     = "jwt_user"
-)
-
-// SetJwtSecret 设置jwt的秘钥
-func SetJwtSecret(secret []byte) {
-	jwtSecret = secret
+// CreateToken 生成一个token
+func (jwtAuth JwtAuth) CreateToken(claimsCreator func() jwt.Claims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsCreator())
+	return token.SignedString(jwtAuth.SigningKey)
 }
 
-// ParseToken 解析Token
-func ParseToken(token string) (*Claims, error) {
-	if string(jwtSecret) == "" {
-		jwtSecret = []byte(os.Getenv("JWT_KEY"))
-	}
-
-	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
+// parseToken 解析Token
+func (jwtAuth JwtAuth) parseToken(token string) (jwt.Claims, error) {
+	tokenClaims, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		return jwtAuth.SigningKey, nil
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	if tokenClaims != nil {
-		if claims, ok := tokenClaims.Claims.(*Claims); ok && tokenClaims.Valid {
-			return claims, nil
-		}
+	if tokenClaims.Claims == nil || !tokenClaims.Valid {
+		return nil, TokenValidateFailed
 	}
 
-	return nil, err
+	return tokenClaims.Claims, nil
+}
+
+// GetCurrentClaims 获取解析jwt后的信息
+func GetCurrentClaims(ctx *gin.Context) interface{} {
+	claims, exist := ctx.Get(constant.JwtClaimsKey)
+	if !exist {
+		return nil
+	}
+
+	return claims
+}
+
+// validateToken 验证token
+func (jwtAuth JwtAuth) validateToken(ctx *gin.Context) error {
+	// 获取token
+	tokenStr := ctx.GetHeader(constant.JwtTokenHeader)
+	kv := strings.Split(tokenStr, " ")
+	if len(kv) != 2 || kv[0] != constant.JwtTokenMethod {
+		return TokenNotExist
+	}
+
+	claims, err := jwtAuth.parseToken(kv[1])
+	if err != nil {
+		return err
+	}
+
+	// token存入context
+	ctx.Set(constant.JwtClaimsKey, claims)
+	return nil
 }
 
 // JWT gin的jwt中间件
-func JWT(c *gin.Context) {
-	var errRes error
+func JWT(ctx *gin.Context) {
 
-	// 获取token
-	token := c.GetHeader(JwtTokenHeader)
-	fmt.Println(token)
+	// 解析token
+	if err := jwtAuth.validateToken(ctx); err != nil {
+		response.Error(ctx, constant.StatusUnauthorized, err.Error())
 
-	kv := strings.Split(token, " ")
-	if len(kv) != 2 || kv[0] != JwtTokenMethod {
-		errRes = TokenNotExist
-	} else {
-		token = kv[1]
-
-		claims, err := ParseToken(token)
-		if err != nil {
-			errRes = TokenValidateFailed
-			fmt.Println(err)
-		} else {
-			if time.Now().Unix() > claims.ExpiresAt {
-				errRes = TokenExpired
-			} else {
-				// 存储用户信息
-				c.Set(JwtUserKey, &claims.User)
-			}
-		}
-
-	}
-
-	if errRes != nil {
-		responseWriter := response.Default(c)
-		responseWriter.Error(401, errRes.Error())
-
-		c.Abort()
+		ctx.Abort()
 		return
 	}
 
-	c.Next()
+	ctx.Next()
 }

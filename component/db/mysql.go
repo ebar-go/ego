@@ -9,6 +9,5 @@ import (
 func ConnectMysql(dsn string) (*gorm.DB, error){
 	client, err := gorm.Open("mysql", dsn)
 	return client, err
-
 }
 

@@ -2,9 +2,9 @@ package consul
 
 import (
 	"testing"
-	"github.com/ebar-go/ego/test"
 	"fmt"
 	"github.com/ebar-go/ego/library"
+	"github.com/stretchr/testify/assert"
 )
 
 func getClient() *Client {
@@ -19,7 +19,7 @@ func getClient() *Client {
 func TestClient_Init(t *testing.T) {
 	client := getClient()
 	err := client.Init()
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 	fmt.Println(client)
 }
 
@@ -27,7 +27,7 @@ func TestClient_Register(t *testing.T) {
 	client := getClient()
 
 	ip, err := library.GetLocalIp()
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	registration := NewServiceRegistration()
 	registration.ID = "epet-go-demo-2"
@@ -45,7 +45,7 @@ func TestClient_Register(t *testing.T) {
 
 	err = client.Register(registration)
 	fmt.Println(err)
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 }
 
 func TestClient_Discover(t *testing.T) {
@@ -53,7 +53,7 @@ func TestClient_Discover(t *testing.T) {
 	client := getClient()
 
 	items, err := client.Discover("epet-go-demo")
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 	fmt.Println(items)
 }
 
@@ -61,10 +61,10 @@ func TestClient_LoadBalance(t *testing.T) {
 	client := getClient()
 
 	items, err := client.Discover("epet-go-demo")
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	service, err := client.LoadBalance(items)
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 	fmt.Println(service.Address, service.ID)
 }
 
@@ -75,7 +75,7 @@ func TestClient_DeRegister(t *testing.T) {
 
 
 	err := client.DeRegister("epet-go-demo-2")
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 }
 
 func TestService_GetHost(t *testing.T) {
@@ -83,7 +83,7 @@ func TestService_GetHost(t *testing.T) {
 	client := getClient()
 
 	items, err := client.Discover("epet-go-demo")
-	test.AssertNil(t, err)
+	assert.Nil(t, err)
 
 	service, err := client.LoadBalance(items)
 	fmt.Println(service.GetHost())
