@@ -3,6 +3,7 @@ package library
 import (
 	"errors"
 	"reflect"
+	"encoding/json"
 )
 
 // Struct2Map 支持结构体转化为map，在嵌套结构中不支持interface{}传值的结构体
@@ -34,4 +35,17 @@ func Struct2Map(obj interface{}) map[string]interface{} {
 		}
 	}
 	return data
+}
+
+func Map2Object(mapInstance map[string]interface{}, obj interface{}) error {
+	bytes, err := json.Marshal(mapInstance)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(bytes, obj); err!= nil {
+		return err
+	}
+
+	return nil
 }

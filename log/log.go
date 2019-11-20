@@ -4,53 +4,71 @@ package log
 import (
 	"github.com/sirupsen/logrus"
 	"io"
+	"github.com/ebar-go/ego/library"
+	"os"
+	"path/filepath"
+	"fmt"
+	"github.com/ebar-go/ego/component/trace"
 )
 
 // Logger 日志结构体
-//   - key 支持自定义日志的字段名称，默认是LoggerDefaultkey
-//   - Out 日志的输出目标,可以是文件,也可以是os.Stdout
 type Logger struct {
-	instance   *logrus.Logger // logrus实例
-	key string
+	instance     *logrus.Logger // logrus实例
+	systemParams SystemParam
 }
 
-var systemLogger *Logger
+type SystemParam struct {
+	ServiceName string `json:"service_name"`
+	ServicePort int    `json:"service_port"`
+}
 
-const (
-	defaultKey = "title" // 日志的默认字段名称 title : this is content
-)
+type Context map[string]interface{}
 
 // New 获取默认的日志管理器，输出到控制台
 func New() *Logger {
 	l := &Logger{}
 	l.instance = getDefaultLogInstance()
-	l.key = defaultKey
-
 	return l
 }
 
-// SetSystemLogger 设置系统日志
-func SetSystemLogger(logger *Logger)  {
-	systemLogger = logger
-}
 
-// GetSystemLogger 获取系统日志
-func GetSystemLogger() *Logger {
-	if systemLogger == nil {
-		systemLogger = New()
+// NewFileLogger 新的文件日志管理器
+func NewFileLogger(filePath string) *Logger {
+	logger := New()
+
+	if !library.IsPathExist(filePath) {
+		err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
+		if err != nil{
+			library.Debug(err)
+			return logger
+		}
 	}
 
-	return systemLogger
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
+	if err == nil {
+		logger.SetOutWriter(file)
+		fmt.Printf("Init Logger Success:%s\n", filePath)
+	}else {
+		fmt.Printf("Failed to init logger:%s,%s\n", filePath ,err.Error())
+	}
+
+	return logger
+}
+
+
+// SetLevel 设置日志等级
+func (l *Logger) SetLevel(level logrus.Level) {
+	l.instance.Level = level
 }
 
 // SetOutWriter 设置输出,可以是文件，也可以是os.StdOut
-func (l *Logger) SetOutWriter(out io.Writer)  {
+func (l *Logger) SetOutWriter(out io.Writer) {
 	l.instance.Out = out
 }
 
-// SetKey 设置字段名称
-func (l *Logger) SetKey(key string)  {
-	l.key = key
+// SetSystemParam 设置系统参数
+func (l *Logger) SetSystemParam(param SystemParam) {
+	l.systemParams = param
 }
 
 // getDefaultLogInstance 实例化默认日志实例
@@ -58,31 +76,56 @@ func getDefaultLogInstance() *logrus.Logger {
 	instance := logrus.New()
 
 	// 设置日志格式为json
-	instance.SetFormatter(&logrus.JSONFormatter{})
+	instance.SetFormatter(&logrus.JSONFormatter{
+		FieldMap: logrus.FieldMap{
+			logrus.FieldKeyTime:  "datetime",
+			logrus.FieldKeyLevel: "level_name",
+			logrus.FieldKeyMsg:   "message",
+			logrus.FieldKeyFunc:  "caller",
+		},
+		TimestampFormat: library.GetDefaultTimeFormat(),
+	})
+	instance.Level = logrus.DebugLevel
+
 	return instance
 }
 
-// Debug 调试等级,记录title为日志备注，context为日志的message内容
-func (l *Logger) Debug(title string, context ...interface{}) {
-	l.instance.WithField(l.key, title).Debug(context...)
+// withFields 携带字段
+func (l *Logger) withFields(context Context) *logrus.Entry {
+
+	if _, ok := context["trace_id"]; !ok {
+		context["trace_id"] = trace.GetTraceId()
+	}
+
+	return l.instance.WithFields(logrus.Fields{
+		"context": library.MergeMaps(Context{
+			"service_name": l.systemParams.ServiceName,
+			"service_port": l.systemParams.ServicePort,
+		}, context),
+	})
 }
 
-// Info 信息等级,记录title为日志备注，context为日志的message内容
-func (l *Logger) Info(title string, context ...interface{}) {
-	l.instance.WithField(l.key, title).Info(context...)
+// Debug 调试等级
+func (l *Logger) Debug(message string, context Context) {
+	l.withFields(context).Debug(message)
 }
 
-// Warn 警告等级,记录title为日志备注，context为日志的message内容
-func (l *Logger) Warn(title string, context ...interface{}) {
-	l.instance.WithField(l.key, title).Warn(context...)
+// Info 信息等级
+func (l *Logger) Info(message string, context Context) {
+	l.withFields(context).Info(message)
 }
 
-// Error 错误等级,记录title为日志备注，context为日志的message内容
-func (l *Logger) Error(title string, context ...interface{}) {
-	l.instance.WithField(l.key, title).Error(context...)
+// Warn 警告等级
+func (l *Logger) Warn(message string, context Context) {
+	l.withFields(context).Warn(message)
 }
 
-// Fatal 中断等级,记录title为日志备注，context为日志的message内容
-func (l *Logger) Fatal(title string, context ...interface{}) {
-	l.instance.WithField(l.key, title).Fatal(context...)
+// Error 错误等级
+func (l *Logger) Error(message string, context Context) {
+	l.withFields(context).Error(message)
+}
+
+// Fatal 中断等级
+func (l *Logger) Fatal(message string, context Context) {
+	l.withFields(context).Fatal(message)
 }

@@ -1,15 +1,15 @@
-package config
+package apollo
 
 import (
 	"testing"
-	"github.com/ebar-go/ego/test"
 	"fmt"
 	"github.com/robfig/cron"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 )
 
-func getApollo() *Apollo {
-	return &Apollo{
+func getConf() Conf {
+	return Conf{
 		AppId: "open-api",
 		Cluster: "local",
 		Ip: "192.168.0.19:8080",
@@ -19,20 +19,20 @@ func getApollo() *Apollo {
 
 // TestInitApolloConfig 测试初始化
 func TestApollo_Init(t *testing.T) {
-	apollo := getApollo()
-	err := apollo.Init()
-	test.AssertNil(t, err)
+	err := Init(getConf())
+	assert.Nil(t, err)
 
 
 }
 
 // TestApollo_ListenChangeEvent 测试监听配置变更
 func TestApollo_ListenChangeEvent(t *testing.T) {
-	apollo := getApollo()
+	err := Init(getConf())
+	assert.Nil(t, err)
 	c := cron.New()
 	spec := "*/5 * * * * ?"
 	c.AddFunc(spec, func() {
-		changeEvent := apollo.ListenChangeEvent()
+		changeEvent := ListenChangeEvent()
 
 		bytes, _ := json.Marshal(changeEvent)
 
@@ -45,9 +45,8 @@ func TestApollo_ListenChangeEvent(t *testing.T) {
 
 // TestApollo_GetStringValue 测试获取配置
 func TestApollo_GetStringValue(t *testing.T) {
-	apollo := getApollo()
-	err := apollo.Init()
-	test.AssertNil(t, err)
+	err := Init(getConf())
+	assert.Nil(t, err)
 
-	fmt.Println(apollo.GetStringValue("LOG_FILE",""))
+	fmt.Println(GetStringValue("LOG_FILE",""))
 }

@@ -3,32 +3,19 @@ package log
 import (
 	"testing"
 	"os"
-	"github.com/ebar-go/ego/test"
 	"fmt"
 	"github.com/ebar-go/ego/library"
+	"github.com/stretchr/testify/assert"
 )
 
 
 // TestLogger_Init 测试初始化
 func TestLogger_New(t *testing.T) {
 	logger := New()
-	test.AssertNotNil(t, logger)
+	assert.NotNil(t, logger)
 }
 
-func TestGetSystemLogger(t *testing.T) {
-	test.AssertNotNil(t, GetSystemLogger())
-}
 
-func TestSetSystemLogger(t *testing.T) {
-	SetSystemLogger(New())
-}
-
-func TestLogger_SetKey(t *testing.T) {
-	logger := New()
-	key := "name"
-	logger.SetKey(key)
-	test.AssertEqual(t, key, logger.key)
-}
 
 func TestLogger_SetOutWriter(t *testing.T) {
 	logger := New()
@@ -39,34 +26,22 @@ func TestLogger_SetOutWriter(t *testing.T) {
 		logger.SetOutWriter(file)
 	}
 
-	test.AssertEqual(t, file, logger.instance.Out)
+	assert.Equal(t, file, logger.instance.Out)
 }
 
 // TestLogger_Info 测试Info
 func TestLogger_Info(t *testing.T) {
-	New().Info("test")
+	logger := New()
+	logger.SetSystemParam(LogSystemParam{
+		Channel: "REQUEST",
+		ServiceName:"stock-manage",
+		ServicePort:9523,
+	})
+
+	traceId := library.UniqueId()
+	logger.Info("A group of walrus emerges from the ocean", Context{"trace_id": traceId})
 }
 
-// TestLogger_Debug 测试Debug
-func TestLogger_Debug(t *testing.T) {
-	New().Debug("test debug", 123, 456)
-}
-
-// TestLogger_Warn 测试Warn
-func TestLogger_Warn(t *testing.T) {
-	New().Warn("test warn", 123, 456)
-}
-
-// TestLogger_Error 测试Error
-func TestLogger_Error(t *testing.T) {
-	New().Error("test error", 123, 456)
-}
-
-// TestLogger_Fatal 测试Fatal
-func TestLogger_Fatal(t *testing.T) {
-	t.SkipNow()
-	New().Fatal("test fatal", 123, 456)
-}
 
 func TestLoggerFile(t *testing.T)  {
 	var err error
@@ -82,6 +57,5 @@ func TestLoggerFile(t *testing.T)  {
 		fmt.Println("err:" + err.Error())
 	}
 
-	logger.Info("test info", 123, 456)
 }
 
