@@ -4,7 +4,7 @@ package log
 import (
 	"github.com/sirupsen/logrus"
 	"io"
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 	"os"
 	"path/filepath"
 	"fmt"
@@ -36,10 +36,10 @@ func New() *Logger {
 func NewFileLogger(filePath string) *Logger {
 	logger := New()
 
-	if !library.IsPathExist(filePath) {
+	if !helper.IsPathExist(filePath) {
 		err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
 		if err != nil{
-			library.Debug(err)
+			helper.Debug(err)
 			return logger
 		}
 	}
@@ -83,7 +83,7 @@ func getDefaultLogInstance() *logrus.Logger {
 			logrus.FieldKeyMsg:   "message",
 			logrus.FieldKeyFunc:  "caller",
 		},
-		TimestampFormat: library.GetDefaultTimeFormat(),
+		TimestampFormat: helper.GetDefaultTimeFormat(),
 	})
 	instance.Level = logrus.DebugLevel
 
@@ -98,7 +98,7 @@ func (l *Logger) withFields(context Context) *logrus.Entry {
 	}
 
 	return l.instance.WithFields(logrus.Fields{
-		"context": library.MergeMaps(Context{
+		"context": helper.MergeMaps(Context{
 			"service_name": l.systemParams.ServiceName,
 			"service_port": l.systemParams.ServicePort,
 		}, context),

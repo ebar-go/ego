@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 	"github.com/gin-gonic/gin"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/ebar-go/ego/http/constant"
@@ -14,7 +14,7 @@ func Recover(ctx *gin.Context)  {
 	defer func() {
 		if r := recover(); r != nil {
 			response.Error(ctx, constant.StatusError, "系统错误")
-			library.Debug(library.Trace())
+			helper.Debug(helper.Trace())
 
 			log.System().Error("system_error", log.Context{
 				"trace_id" : trace.GetTraceId(),

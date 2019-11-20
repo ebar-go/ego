@@ -2,7 +2,7 @@ package request
 
 import (
 	"testing"
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 )
 
 func TestKongRequest_NewRequest(t *testing.T) {
@@ -15,7 +15,7 @@ func TestKongRequest_NewRequest(t *testing.T) {
 	request, _ := kong.NewRequest("user","GET", "test", nil)
 
 	resp, err := DefaultClient().Do(request)
-	library.Debug(resp, err)
+	helper.Debug(resp, err)
 	str, _ :=StringifyResponse(resp)
-	library.Debug(str)
+	helper.Debug(str)
 }

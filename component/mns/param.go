@@ -1,6 +1,6 @@
 package mns
 
-import "github.com/ebar-go/ego/library"
+import "github.com/ebar-go/ego/helper"
 
 // Params 参数
 type Params struct {
@@ -13,5 +13,5 @@ type Params struct {
 
 // GenerateSign 生成签名
 func (params Params) GenerateSign(key string) string {
-	return  library.GetMd5String(params.TraceId + key)
+	return  helper.GetMd5String(params.TraceId + key)
 }

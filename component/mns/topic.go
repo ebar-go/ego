@@ -4,7 +4,7 @@ import (
 	"github.com/aliyun/aliyun-mns-go-sdk"
 	"os"
 	"github.com/ebar-go/ego/http/constant"
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 	"encoding/base64"
 	"github.com/ebar-go/ego/log"
 	"encoding/json"
@@ -27,7 +27,7 @@ func (topic *Topic) PublishMessage(params Params, filterTag string) (*ali_mns.Me
 	}
 
 	if params.TraceId == "" {
-		params.TraceId = library.UniqueId()
+		params.TraceId = helper.UniqueId()
 	}
 
 	if params.Sign == "" {
@@ -45,13 +45,13 @@ func (topic *Topic) PublishMessage(params Params, filterTag string) (*ali_mns.Me
 
 	log.Mq().Info("publishMessage", log.Context{
 		"action" : "publishMessage",
-		"publish_time" : library.GetTimeStr(),
-		"msectime" : library.GetTimeStampFloatStr(),
+		"publish_time" : helper.GetTimeStr(),
+		"msectime" : helper.GetTimeStampFloatStr(),
 		"message_id" : resp.MessageId,
 		"status_code" : resp.Code,
 		"topic_name" : topic.Name,
 		"message_tag" : params.Tag,
-		"global_trace_id" : library.NewTraceId(),
+		"global_trace_id" : helper.NewTraceId(),
 		"trace_id": params.TraceId,
 		"filter_tag" : filterTag,
 		"sign" : params.Sign,

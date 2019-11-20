@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 	"path"
 	"github.com/ebar-go/ego/http/constant"
 	"sync"
@@ -87,7 +87,7 @@ func InitManager(conf ManagerConf) {
 
 // rotate 分割日志文件
 func (m *Manager) rotate() *Manager {
-	currentDateStr := library.GetDateStr()
+	currentDateStr := helper.GetDateStr()
 	if currentDateStr != m.rotateDate {
 		// TODO 需要验证并发时的安全性
 		m.rotateDate = currentDateStr

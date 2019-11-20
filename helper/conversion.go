@@ -1,9 +1,10 @@
-package library
+package helper
 
 import (
 	"errors"
 	"reflect"
-	"encoding/json"
+	json "github.com/pquerna/ffjson/ffjson"
+	"fmt"
 )
 
 // Struct2Map 支持结构体转化为map，在嵌套结构中不支持interface{}传值的结构体
@@ -37,15 +38,21 @@ func Struct2Map(obj interface{}) map[string]interface{} {
 	return data
 }
 
-func Map2Object(mapInstance map[string]interface{}, obj interface{}) error {
-	bytes, err := json.Marshal(mapInstance)
+// Map2Struct 数组转结构体
+func Map2Struct(mapInstance map[string]interface{}, obj interface{}) error {
+	buf, err := json.Marshal(mapInstance)
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(bytes, obj); err!= nil {
+	if err := json.Unmarshal(buf, obj); err!= nil {
 		return err
 	}
 
 	return nil
+}
+
+// Float2String float转string
+func Float2String(a float64) string {
+	return fmt.Sprintf("%.f", a)
 }

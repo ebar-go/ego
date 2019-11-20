@@ -3,7 +3,7 @@ package consul
 import (
 	"testing"
 	"fmt"
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +26,7 @@ func TestClient_Init(t *testing.T) {
 func TestClient_Register(t *testing.T) {
 	client := getClient()
 
-	ip, err := library.GetLocalIp()
+	ip, err := helper.GetLocalIp()
 	assert.Nil(t, err)
 
 	registration := NewServiceRegistration()

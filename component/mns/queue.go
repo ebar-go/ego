@@ -3,7 +3,7 @@ package mns
 import (
 	"github.com/aliyun/aliyun-mns-go-sdk"
 	"github.com/ebar-go/ego/log"
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 	"encoding/json"
 )
 
@@ -50,8 +50,8 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 				var params Params
 
 				// 解析消息
-				if err := json.Unmarshal([]byte(library.DecodeBase64Str(resp.MessageBody)), &params); err != nil {
-					library.Debug("消息结构异常:",queue.Name, err.Error(), resp.MessageBody )
+				if err := json.Unmarshal([]byte(helper.DecodeBase64Str(resp.MessageBody)), &params); err != nil {
+					helper.Debug("消息结构异常:",queue.Name, err.Error(), resp.MessageBody )
 				}else {
 
 					log.Mq().Info("receiveMessage", log.Context{
@@ -63,7 +63,7 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 					})
 
 					if err := queue.Handler(params); err != nil {
-						library.Debug("处理消息失败:",queue.Name, err.Error() )
+						helper.Debug("处理消息失败:",queue.Name, err.Error() )
 
 						// TODO ChangeMessageVisibility
 					}else {
@@ -85,7 +85,7 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 			}
 		case err := <-errChan:
 			{
-				library.Debug(err)
+				helper.Debug(err)
 				endChan <- 1
 			}
 		}

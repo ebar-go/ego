@@ -22,7 +22,7 @@ type Server struct {
 	Router *gin.Engine // gin的路由
 	initialize bool
 	JwtKey []byte // jwt秘钥
-	AllowCors bool // 是否允许跨域
+	AllowCORS bool // 是否允许跨域
 	NotFoundHandler func(ctx *gin.Context) // 404的处理方法
 	Recover func(ctx *gin.Context) // 接受panic的recover处理方法
 }
@@ -60,7 +60,7 @@ func (server *Server) loadMiddleware() {
 	// 请求日志
 	server.Router.Use(middleware.RequestLog)
 
-	if server.AllowCors {
+	if server.AllowCORS {
 		server.Router.Use(middleware.CORS)
 	}
 

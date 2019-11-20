@@ -3,7 +3,6 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"bytes"
-	"github.com/ebar-go/ego/library"
 	"fmt"
 	"time"
 	"github.com/ebar-go/ego/log"
@@ -13,6 +12,7 @@ import (
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/http/constant"
 	"strings"
+	"github.com/ebar-go/ego/helper"
 )
 
 // bodyLogWriter 读取响应Writer
@@ -30,7 +30,7 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 // RequestLog gin的请求日志中间件
 func RequestLog(c *gin.Context) {
 	t := time.Now()
-	requestTime := library.GetTimeStampFloatStr()
+	requestTime := helper.GetTimeStampFloatStr()
 	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 	c.Writer = blw
 
@@ -39,7 +39,7 @@ func RequestLog(c *gin.Context) {
 	// 从头部信息获取
 	traceId := c.GetHeader(constant.GatewayTrace)
 	if strings.TrimSpace(traceId) == "" {
-		traceId = library.NewTraceId()
+		traceId = helper.NewTraceId()
 	}
 	trace.SetTraceId(traceId)
 	defer trace.DeleteTraceId()
@@ -53,7 +53,7 @@ func RequestLog(c *gin.Context) {
 
 
 	responseBody := blw.body.String()
-	maxRequestCount := library.Min(blw.body.Len() - 1, constant.DefaultMaxResponseSize)
+	maxRequestCount := helper.Min(blw.body.Len() - 1, constant.DefaultMaxResponseSize)
 	// 日志格式
 	logContext["trace_id"] = traceId
 	logContext["request_uri"] = c.Request.RequestURI
@@ -62,7 +62,7 @@ func RequestLog(c *gin.Context) {
 	logContext["refer_request_host"] = c.ClientIP()
 	logContext["request_body"] = requestBody
 	logContext["request_time"] = requestTime
-	logContext["response_time"] = library.GetTimeStampFloatStr()
+	logContext["response_time"] = helper.GetTimeStampFloatStr()
 	logContext["response_body"] = responseBody[0:maxRequestCount]
 	logContext["time_used"] = fmt.Sprintf("%v", latency)
 	logContext["header"] = c.Request.Header
@@ -73,7 +73,6 @@ func RequestLog(c *gin.Context) {
 
 // GetRequestBody 获取请求参数
 func getRequestBody(c *gin.Context) interface{} {
-
 	switch c.Request.Method {
 	case http.MethodGet:
 		return c.Request.URL.Query()

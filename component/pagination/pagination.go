@@ -1,11 +1,12 @@
-package library
+package pagination
 
 import (
 	"math"
+	"github.com/ebar-go/ego/helper"
 )
 
-// Pagination 分页器
-type Pagination struct {
+// Paginator 分页器
+type Paginator struct {
 	TotalCount int `json:"total"` // 总条数
 	CurrentCount int `json:"count"` // 当前页的数据项数量
 	Limit int `json:"per_page"` // 每页行数
@@ -20,9 +21,9 @@ const (
 	defaultCurrentPage = 1
 )
 
-// NewPagination 获取分页实例
-func NewPagination(totalCount, currentPage, limit int) (Pagination) {
-	pagination := Pagination{
+// Paginate 获取分页实例
+func Paginate(totalCount, currentPage, limit int) Paginator {
+	pagination := Paginator{
 		TotalCount: totalCount,
 		CurrentPage: currentPage,
 		Limit: limit,
@@ -36,21 +37,21 @@ func NewPagination(totalCount, currentPage, limit int) (Pagination) {
 		pagination.CurrentPage = defaultCurrentPage
 	}
 
-	pagination.TotalPages = int(math.Ceil(float64(pagination.TotalCount) / float64(pagination.Limit))) //page总数
+	pagination.TotalPages = helper.Div(totalCount, limit) //page总数
 	if pagination.CurrentPage < pagination.TotalPages {
 		pagination.CurrentCount = pagination.Limit
 	}else if pagination.CurrentPage > pagination.TotalPages {
 		pagination.CurrentCount = 0
 	}else {
-		pagination.CurrentCount = pagination.TotalCount - (pagination.Limit * (pagination.CurrentPage - 1))
+		pagination.CurrentCount = pagination.TotalCount - pagination.GetOffset()
 	}
 
 	return pagination
 }
 
-// NewPaginationWithSlice 根据切片分页
-func NewPaginationWithSlice(items []interface{}, currentPage, limit int) Pagination {
-	pagination := Pagination{
+// PaginateSlice 根据切片分页
+func PaginateSlice(items []interface{}, currentPage, limit int) Paginator {
+	pagination := Paginator{
 		TotalCount: len(items),
 		CurrentPage: currentPage,
 		Limit: limit,
@@ -67,18 +68,22 @@ func NewPaginationWithSlice(items []interface{}, currentPage, limit int) Paginat
 	pagination.TotalPages = int(math.Ceil(float64(pagination.TotalCount) / float64(pagination.Limit))) //page总数
 
 	low := pagination.GetOffset()
-	high := Min(pagination.TotalCount, low + pagination.Limit)
-	pagination.Items = items[low:high]
-	pagination.CurrentCount= len(items[low:high])
+	high := helper.Min(pagination.TotalCount, low + pagination.Limit)
+
+	if low < high {
+		pagination.Items = items[low:high]
+		pagination.CurrentCount= high - low
+	}else {
+		pagination.Items = []interface{}{}
+		pagination.CurrentCount = 0
+
+	}
+
+
 	return pagination
 }
 
-// SetCurrentCount 设置当前页的数据项数量
-func (p *Pagination) SetCurrentCount(currentCount int) {
-	p.CurrentCount = currentCount
-}
-
 // GetOffset 获取偏移量
-func (p *Pagination) GetOffset() int {
+func (p *Paginator) GetOffset() int {
 	return (p.CurrentPage - 1) * p.Limit
 }

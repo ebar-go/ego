@@ -3,14 +3,14 @@
 package response
 
 import (
-	"github.com/ebar-go/ego/library"
 	"github.com/gin-gonic/gin"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
 	"github.com/ebar-go/ego/http/constant"
 	"github.com/ebar-go/ego/component/trace"
+	"github.com/ebar-go/ego/component/pagination"
+	"github.com/ebar-go/ego/helper"
 )
 
 
@@ -70,13 +70,8 @@ type Trace struct {
 
 // Meta 元数据
 type Meta struct {
-	Trace Trace `json:"trace"`
-
-	Pagination *library.Pagination `json:"pagination"` // 分页信息
-}
-
-func getRequestId() string {
-	return constant.RequestIdPrefix + library.UniqueId()
+	Trace Trace                       `json:"trace"`
+	Pagination *pagination.Paginator `json:"pagination"` // 分页信息
 }
 
 // Default 实例化response
@@ -87,7 +82,7 @@ func Default() *Response {
 		Data: nil,
 		Meta: Meta{
 			Trace: Trace{
-				RequestId: getRequestId(),
+				RequestId: helper.NewRequestId(),
 				TraceId: trace.GetTraceId(),
 			},
 		},
@@ -101,7 +96,7 @@ func (response *Response) complete()  {
 	if &response.Meta == nil {
 		response.Meta = Meta{
 			Trace: Trace{
-				RequestId: getRequestId(),
+				RequestId: helper.NewRequestId(),
 				TraceId: trace.GetTraceId(),
 			},
 		}
@@ -164,7 +159,7 @@ func formatStatusCode(v interface{}) string {
 // Decode 解析json数据Response
 func Decode(result string) *Response {
 	var resp Response
-	err := json.Unmarshal([]byte(result), &resp)
+	err := helper.JsonDecode([]byte(result), &resp)
 	if  err != nil {
 		fmt.Println(err)
 		return nil
@@ -176,7 +171,7 @@ func Decode(result string) *Response {
 // DecodeMap 解析json数据为MapResponse
 func DecodeMap(result string) *MapResponse {
 	var resp MapResponse
-	err := json.Unmarshal([]byte(result), &resp)
+	err := helper.JsonDecode([]byte(result), &resp)
 	if  err != nil {
 		fmt.Println(err)
 		return nil

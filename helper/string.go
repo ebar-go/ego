@@ -1,4 +1,4 @@
-package library
+package helper
 
 import (
 	"encoding/hex"
@@ -8,6 +8,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/ebar-go/ego/http/constant"
 	"hash/crc32"
+	"encoding/base64"
 )
 
 //生成32位md5字串
@@ -18,7 +19,7 @@ func GetMd5String(s string) string {
 }
 
 // GetHash 获取hash加密内容
-func GetHash(s string) string {
+func GetHashString(s string) string {
 	Sha1Inst := sha1.New()
 	Sha1Inst.Write([]byte(s))
 	result := Sha1Inst.Sum([]byte(""))
@@ -35,6 +36,11 @@ func NewTraceId() string {
 	return constant.TraceIdPrefix + UniqueId()
 }
 
+// NewRequestId 生成请求ID
+func NewRequestId() string {
+	return constant.RequestIdPrefix + UniqueId()
+}
+
 func HashCode(s string) int {
 	v := int(crc32.ChecksumIEEE([]byte(s)))
 	if v >= 0 {
@@ -45,4 +51,12 @@ func HashCode(s string) int {
 	}
 	// v == MinInt
 	return 0
+}
+
+func DecodeBase64Str(encoded string) string {
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return ""
+	}
+	return string(decoded)
 }

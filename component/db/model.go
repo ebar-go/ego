@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 	"database/sql/driver"
 	"time"
 )
@@ -21,7 +21,7 @@ type Timestamp struct {
 
 // MarshalJSON 解析
 func (t Timestamp) MarshalJSON() ([]byte, error) {
-	formatted := fmt.Sprintf("\"%s\"", t.Format(library.GetDefaultTimeFormat()))
+	formatted := fmt.Sprintf("\"%s\"", t.Format(helper.GetDefaultTimeFormat()))
 	return []byte(formatted), nil
 }
 

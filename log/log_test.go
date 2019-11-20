@@ -4,7 +4,7 @@ import (
 	"testing"
 	"os"
 	"fmt"
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +19,7 @@ func TestLogger_New(t *testing.T) {
 
 func TestLogger_SetOutWriter(t *testing.T) {
 	logger := New()
-	filePath := library.GetCurrentPath() + "/system.log"
+	filePath := helper.GetCurrentPath() + "/system.log"
 	fmt.Println(filePath)
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {
@@ -38,7 +38,7 @@ func TestLogger_Info(t *testing.T) {
 		ServicePort:9523,
 	})
 
-	traceId := library.UniqueId()
+	traceId := helper.UniqueId()
 	logger.Info("A group of walrus emerges from the ocean", Context{"trace_id": traceId})
 }
 
@@ -48,7 +48,7 @@ func TestLoggerFile(t *testing.T)  {
 	logger := New()
 
 
-	filePath := library.GetCurrentPath() + "/system.log"
+	filePath := helper.GetCurrentPath() + "/system.log"
 	fmt.Println(filePath)
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {

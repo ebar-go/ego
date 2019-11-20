@@ -18,6 +18,7 @@ require (
 	github.com/magiconair/properties v1.8.1
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5
 	github.com/pkg/errors v0.8.1
+	github.com/pquerna/ffjson v0.0.0-20190930134022-aa0246cd15f7
 	github.com/robfig/cron v1.2.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2

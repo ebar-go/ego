@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"strings"
 	"github.com/ebar-go/ego/http/constant"
-	"github.com/ebar-go/ego/library"
 )
 
 const(
@@ -63,7 +62,6 @@ func New(method, url string, body io.Reader) (*http.Request, error) {
 		url = constant.HttpSchema + url
 	}
 
-	library.Debug(url)
 	return http.NewRequest(method, url, body)
 }
 
