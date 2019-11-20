@@ -1,14 +1,14 @@
 package middleware
 
 import (
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
-	"fmt"
-	"time"
-	"strings"
 	"errors"
-	"os"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/ebar-go/ego/http/response"
+	"github.com/gin-gonic/gin"
+	"os"
+	"strings"
+	"time"
 )
 
 var jwtSecret []byte
@@ -33,7 +33,7 @@ var TokenExpired = errors.New("token expired")
 const (
 	JwtTokenMethod = "Bearer"
 	JwtTokenHeader = "Authorization"
-	JwtUserKey = "jwt_user"
+	JwtUserKey     = "jwt_user"
 )
 
 // SetJwtSecret 设置jwt的秘钥
@@ -85,7 +85,7 @@ func JWT(c *gin.Context) {
 		} else {
 			if time.Now().Unix() > claims.ExpiresAt {
 				errRes = TokenExpired
-			}else {
+			} else {
 				// 存储用户信息
 				c.Set(JwtUserKey, &claims.User)
 			}
@@ -100,7 +100,6 @@ func JWT(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
 
 	c.Next()
 }

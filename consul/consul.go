@@ -1,31 +1,31 @@
 /**
 集成consul组件，包含实例化consul客户端,服务发现,服务注册,服务注销,负载均衡等方法
- */
+*/
 package consul
 
 import (
-	consulapi "github.com/hashicorp/consul/api"
 	"fmt"
+	consulapi "github.com/hashicorp/consul/api"
 	"math/rand"
-	"time"
 	"net"
 	"strconv"
+	"time"
 )
 
 // Service 服务
 type Service struct {
-	ID string // 服务ID
-	Name string // 服务名称
-	Address string // 服务地址
-	Port int // 服务端口
-	Tags []string // 服务标签
+	ID      string   // 服务ID
+	Name    string   // 服务名称
+	Address string   // 服务地址
+	Port    int      // 服务端口
+	Tags    []string // 服务标签
 }
 
 // Client 客户端
 type Client struct {
-	Config *consulapi.Config // 配置
+	Config       *consulapi.Config // 配置
 	consulClient *consulapi.Client // consul客户端
-	initialize bool
+	initialize   bool
 }
 
 // DefaultConfig 默认配置
@@ -42,7 +42,6 @@ func NewServiceRegistration() *consulapi.AgentServiceRegistration {
 func NewServiceCheck() *consulapi.AgentServiceCheck {
 	return new(consulapi.AgentServiceCheck)
 }
-
 
 // NewClient 获取客户端
 func (client *Client) Init() (err error) {
@@ -86,17 +85,16 @@ func (client *Client) Discover(name string) ([]Service, error) {
 		return nil, fmt.Errorf("service name : %s not found", name)
 	}
 
-	var serviceItems []Service
-	for _, service := range services {
+	serviceItems := make([]Service, len(services))
+	for i, service := range services {
 		serviceItem := Service{
-			ID: service.Service.ID,
-			Name: service.Service.Service,
+			ID:      service.Service.ID,
+			Name:    service.Service.Service,
 			Address: service.Service.Address,
-			Port : service.Service.Port,
-			Tags: service.Service.Tags,
-
+			Port:    service.Service.Port,
+			Tags:    service.Service.Tags,
 		}
-		serviceItems = append(serviceItems, serviceItem)
+		serviceItems[i] = serviceItem
 	}
 
 	return serviceItems, nil
