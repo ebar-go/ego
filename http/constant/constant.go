@@ -21,10 +21,10 @@ const (
 const (
 	DefaultLogPath = "/wwwlogs/"
 	DefaultSystemName = "system_name"
-	SystemLogPrefix = "system-"
-	RequestLogPrefix = "request-"
-	AppLogPrefix = "app-"
-	MqLogPrefix = "mq-"
+	SystemLogPrefix = "system_"
+	RequestLogPrefix = "request_"
+	AppLogPrefix = "app_"
+	MqLogPrefix = "mq_"
 	LogSuffix = ".log"
 
 	AppLogComponentName = "app"
