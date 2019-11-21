@@ -116,12 +116,14 @@ func (server *Server) loadMiddleware() {
 
 	// recover
 	server.Router.Use(server.recoverHandler)
-	// 请求日志
-	server.Router.Use(middleware.RequestLog)
 
 	if server.allowCORS {
 		server.Router.Use(middleware.CORS)
 	}
+
+
+	// 请求日志
+	server.Router.Use(middleware.RequestLog)
 
 	middleware.SetJwtSigningKey(server.jwtKey)
 
@@ -131,11 +133,11 @@ func (server *Server) loadMiddleware() {
 func (server *Server) Start() error {
 	server.initialize.Lock()
 
-	server.loadMiddleware()
-
 	// 404
 	server.Router.NoRoute(server.notFoundHandler)
 	server.Router.NoMethod(server.notFoundHandler)
+
+	server.loadMiddleware()
 
 	// 初始化系统日志管理器
 	log.InitManager(log.ManagerConf{
