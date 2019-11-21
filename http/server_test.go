@@ -8,38 +8,24 @@ import (
 	"testing"
 )
 
+func TestNewServer(t *testing.T) {
+	app := NewServer()
+	assert.Nil(t, app.Start())
+}
+
+
 func TestServer_Init(t *testing.T) {
-	server := &Server {
-		Address : "127.0.0.1", // 可以读取apollo地址
-		Port:8088,
-		LogPath:"/tmp/log",
-	}
-	assert.Nil(t, server.Init())
-}
-
-func TestServer_GetCompleteHost(t *testing.T) {
-	server := &Server {
-		Address : "127.0.0.1", // 可以读取apollo地址
-		Port:8088,
-		LogPath:"/tmp/log",
-	}
-	assert.Equal(t, fmt.Sprintf("%s:%d", server.Address, server.Port), server.GetCompleteHost())
-}
-
-func TestServer_Start(t *testing.T) {
-	server := &Server{
-		Address : "127.0.0.1", // 可以读取apollo地址
-		Port:8088,
-		LogPath:"/tmp/log",
-		JwtKey:[]byte("jwt_key"),
-	}
-	assert.Nil(t, server.Init())
+	app := NewServer()
+	app.SetName("test")
+	app.SetJwtKey([]byte("jwt_key"))
+	app.SetLogPath("/tmp/log")
+	assert.Nil(t, app.Start())
 
 	// 添加路由
-	server.Router.Use(middleware.JWT)
-	server.Router.GET("/test", func(context *gin.Context) {
+	app.Router.Use(middleware.JWT)
+	app.Router.GET("/test", func(context *gin.Context) {
 		fmt.Println("hello,world")
 	})
 
-	assert.Nil(t, server.Start())
+	assert.Nil(t, app.Start())
 }

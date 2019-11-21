@@ -1,106 +1,151 @@
 package http
 
 import (
-	"errors"
-	"github.com/ebar-go/ego/http/constant"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/log"
 	"github.com/gin-gonic/gin"
 	"net"
 	"strconv"
+	"sync"
 )
 
 
+const (
+	defaultPort = 8080
+	defaultLogPath = "/tmp/log"
+	defaultName = "app"
+)
+
 // Server Web服务管理器
 type Server struct {
-	LogPath string // 日志路径
-	AppDebug bool
-	SystemName string // 系统名称
-	Address string // 启动地址,如果为空,默认是127.0.0.1
-	Port int // 端口号
+	initialize *sync.Mutex
+	// 系统名称，可选
+	name string
+
+	// 启动地址,如果为空,默认是0.0.0.0
+	address string
+
+	// 端口号,默认是8080
+	port int
+
+	// 日志路径
+	logPath string
+
+	// 是否设置app日志等级为debug
+	appDebug bool
+
+
 	Router *gin.Engine // gin的路由
-	initialize bool
-	JwtKey []byte // jwt秘钥
-	AllowCORS bool // 是否允许跨域
-	NotFoundHandler func(ctx *gin.Context) // 404的处理方法
-	Recover func(ctx *gin.Context) // 接受panic的recover处理方法
+
+
+	jwtKey []byte // jwt秘钥
+
+	// 是否允许跨域
+	allowCORS bool
+
+	// 404的处理方法
+	notFoundHandler func(ctx *gin.Context)
+
+	// 接受panic的recover处理方法
+	recoverHandler func(ctx *gin.Context)
 }
 
-// Init 服务初始化
-func (server *Server) Init() error {
-	if server.initialize {
-		return errors.New("请勿重复初始化Http Server")
+// 实例化server
+func NewServer() *Server {
+	return &Server{
+		name: defaultName,
+		port: defaultPort,
+		notFoundHandler: handler.NotFoundHandler,
+		recoverHandler: middleware.Recover,
+		allowCORS: true,
+		appDebug: false,
+		Router: gin.Default(),
+		initialize:new(sync.Mutex),
+		logPath: defaultLogPath,
 	}
+}
 
-	if server.Port == 0 {
-		return errors.New("端口号不能为0")
-	}
+// SetName 设置系统名称
+func (server *Server) SetName(name string) {
+	server.name = name
+}
 
-	server.Router = gin.Default()
+// SetLogPath 设置日志路径
+func (server *Server) SetLogPath(path string) {
+	server.logPath = path
+}
 
-	server.loadMiddleware()
+// AppDebug 是否开启app日志的debug等级
+func (server *Server) AppDebug(debug bool) {
+	server.appDebug = debug
+}
 
-	// 404
-	server.Router.NoRoute(server.NotFoundHandler)
-	server.Router.NoMethod(server.NotFoundHandler)
+// SetJwtKey 设置jwt
+func (server *Server) SetJwtKey(key []byte) {
+	server.jwtKey = key
+}
 
-	server.initLogger()
-	server.initialize = true
-	return nil
+// AllowCORS 是否允许跨域
+func (server *Server) AllowCORS(allow bool) {
+	server.allowCORS = allow
+}
+
+// SetRecover 设置recover处理器
+func (server *Server) SetRecover(recoverHandler func(ctx *gin.Context)) {
+	server.recoverHandler = recoverHandler
+}
+
+// SetNotFoundHandler 设置404处理器
+func (server *Server) SetNotFoundHandler(notFoundHandler func(ctx *gin.Context)) {
+	server.notFoundHandler = notFoundHandler
+}
+
+// SetAddress 设置地址
+func (server *Server) SetAddress(address string) {
+	server.address = address
+}
+
+// SetPort 设置端口
+func (server *Server) SetPort(port int) {
+	server.port = port
 }
 
 // loadMiddleware 加载中间件
 func (server *Server) loadMiddleware() {
-	if server.Recover == nil {
-		server.Recover = middleware.Recover
-	}
+
 	// recover
-	server.Router.Use(server.Recover)
+	server.Router.Use(server.recoverHandler)
 	// 请求日志
 	server.Router.Use(middleware.RequestLog)
 
-	if server.AllowCORS {
+	if server.allowCORS {
 		server.Router.Use(middleware.CORS)
 	}
 
-	middleware.SetJwtSigningKey(server.JwtKey)
+	middleware.SetJwtSigningKey(server.jwtKey)
 
-	if server.NotFoundHandler == nil {
-		server.NotFoundHandler = handler.NotFoundHandler
-	}
-}
-
-// initLogger 初始化日志管理器
-func (server *Server) initLogger() {
-	// 初始化日志目录
-	if server.LogPath == "" {
-		server.LogPath = constant.DefaultLogPath
-	}
-
-	if server.SystemName == "" {
-		server.SystemName = constant.DefaultSystemName
-	}
-
-	// 初始化系统日志管理器
-	log.InitManager(log.ManagerConf{
-		SystemName: server.SystemName,
-		SystemPort: server.Port,
-		LogPath: server.LogPath,
-		AppDebug: server.AppDebug,
-	})
-}
-
-// GetCompleteHost 获取完整的host
-func (server Server) GetCompleteHost() string {
-	return net.JoinHostPort(server.Address, strconv.Itoa(server.Port))
 }
 
 // Start 启动服务
 func (server *Server) Start() error {
-	if !server.initialize {
-		return errors.New("请先初始化服务")
-	}
+	server.initialize.Lock()
 
-	return server.Router.Run(server.GetCompleteHost())
+	server.loadMiddleware()
+
+	// 404
+	server.Router.NoRoute(server.notFoundHandler)
+	server.Router.NoMethod(server.notFoundHandler)
+
+	// 初始化系统日志管理器
+	log.InitManager(log.ManagerConf{
+		SystemName: server.name,
+		SystemPort: server.port,
+		LogPath: server.logPath,
+		AppDebug: server.appDebug,
+	})
+
+	completeHost := net.JoinHostPort(server.address, strconv.Itoa(server.port))
+
+	return server.Router.Run(completeHost)
 }

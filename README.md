@@ -31,12 +31,7 @@ import (
 	)
 
 func main() {
-    server := &http.Server {
-        Address : "127.0.0.1", // 可以读取apollo地址
-        Port:8088,
-    }
-    helper.CheckErr("InitServer", server.Init(), true)
-    
+    server := http.NewServer()
     // 添加路由
     server.Router.GET("/test", func(context *gin.Context) {
         fmt.Println("hello,world")
@@ -59,13 +54,8 @@ import (
 	"github.com/ebar-go/ego/helper"
 	)
 func main() {
-    server := http.Server {
-        Address : "127.0.0.1", // 可以读取apollo地址
-        Port:8088,
-        LogPath:"/tmp/log",
-        JwtKey:[]byte("jwt_key"),
-    }
-    helper.CheckErr("InitServer", server.Init(), true)
+    server := http.NewServer()
+    server.SetJwtKey([]byte("jwt_key"))
     // 添加路由
     server.Router.GET("/test", func(context *gin.Context) {
         fmt.Println("hello,world")
@@ -85,7 +75,7 @@ func main() {
 ```
 
 ### cache
-缓存模块,待定
+推荐使用 go-cache
 
 ### config
 配置项,集成Apollo配置
