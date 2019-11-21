@@ -108,7 +108,7 @@ func (response *Response) complete()  {
 func Json(ctx *gin.Context, response *Response)  {
 	response.complete()
 	// 核心处理方式
-	ctx.Header("Access-Control-Allow-Origin", "*")
+	ctx.Header("Access-Control-Allow-Origin", ctx.Request.Header.Get("Origin"))
 	ctx.Header("Access-Control-Allow-Credentials", "true")
 	ctx.Header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 	ctx.Header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
