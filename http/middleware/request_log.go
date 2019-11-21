@@ -43,6 +43,7 @@ func RequestLog(c *gin.Context) {
 	}
 	trace.SetTraceId(traceId)
 	defer trace.DeleteTraceId()
+	helper.Debug(traceId)
 
 	c.Next()
 

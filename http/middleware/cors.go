@@ -15,10 +15,7 @@ func CORS(c *gin.Context) {
 	c.Header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS")
 
 	if method == "OPTIONS" || method == "HEAD" {
-		c.Status(204)
-		c.Writer.Write([]byte(""))
-
-		c.Abort()
+		c.AbortWithStatus(204)
 
 		return
 	}

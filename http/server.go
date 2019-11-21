@@ -41,8 +41,6 @@ type Server struct {
 
 	jwtKey []byte // jwt秘钥
 
-	// 是否允许跨域
-	allowCORS bool
 
 	// 404的处理方法
 	notFoundHandler func(ctx *gin.Context)
@@ -57,8 +55,6 @@ func NewServer() *Server {
 		name: defaultName,
 		port: defaultPort,
 		notFoundHandler: handler.NotFoundHandler,
-		recoverHandler: middleware.Recover,
-		allowCORS: true,
 		appDebug: false,
 		Router: gin.Default(),
 		initialize:new(sync.Mutex),
@@ -86,16 +82,6 @@ func (server *Server) SetJwtKey(key []byte) {
 	server.jwtKey = key
 }
 
-// AllowCORS 是否允许跨域
-func (server *Server) AllowCORS(allow bool) {
-	server.allowCORS = allow
-}
-
-// SetRecover 设置recover处理器
-func (server *Server) SetRecover(recoverHandler func(ctx *gin.Context)) {
-	server.recoverHandler = recoverHandler
-}
-
 // SetNotFoundHandler 设置404处理器
 func (server *Server) SetNotFoundHandler(notFoundHandler func(ctx *gin.Context)) {
 	server.notFoundHandler = notFoundHandler
@@ -111,24 +97,6 @@ func (server *Server) SetPort(port int) {
 	server.port = port
 }
 
-// loadMiddleware 加载中间件
-func (server *Server) loadMiddleware() {
-
-	// recover
-	server.Router.Use(server.recoverHandler)
-
-	if server.allowCORS {
-		server.Router.Use(middleware.CORS)
-	}
-
-
-	// 请求日志
-	server.Router.Use(middleware.RequestLog)
-
-	middleware.SetJwtSigningKey(server.jwtKey)
-
-}
-
 // Start 启动服务
 func (server *Server) Start() error {
 	server.initialize.Lock()
@@ -137,7 +105,7 @@ func (server *Server) Start() error {
 	server.Router.NoRoute(server.notFoundHandler)
 	server.Router.NoMethod(server.notFoundHandler)
 
-	server.loadMiddleware()
+	middleware.SetJwtSigningKey(server.jwtKey)
 
 	// 初始化系统日志管理器
 	log.InitManager(log.ManagerConf{
