@@ -1,115 +1,121 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
-	"errors"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
-	"github.com/ebar-go/ego/http/constant"
 	"github.com/ebar-go/ego/log"
-	"path"
-	"github.com/sirupsen/logrus"
+	"github.com/gin-gonic/gin"
 	"net"
 	"strconv"
+	"sync"
 )
 
 
+const (
+	defaultPort = 8080
+	defaultLogPath = "/tmp/log"
+	defaultName = "app"
+)
+
 // Server Web服务管理器
 type Server struct {
-	LogPath string
-	AppDebug bool
-	SystemName string
-	Address string
-	Port int
-	Router *gin.Engine
-	initialize bool
-	NotFoundHandler func(ctx *gin.Context)
-	Recover func(ctx *gin.Context)
+	initialize *sync.Mutex
+	// 系统名称，可选
+	name string
+
+	// 启动地址,如果为空,默认是0.0.0.0
+	address string
+
+	// 端口号,默认是8080
+	port int
+
+	// 日志路径
+	logPath string
+
+	// 是否设置app日志等级为debug
+	appDebug bool
+
+
+	Router *gin.Engine // gin的路由
+
+
+	jwtKey []byte // jwt秘钥
+
+
+	// 404的处理方法
+	notFoundHandler func(ctx *gin.Context)
+
+	// 接受panic的recover处理方法
+	recoverHandler func(ctx *gin.Context)
 }
 
-// Init 服务初始化
-func (server *Server)Init() error {
-	if server.initialize {
-		return errors.New("请勿重复初始化Http Server")
+// 实例化server
+func NewServer() *Server {
+	return &Server{
+		name: defaultName,
+		port: defaultPort,
+		notFoundHandler: handler.NotFoundHandler,
+		appDebug: false,
+		Router: gin.Default(),
+		initialize:new(sync.Mutex),
+		logPath: defaultLogPath,
 	}
-
-	if server.Port == 0 {
-		return errors.New("端口号不能为0")
-	}
-
-	server.Router = gin.Default()
-
-	// 请求日志
-	server.Router.Use(middleware.RequestLog)
-
-	if server.NotFoundHandler == nil {
-		server.NotFoundHandler = handler.NotFoundHandler
-	}
-
-	if server.Recover == nil {
-		server.Recover = handler.Recover
-	}
-	server.Router.Use(server.Recover)
-
-	// 404
-	server.Router.NoRoute(server.NotFoundHandler)
-	server.Router.NoMethod(server.NotFoundHandler)
-
-	server.initLogger()
-
-	server.initialize = true
-	return nil
 }
 
+// SetName 设置系统名称
+func (server *Server) SetName(name string) {
+	server.name = name
+}
 
-func (server *Server) initLogger() error {
-	// 初始化日志目录
-	if server.LogPath == "" {
-		server.LogPath = constant.DefaultLogPath
-	}
+// SetLogPath 设置日志路径
+func (server *Server) SetLogPath(path string) {
+	server.logPath = path
+}
 
-	if server.SystemName == "" {
-		server.SystemName = constant.DefaultSystemName
-	}
+// AppDebug 是否开启app日志的debug等级
+func (server *Server) AppDebug(debug bool) {
+	server.appDebug = debug
+}
 
+// SetJwtKey 设置jwt
+func (server *Server) SetJwtKey(key []byte) {
+	server.jwtKey = key
+}
 
-	appPath := path.Join(server.LogPath, server.SystemName, constant.AppLogPrefix + server.SystemName + constant.LogSuffix)
-	systemPath := path.Join(server.LogPath, server.SystemName, constant.SystemLogPrefix + server.SystemName + constant.LogSuffix)
-	requestPath := path.Join(server.LogPath, server.SystemName, constant.RequestLogPrefix + server.SystemName + constant.LogSuffix)
+// SetNotFoundHandler 设置404处理器
+func (server *Server) SetNotFoundHandler(notFoundHandler func(ctx *gin.Context)) {
+	server.notFoundHandler = notFoundHandler
+}
 
-	log.AppLogger = log.NewFileLogger(appPath)
-	if !server.AppDebug {
-		log.AppLogger.SetLevel(logrus.DebugLevel)
-	}
+// SetAddress 设置地址
+func (server *Server) SetAddress(address string) {
+	server.address = address
+}
 
-	log.AppLogger.SetSystemParam(log.LogSystemParam{
-		ServiceName: server.SystemName,
-		ServicePort: server.Port,
-		Channel: log.DefaultAppChannel,
-	})
-
-	log.SystemLogger = log.NewFileLogger(systemPath)
-	log.SystemLogger.SetSystemParam(log.LogSystemParam{
-		ServiceName: server.SystemName,
-		ServicePort: server.Port,
-		Channel: log.DefaultSystemChannel,
-	})
-
-	log.RequestLogger = log.NewFileLogger(requestPath)
-	log.RequestLogger.SetSystemParam(log.LogSystemParam{
-		ServiceName: server.SystemName,
-		ServicePort: server.Port,
-		Channel: log.DefaultRequestChannel,
-	})
-
-	return nil
+// SetPort 设置端口
+func (server *Server) SetPort(port int) {
+	server.port = port
 }
 
 // Start 启动服务
 func (server *Server) Start() error {
-	if !server.initialize {
-		return errors.New("请先初始化服务")
-	}
+	server.initialize.Lock()
 
-	return server.Router.Run(net.JoinHostPort(server.Address, strconv.Itoa(server.Port)))
+	// 404
+	server.Router.NoRoute(server.notFoundHandler)
+	server.Router.NoMethod(server.notFoundHandler)
+
+	middleware.SetJwtSigningKey(server.jwtKey)
+
+	// 初始化系统日志管理器
+	log.InitManager(log.ManagerConf{
+		SystemName: server.name,
+		SystemPort: server.port,
+		LogPath: server.logPath,
+		AppDebug: server.appDebug,
+	})
+
+	completeHost := net.JoinHostPort(server.address, strconv.Itoa(server.port))
+
+	return server.Router.Run(completeHost)
 }

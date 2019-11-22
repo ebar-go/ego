@@ -5,9 +5,17 @@ const (
 	GatewayTrace   = "gateway-trace" // 网关trace
 	JwtTokenMethod = "Bearer"
 	JwtTokenHeader = "Authorization"
-	JwtUserKey     = "jwt_user"
-	JwtExpiredTime = 600
+	JwtClaimsKey     = "jwt_claims"
+	JwtExpiredTime = 3600
+	SystemNameKey = "SYSTEM_NAME"
 
+	DefaultMaxResponseSize = 1000
+
+)
+
+const (
+	EnvSystemName = "SYSTEM_NAME"
+	EnvSystemPort = "SYSTEM_PORT"
 )
 
 const (
@@ -16,7 +24,13 @@ const (
 	SystemLogPrefix = "system_"
 	RequestLogPrefix = "request_"
 	AppLogPrefix = "app_"
+	MqLogPrefix = "mq_"
 	LogSuffix = ".log"
+
+	AppLogComponentName = "app"
+	TraceLogComponentName = "trace"
+	MqLogComponentName = "mq"
+	SystemLogComponentName = "phplogs"
 )
 
 const (

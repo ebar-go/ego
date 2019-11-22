@@ -16,24 +16,6 @@
 go get -u github.com/ebar-go/ego
 ```
 
-## 目录结构
-```
-.
-├── cache
-├── config
-├── consul
-├── db
-├── http
-├── library
-├── log
-├── task
-├── test
-├── go.mod
-├── go.sum
-└── README.md
-
-```
-
 ## 模块
 ### http
 基于gin框架的http服务器模块
@@ -45,20 +27,17 @@ import (
 	"github.com/ebar-go/ego/http"
 	"github.com/gin-gonic/gin"
 	"fmt"
+    "github.com/ebar-go/ego/helper"
 	)
+
 func main() {
-    server := http.Server {
-        Address : "127.0.0.1:8088", // 可以读取apollo地址
-    }
-    err := server.Init()
-    if err != nil {
-    	panic(err)
-    }
-    // TODO 添加路由
+    server := http.NewServer()
+    // 添加路由
     server.Router.GET("/test", func(context *gin.Context) {
         fmt.Println("hello,world")
     })
-    err =server.Start()
+    
+    helper.CheckErr("StartServer", server.Start(), true)
 }
 ```
 
@@ -72,16 +51,12 @@ import (
 	"fmt"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/request"
+	"github.com/ebar-go/ego/helper"
 	)
 func main() {
-    server := http.Server {
-        Address : "127.0.0.1:8088", // 可以读取apollo地址
-    }
-    err := server.Init()
-    if err != nil {
-    	panic(err)
-    }
-    // TODO 添加路由
+    server := http.NewServer()
+    server.SetJwtKey([]byte("jwt_key"))
+    // 添加路由
     server.Router.GET("/test", func(context *gin.Context) {
         fmt.Println("hello,world")
     })
@@ -92,15 +67,15 @@ func main() {
     	api.GET("/user", func(context *gin.Context) {
     		
     	    fmt.Println("获取用户信息")
-    	    fmt.Println(middleware.GetCurrentUser(context))
+    	    fmt.Println(middleware.GetCurrentClaims(context))
     	})
     }
-    err =server.Start()
+    helper.CheckErr("StartServer", server.Start(), true)
 }
 ```
 
 ### cache
-缓存模块,待定
+推荐使用 go-cache
 
 ### config
 配置项,集成Apollo配置
@@ -109,22 +84,20 @@ func main() {
 ```go
 package main
 import (
-	"github.com/ebar-go/ego/config"
+	"github.com/ebar-go/ego/component/apollo"
     "os"
 	"fmt"
+	"github.com/ebar-go/ego/helper"
 )
 func main() {
-    apollo := config.Apollo{
+    conf := apollo.Conf{
     	AppId: "open-api",
     	Cluster: "local",
     	Ip: "192.168.0.19:8080",
     	Namespace: "application",
     }
-    if err := apollo.Init(); err != nil {
-        // TODO 如果apollo启动失败，应该有备用方案
-        fmt.Println("启动apollo失败:"+ err.Error())
-        os.Exit(-1)
-    }
+    helper.CheckErr("InitApollo", apollo.Init(conf), true)
+    
     // 获取配置
     logFilePath := apollo.GetStringValue("LOG_FILE","/var/tmp")
     fmt.Println(logFilePath)
@@ -141,10 +114,9 @@ func main() {
 ```go
 package main
 import (
-	consulapi "github.com/hashicorp/consul/api"
-	"github.com/ebar-go/ego/consul"
+	"github.com/ebar-go/ego/component/consul"
 	"fmt"
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 )
 func main() {
     config := consul.DefaultConfig()
@@ -154,12 +126,12 @@ func main() {
         Config:config,
     }
     // 获取本机IP
-    ip, err := library.GetLocalIp()  
+    ip, err := helper.GetLocalIp()  
     if err != nil {
     	panic(err)
     }
     registration := consul.NewServiceRegistration()
-    registration.ID = "epet-go-demo-2"
+    registration.ID = "go-demo-2"
     registration.Name = "project-demo"
     registration.Port = 8088
     registration.Tags = []string{"project-demo"}
@@ -179,10 +151,9 @@ func main() {
 ```go
 package main
 import (
-	consulapi "github.com/hashicorp/consul/api"
-	"github.com/ebar-go/ego/consul"
+	"github.com/ebar-go/ego/component/consul"
 	"fmt"
-	"github.com/ebar-go/ego/library"
+	"github.com/ebar-go/ego/helper"
 )
 func main() {
     config := consul.DefaultConfig()
@@ -202,41 +173,39 @@ func main() {
 
 更多方法请查看测试用例
 
-### library
+### helper
 公共库
-- Date
-
-```go
-package main
-import ("github.com/ebar-go/ego/library"
-    "fmt"
-)
-func main() {//
-    // 获取当前时间
-    now := library.GetTimeStr()
-    fmt.Println(now)
-}
-
-```
-
-- 打印调试
 
 ```go
 package main
 import (
-	"github.com/ebar-go/ego/library"
+    "github.com/ebar-go/ego/helper"
+    "fmt"
 )
-func main() {
-	// 打印调试
-    library.Debug(123, "aaa")
+func main() {//
+    // 获取当前时间
+    fmt.Println("获取当前时间:" , helper.GetTimeStr())
+    helper.Debug("打印调试")
 }
-
 ```
-
 
 ### log
 日志管理器
-- 输出到控制台
+- 系统日志
+
+```go
+package main
+import (
+       	"github.com/ebar-go/ego/log"
+       	"os"
+       )
+func main() {
+    log.App().Info("test", log.Context{"a":1})
+    log.App().Debug("test", log.Context{"a":1})
+    log.App().Warn("test", log.Context{"a":1})
+}
+```
+- 自定义
 
 ```go
 package main
@@ -246,32 +215,10 @@ import (
        )
 func main() {
     logger := log.New()
-    logger.Debug("test debug", 123, 456)
+    logger.Debug("test debug", log.Context{"name":"123"})
 }
 ```
 
-- 输出到文件
-
-```go
-package main
-import (
-	"github.com/ebar-go/ego/log"
-	"os"
-	"fmt"
-)
-func main() {
-    logger := log.New()
-    filePath := "/var/log/system.log"
-    fmt.Println(filePath)
-    file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-    if err == nil {
-    	logger.SetOutWriter(file)
-    }else {
-    	fmt.Println("err:" + err.Error())
-	}
-    logger.Info("test info", 123, 456)
-}
-```
 
 ### HTTP请求
 - kong
