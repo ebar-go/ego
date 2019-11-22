@@ -7,8 +7,7 @@ import (
 	"sync"
 )
 
-var manager = new(Manager)
-var once = new(sync.Once)
+var manager *Manager
 
 // Manager 系统日志管理器
 type Manager struct {
@@ -18,6 +17,7 @@ type Manager struct {
 	system *Logger
 	request *Logger
 	mq *Logger
+	initialize *sync.Mutex
 }
 
 // GetSystemParam
@@ -78,24 +78,32 @@ type ManagerConf struct {
 
 // InitManager 初始化日志管理器
 func InitManager(conf ManagerConf) {
-	once.Do(func() {
-		manager.conf = conf
-		manager.rotate()
-	})
+	if manager == nil {
+		manager = &Manager{
+			conf: conf,
+			initialize: new(sync.Mutex),
+		}
+
+	}
+
+	manager.rotate()
 
 }
 
 // rotate 分割日志文件
 func (m *Manager) rotate() *Manager {
+
 	currentDateStr := helper.GetDateStr()
 	if currentDateStr != m.rotateDate {
-		// TODO 需要验证并发时的安全性
+		// 加锁保证初始化
+		manager.initialize.Lock()
 		m.rotateDate = currentDateStr
 
 		m.InitAppLogger()
 		m.InitRequestLogger()
 		m.InitSystemLogger()
 		m.InitMqLogger()
+		manager.initialize.Unlock()
 	}
 
 	return m
@@ -103,21 +111,33 @@ func (m *Manager) rotate() *Manager {
 
 // App 应用日志
 func App() *Logger {
+	if manager == nil {
+		return New()
+	}
 	return manager.rotate().app
 }
 
 // System 系统日志
 func System() *Logger {
+	if manager == nil {
+		return New()
+	}
 	return manager.rotate().system
 }
 
 // Request 请求日志
 func Request() *Logger {
+	if manager == nil {
+		return New()
+	}
 	return manager.rotate().request
 }
 
 // Mq 消息队列日志
 func Mq() *Logger {
+	if manager == nil {
+		return New()
+	}
 	return manager.rotate().mq
 }
 
