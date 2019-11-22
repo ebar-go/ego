@@ -73,7 +73,7 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 					})
 
 					if err := queue.Handler(params); err != nil {
-						log.System().Error("processMessageFailed", log.Context{
+						log.System().Warn("processMessageFailed", log.Context{
 							"err" : err.Error(),
 							"trace" : helper.Trace(),
 						})
@@ -97,7 +97,7 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 			}
 		case err := <-errChan:
 			{
-				log.System().Error("receiveMessageFailed", log.Context{
+				log.System().Info("receiveMessageFailed", log.Context{
 					"err" : err.Error(),
 					"trace" : helper.Trace(),
 				})
