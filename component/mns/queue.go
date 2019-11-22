@@ -48,14 +48,24 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 		case resp := <-respChan:
 			{
 				var params Params
+				log.System().Info("mqParams", log.Context{
+					"receiveTime" : helper.GetTimeStr(),
+					"queue_name" : queue.Name,
+					"resp" : resp,
+					"message_id" : resp.MessageId,
+					"body" : resp.MessageBody,
+				})
 
 				// 解析消息
 				if err := json.Unmarshal([]byte(helper.DecodeBase64Str(resp.MessageBody)), &params); err != nil {
-					helper.Debug("消息结构异常:",queue.Name, err.Error(), resp.MessageBody )
+					log.System().Error("invalidMessageBody", log.Context{
+						"err" : err.Error(),
+						"trace" : helper.Trace(),
+					})
 				}else {
 
 					log.Mq().Info("receiveMessage", log.Context{
-						"receiveTime" : "receiveMessage",
+						"receiveTime" : helper.GetTimeStr(),
 						"queue_name" : queue.Name,
 						"messageBody" : params.Content,
 						"tag" : params.Tag,
@@ -63,14 +73,16 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 					})
 
 					if err := queue.Handler(params); err != nil {
-						helper.Debug("处理消息失败:",queue.Name, err.Error() )
+						log.System().Error("processMessageFailed", log.Context{
+							"err" : err.Error(),
+							"trace" : helper.Trace(),
+						})
 
-						// TODO ChangeMessageVisibility
 					}else {
 						// 处理成功，删除消息
 						err := queue.DeleteMessage(resp.ReceiptHandle)
 						log.Mq().Info("deleteMessage", log.Context{
-							"receiveTime" : "deleteMessage",
+							"receiveTime" : helper.GetTimeStr(),
 							"queue_name" : queue.Name,
 							"messageBody" : params.Content,
 							"tag" : params.Tag,
@@ -85,7 +97,10 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 			}
 		case err := <-errChan:
 			{
-				helper.Debug(err)
+				log.System().Error("receiveMessageFailed", log.Context{
+					"err" : err.Error(),
+					"trace" : helper.Trace(),
+				})
 				endChan <- 1
 			}
 		}
