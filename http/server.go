@@ -51,12 +51,17 @@ type Server struct {
 
 // 实例化server
 func NewServer() *Server {
+	router := gin.Default()
+
+	// 默认引入请求日志中间件
+	router.Use(middleware.RequestLog)
+
 	return &Server{
 		name: defaultName,
 		port: defaultPort,
 		notFoundHandler: handler.NotFoundHandler,
 		appDebug: false,
-		Router: gin.Default(),
+		Router: router,
 		initialize:new(sync.Mutex),
 		logPath: defaultLogPath,
 	}
