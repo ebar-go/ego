@@ -110,6 +110,7 @@ func (server *Server) Start() error {
 	server.Router.NoRoute(server.notFoundHandler)
 	server.Router.NoMethod(server.notFoundHandler)
 
+	// 设置jwt的秘钥
 	middleware.SetJwtSigningKey(server.jwtKey)
 
 	// 初始化系统日志管理器
