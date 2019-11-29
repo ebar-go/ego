@@ -227,12 +227,92 @@ func main() {
 更多方法请查看测试用例
 
 ### mysql
-数据库
+集成的Gorm,使用连接池
+
+```go
+package main
+import (
+       	"github.com/ebar-go/ego/component/mysql"
+       	"github.com/ebar-go/ego/helper"
+       	"os"
+       )
+func main() {
+    conf := mysql.Conf{
+    	Dsn: "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True&loc=Local",
+    	LogMode:true,
+    }
+    
+    helper.CheckErr("InitMysqlPool", mysql.InitPool(conf), true)
+    
+    conn := mysql.GetConnection()
+    conn.DB().Ping()
+    
+}
+```
 
 ### redis
-redis
+集成的go-redis,使用连接池
+
+```go
+package main
+import (
+       	"github.com/ebar-go/ego/component/redis"
+       	"github.com/ebar-go/ego/helper"
+       	"os"
+       	"fmt"
+       )
+func main() {
+    conf := redis.Conf{
+    	Host: "192.168.0.222",
+    	Port: 6379,
+    }
+    
+    helper.CheckErr("InitRedisPool", redis.InitPool(conf), true)
+    
+    conn := redis.GetConnection()
+    if err := conn.Set("key", "value", 0).Err(); err != nil {
+    	fmt.Println(err)
+    }
+    
+    val, err := conn.Get("key").Result()
+    fmt.Println("key", val, err)
+}
+```
+
+### 对接prometheus监控
+监控Mysql
+
+```go
+package main
+import (
+       	"github.com/ebar-go/ego/component/mysql"
+       	"github.com/ebar-go/ego/component/prometheus"
+       	"github.com/ebar-go/ego/helper"
+       	"github.com/ebar-go/ego/http"
+       	"os"
+       )
+func main() {
+    conf := mysql.Conf{
+    	Dsn: "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True&loc=Local",
+    	LogMode:true,
+    }
+    
+    helper.CheckErr("InitMysqlPool", mysql.InitPool(conf), true)
+    
+    conn := mysql.GetConnection()
+    prometheus.ListenMysql(conn, "server")
+    
+    server := http.NewServer()
+    
+    server.Router.GET("/metrics", prometheus.Handler)
+    
+    helper.CheckErr("StartServer", server.Start(), true)
+    
+}
+```
 
 ### test 单元测试
+
 
 ## TODO
 - 参数验证器
