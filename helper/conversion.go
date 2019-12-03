@@ -5,6 +5,7 @@ import (
 	"reflect"
 	json "github.com/pquerna/ffjson/ffjson"
 	"fmt"
+	"strconv"
 )
 
 // Struct2Map 支持结构体转化为map，在嵌套结构中不支持interface{}传值的结构体
@@ -55,4 +56,19 @@ func Map2Struct(mapInstance map[string]interface{}, obj interface{}) error {
 // Float2String float转string
 func Float2String(a float64) string {
 	return fmt.Sprintf("%.f", a)
+}
+
+// Interface2Int interface转int
+func Interface2Int(i interface{}) int {
+	f , ok := i.(float64)
+	if !ok {
+		return 0
+	}
+
+	str := fmt.Sprintf("%.f", f)
+	if result, err := strconv.Atoi(str); err == nil {
+		return result
+	}
+
+	return 0
 }
