@@ -1,4 +1,4 @@
-package requestMethod
+package request
 
 const(
 	Get     = "GET"

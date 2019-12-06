@@ -3,7 +3,7 @@ package impl
 import (
 	"github.com/valyala/fasthttp"
 	"github.com/pkg/errors"
-	"github.com/ebar-go/ego/http/client/object"
+	"github.com/ebar-go/ego/http/client/request"
 	"bytes"
 )
 
@@ -15,7 +15,7 @@ func NewFastHttpClient() FastHttpClient {
 	return FastHttpClient{}
 }
 
-func (client FastHttpClient) NewRequest(param object.RequestParam) object.IRequest{
+func (client FastHttpClient) NewRequest(param request.Param) request.IRequest {
 	req := fasthttp.AcquireRequest()
 
 	req.Header.SetContentType("application/json")

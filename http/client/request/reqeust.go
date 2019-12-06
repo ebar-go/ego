@@ -1,3 +1,3 @@
-package object
+package request
 
 type IRequest interface {}

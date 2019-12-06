@@ -6,7 +6,7 @@ import (
 	"net"
 	"github.com/pkg/errors"
 	"github.com/ebar-go/ego/helper"
-	"github.com/ebar-go/ego/http/client/object"
+	"github.com/ebar-go/ego/http/client/request"
 	"strings"
 	"github.com/ebar-go/ego/http/constant"
 )
@@ -16,6 +16,7 @@ const(
 	DefaultMaxIdleConnsPerHost = 100
 )
 
+// HttpClient http客户端,支持长连接
 type HttpClient struct {
 	Timeout time.Duration
 	Transport *http.Transport
@@ -39,17 +40,18 @@ func NewHttpClient() HttpClient {
 	}
 }
 
-func (client HttpClient) NewRequest(param object.RequestParam) object.IRequest {
+// NewRequest 实例化request
+func (client HttpClient) NewRequest(param request.Param) request.IRequest {
 	if !strings.HasPrefix(param.Url, constant.HttpSchema) {
 		param.Url = constant.HttpSchema + param.Url
 	}
 
-	request, err := http.NewRequest(param.Method, param.Url, param.Body)
+	req, err := http.NewRequest(param.Method, param.Url, param.Body)
 	if err != nil {
 		return nil
 	}
 
-	return object.IRequest(request)
+	return req
 }
 
 // Execute 执行请求
@@ -59,9 +61,11 @@ func (client HttpClient) Execute(request interface{}) (string, error) {
 	}
 
 	req, ok := request.(*http.Request)
+
 	if !ok {
 		return "", errors.New("request not *http.request")
 	}
+	defer req.Body.Close()
 
 	resp, err := client.clientPool.Do(req)
 	if err != nil {

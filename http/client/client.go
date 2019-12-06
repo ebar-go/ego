@@ -2,13 +2,13 @@ package client
 
 import (
 	"github.com/ebar-go/ego/http/client/impl"
-	"github.com/ebar-go/ego/http/client/object"
+	"github.com/ebar-go/ego/http/client/request"
 )
 
 // IClient Http客户端
 type IClient interface {
 	Execute(request interface{}) (string, error)
-	NewRequest(param object.RequestParam) object.IRequest
+	NewRequest(param request.Param) request.IRequest
 }
 
 func NewHttpClient() IClient {
