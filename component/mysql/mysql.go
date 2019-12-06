@@ -6,6 +6,8 @@ import (
 	"sync"
 	"os"
 	"fmt"
+	"net"
+	"strconv"
 )
 
 const (
@@ -34,14 +36,23 @@ type Conf struct {
 	// 数据库名称
 	Name string
 
+	// 地址
+	Host string
+
+	// 端口号
+	Port int
+
+	// 用户名
+	User string
+
+	// 密码
+	Password string
+
 	// 是否为默认连接
 	Default bool
 
 	// 连接失败的处理方式
 	ConnectFailedHandler func(err error)
-
-	// dsn
-	Dsn string
 
 	// 是否日志模式，默认不开
 	LogMode bool
@@ -64,7 +75,6 @@ func CloseConnectionGroup()  {
 
 	return
 }
-
 // complete 补全
 func (conf *Conf) complete() {
 	if conf.MaxIdleConnections == 0 {
@@ -83,8 +93,15 @@ func (conf *Conf) complete() {
 	}
 }
 
+// GetDsn 获取dsn
+func (conf Conf) GetDsn() string {
+	address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
+	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", conf.User, conf.Password, address, conf.Name)
+}
+
 // 初始化数据库连接池
 func InitPool(confItems ...Conf) (err error) {
+	// 加锁
 	group.lock.Lock()
 
 	defaultConnectionName := ""
@@ -98,7 +115,7 @@ func InitPool(confItems ...Conf) (err error) {
 
 		conf.complete()
 
-		connection, err := gorm.Open("mysql", conf.Dsn)
+		connection, err := gorm.Open("mysql", conf.GetDsn())
 		if err != nil {
 			conf.ConnectFailedHandler(err)
 		}
@@ -111,6 +128,7 @@ func InitPool(confItems ...Conf) (err error) {
 
 		group.connections[conf.Name] = connection
 	}
+
 	group.defaultName = defaultConnectionName
 
 	return nil
