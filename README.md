@@ -52,7 +52,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"fmt"
 	"github.com/ebar-go/ego/http/middleware"
-	"github.com/ebar-go/ego/http/request"
 	"github.com/ebar-go/ego/helper"
 	)
 func main() {
@@ -222,11 +221,36 @@ func main() {
 ```
 
 
-### HTTP请求
-- kong
-- http
-
-更多方法请查看测试用例
+### HTTP请求客户端
+提供官方的http包、fasthttp(推荐使用),kong网关的http客户端
+```go
+package main
+import (
+       	"github.com/ebar-go/ego/component/mysql"
+       	"github.com/ebar-go/ego/http/client"
+       	"github.com/ebar-go/ego/http/client/request"
+       	"os"
+       	"fmt"
+       )
+func main() {
+	// 官方http,支持长连接
+	httpClient := client.NewHttpClient()
+	
+	// fasthttp
+	// httpClient := client.NewFastHttpClient()
+	
+	// kong
+	// httpClient := client.NewKongClient()
+	// 设置其他参数...
+	req := httpClient.NewRequest(request.Param{
+		Url: "http://localhost:8080/test",
+		Method: request.Get,
+	})
+	
+	resp, err := httpClient.Execute(req)
+	fmt.Println(resp, err)
+}
+```
 
 ### mysql
 集成的Gorm,使用连接池
