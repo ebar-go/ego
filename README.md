@@ -11,6 +11,7 @@
 - 集成Consul,支持服务注册、发现、注销
 - Mysql,Redis连接池
 - 集成prometheus监控
+- 集成MNS
 
 ## 安装
 
@@ -312,6 +313,36 @@ func main() {
 }
 ```
 
+### 对接阿里云MNS
+```go
+package main
+import (
+       	"github.com/ebar-go/ego/component/mns"
+       	"github.com/ebar-go/ego/helper"
+       	"os"
+       	"fmt"
+       )
+func main()  {
+	conf := mns.Conf{
+    		Url:             "endpoint",
+    		AccessKeyId:     "id",
+    		AccessKeySecret: "secret",
+    	}
+    
+    	mnsClient := mns.InitClient(conf)
+    
+    	// 添加队列
+    	mnsClient.AddQueue(&mns.Queue{
+    		Name:       "queueName",
+    		Handler:    func(params mns.Params) error {
+    		    fmt.Println(params)
+    		    return nil
+    		},
+    		WaitSecond: 30,
+    	})
+}
+```
+
 ### 对接prometheus监控
 监控Mysql
 
@@ -325,12 +356,6 @@ import (
        	"os"
        )
 func main() {
-    conf := mysql.Conf{
-    	Dsn: "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True&loc=Local",
-    	LogMode:true,
-    }
-    
-    helper.CheckErr("InitMysqlPool", mysql.InitPool(conf), true)
     
     conn := mysql.GetConnection()
     prometheus.ListenMysql(conn, "server")
