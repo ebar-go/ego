@@ -1,4 +1,4 @@
-package request
+package kong
 
 import (
 	"fmt"
@@ -7,12 +7,15 @@ import (
 	"github.com/ebar-go/ego/http/constant"
 	"github.com/pkg/errors"
 	"github.com/valyala/fasthttp"
-	"io"
-	"net/http"
 	"time"
 )
 
-type Kong struct {
+type IClient interface {
+	GenerateToken() (string, error)
+}
+
+// Client kong客户端
+type Client struct {
 	Iss string // 签名
 	Secret string // 秘钥
 	ReferServiceName string
@@ -24,7 +27,7 @@ type Kong struct {
 }
 
 // GetEncodeToken 获取加密的token
-func (kong Kong) GenerateToken() (string, error) {
+func (kong Client) GenerateToken() (string, error) {
 	if kong.TokenExpireTime == 0 {
 		kong.TokenExpireTime = constant.JwtExpiredTime
 	}
@@ -40,28 +43,7 @@ func (kong Kong) GenerateToken() (string, error) {
 	return tokenStr, err
 }
 
-// NewRequest
-func (kong *Kong) NewRequest(router, method , uri string, body io.Reader) (*http.Request, error) {
-	url := fmt.Sprintf("%s/%s%s", kong.Address, router, uri)
-	request, err := New(method , url, body)
-	if err != nil {
-		return nil, err
-	}
-
-
-	// 生成kong的token
-	jwtToken , _ := kong.GenerateToken()
-
-	request.Header.Add("Accept-Encoding", "charset=UTF-8")
-	request.Header.Add("Refer-Service-Name", kong.ReferServiceName)
-	request.Header.Add("Refer-Request-Host", kong.ReferRequestHost)
-	request.Header.Add("X-Service-User", kong.XServiceUser)
-	request.Header.Add(constant.JwtTokenHeader, fmt.Sprintf("%s %s", constant.JwtTokenMethod,jwtToken))
-
-	return request, nil
-}
-
-func (kong *Kong) NewFastHttpRequest(router, method, uri string) *fasthttp.Request{
+func (kong *Client) NewRequest(router, method, uri string) *fasthttp.Request{
 	url := fmt.Sprintf("%s/%s%s", kong.Address, router, uri)
 
 	req := fasthttp.AcquireRequest()
@@ -85,7 +67,7 @@ func (kong *Kong) NewFastHttpRequest(router, method, uri string) *fasthttp.Reque
 }
 
 // Send 发送http请求，得到响应
-func Send(request *fasthttp.Request) (string, error) {
+func (kong *Client) Execute(request *fasthttp.Request) (string, error) {
 	defer fasthttp.ReleaseRequest(request) // 用完需要释放资源
 
 	resp := fasthttp.AcquireResponse()

@@ -6,6 +6,8 @@ import (
 	json "github.com/pquerna/ffjson/ffjson"
 	"fmt"
 	"strconv"
+	"net/http"
+	"io/ioutil"
 )
 
 // Struct2Map 支持结构体转化为map，在嵌套结构中不支持interface{}传值的结构体
@@ -71,4 +73,27 @@ func Interface2Int(i interface{}) int {
 	}
 
 	return 0
+}
+
+// 将response序列化
+func  StringifyResponse(response *http.Response) (string, error) {
+	if response == nil {
+		return "", errors.New("没有响应数据")
+	}
+
+	if response.StatusCode != 200 {
+		return "", errors.New("非200的上游返回")
+	}
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+
+	// 关闭响应
+	defer func() {
+		response.Body.Close()
+	}()
+
+	return string(data), nil
 }
