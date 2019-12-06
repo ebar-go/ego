@@ -27,9 +27,9 @@ func (client FastHttpClient) NewRequest(param request.Param) request.IRequest {
 		req.Header.Add(key, value)
 	}
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(param.Body)
 	if param.Body != nil {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(param.Body)
 		req.SetBody(buf.Bytes())
 	}
 
@@ -37,7 +37,7 @@ func (client FastHttpClient) NewRequest(param request.Param) request.IRequest {
 }
 
 // Send 发送http请求，得到响应
-func (client FastHttpClient) Execute(request interface{}) (string, error) {
+func (client FastHttpClient) Execute(request request.IRequest) (string, error) {
 	if request == nil {
 		return "", errors.New("request is nil")
 	}

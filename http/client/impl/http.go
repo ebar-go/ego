@@ -55,7 +55,7 @@ func (client HttpClient) NewRequest(param request.Param) request.IRequest {
 }
 
 // Execute 执行请求
-func (client HttpClient) Execute(request interface{}) (string, error) {
+func (client HttpClient) Execute(request request.IRequest) (string, error) {
 	if request == nil {
 		return "", errors.New("request is nil")
 	}

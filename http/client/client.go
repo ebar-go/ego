@@ -7,7 +7,7 @@ import (
 
 // IClient Http客户端
 type IClient interface {
-	Execute(request interface{}) (string, error)
+	Execute(request request.IRequest) (string, error)
 	NewRequest(param request.Param) request.IRequest
 }
 
@@ -17,4 +17,8 @@ func NewHttpClient() IClient {
 
 func NewFastHttpClient() IClient {
 	return impl.NewFastHttpClient()
+}
+
+func NewKongClient() IClient {
+	return impl.KongClient{}
 }
