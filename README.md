@@ -44,6 +44,7 @@ func main() {
 ```
 
 #### 中间件
+集成JWT,跨域等中间件
 - JWT
 ```go
 package main
@@ -264,7 +265,10 @@ import (
        )
 func main() {
     conf := mysql.Conf{
-    	Dsn: "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True&loc=Local",
+    	Name: "test",
+    	Host: "127.0.0.1",
+    	Port: 3306,
+    	Default: true,
     	LogMode:true,
     }
     
@@ -272,6 +276,9 @@ func main() {
     
     conn := mysql.GetConnection()
     conn.DB().Ping()
+    defer func() {
+    	mysql.CloseConnectionGroup()
+    }()
     
 }
 ```
