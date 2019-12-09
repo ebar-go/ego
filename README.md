@@ -380,6 +380,8 @@ import (
        	"github.com/ebar-go/ego/http/response"
        	"os"
        	"github.com/gin-gonic/gin"
+       	"github.com/gin-gonic/gin/binding"
+       	"github.com/ebar-go/ego/http/validator"
        )
 
 type Login struct {
@@ -388,8 +390,9 @@ type Login struct {
 }
 
 func main() {
-    
-    
+	// 使用自定义验证器代替gin的validator
+	binding.Validator = new(validator.Validator)
+	
     server := http.NewServer()
     
     server.Router.GET("/login", func(c *gin.Context) {
