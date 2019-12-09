@@ -12,6 +12,7 @@
 - Mysql,Redis连接池
 - 集成prometheus监控
 - 集成MNS
+- 集成参数验证器
 
 ## 安装
 
@@ -369,8 +370,51 @@ func main() {
 }
 ```
 
+### 参数验证器
+更多验证规则请查阅: [https://github.com/go-playground/validator](https://github.com/go-playground/validator)，经过社区验证的高可用、高性能验证器
+```go
+package main
+import (
+       	"github.com/ebar-go/ego/helper"
+       	"github.com/ebar-go/ego/http"
+       	"github.com/ebar-go/ego/http/response"
+       	"os"
+       	"github.com/gin-gonic/gin"
+       )
+
+type Login struct {
+	User     string `form:"user" json:"user" xml:"user"  binding:"required"`
+	Password string `form:"password" json:"password" xml:"password" binding:"required"`
+}
+
+func main() {
+    
+    
+    server := http.NewServer()
+    
+    server.Router.GET("/login", func(c *gin.Context) {
+        var json Login
+        if err := c.ShouldBindJSON(&json); err != nil {
+        	// 参数错误的业务码自定义
+        	invalidParamCode := 1001
+        	response.Error(c, invalidParamCode, err.Error())
+        	return
+        }
+        		
+       // .. 其他代码
+        		
+       response.Success(c, response.Data{
+       	"token":"1234567abcd",
+       })
+    })
+    
+    helper.CheckErr("StartServer", server.Start(), true)
+    
+}
+```
+```
+
 ### test 单元测试
 
 
 ## TODO
-- 参数验证器

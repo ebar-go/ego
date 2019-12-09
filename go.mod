@@ -9,6 +9,9 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/gin-gonic/gin v1.4.0
+	github.com/go-playground/locales v0.13.0
+	github.com/go-playground/universal-translator v0.17.0
+	github.com/go-playground/validator/v10 v10.0.1
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/gogap/errors v0.0.0-20160523102334-149c546090d0 // indirect
 	github.com/gogap/stack v0.0.0-20150131034635-fef68dddd4f8 // indirect
