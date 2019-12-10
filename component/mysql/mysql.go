@@ -32,12 +32,15 @@ func GetGroup() *ConnectionGroup  {
 // ConnectionGroup 数据库连接组
 type ConnectionGroup struct {
 	lock *sync.Mutex
-	defaultName string
+	defaultKey string
 	connections map[string]*gorm.DB
 }
 
 // Conf 数据库配置
 type Conf struct {
+	// 数据库标识
+	Key string
+
 	// 数据库名称
 	Name string
 
@@ -109,15 +112,15 @@ func InitPool(confItems ...Conf) (err error) {
 	// 加锁
 	group.lock.Lock()
 
-	defaultConnectionName := ""
+	defaultConnectionKey := ""
 	for key, conf := range confItems {
 		// 如果没有设置default选项，则默认取第一个
 		if key == 0 {
-			defaultConnectionName = conf.Name
+			defaultConnectionKey = conf.Key
 		}
 
 		if conf.Default {
-			defaultConnectionName = conf.Name
+			defaultConnectionKey = conf.Key
 		}
 
 		conf.complete()
@@ -129,7 +132,7 @@ func InitPool(confItems ...Conf) (err error) {
 
 		log.System().Info("ConnectMysqlSuccess", log.Context{
 			"conf" : conf,
-			"default" : defaultConnectionName,
+			"default" : defaultConnectionKey,
 		})
 
 		// 设置是否打印日志
@@ -138,17 +141,17 @@ func InitPool(confItems ...Conf) (err error) {
 		connection.DB().SetMaxIdleConns(conf.MaxIdleConnections)
 		connection.DB().SetMaxOpenConns(conf.MaxOpenConnections)
 
-		group.connections[conf.Name] = connection
+		group.connections[conf.Key] = connection
 	}
 
-	group.defaultName = defaultConnectionName
+	group.defaultKey = defaultConnectionKey
 
 	return nil
 }
 
 // 获取数据库连接
 func GetConnection() *gorm.DB {
-	return GetConnectionByName(group.defaultName)
+	return GetConnectionByName(group.defaultKey)
 }
 
 // GetConnectionByName 根据名称获取数据库连接
