@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"github.com/ebar-go/ego/log"
 )
 
 const (
@@ -22,6 +23,10 @@ func init()  {
 		lock: &sync.Mutex{},
 		connections: make(map[string]*gorm.DB),
 	}
+}
+
+func GetGroup() *ConnectionGroup  {
+	return group
 }
 
 // ConnectionGroup 数据库连接组
@@ -109,7 +114,9 @@ func InitPool(confItems ...Conf) (err error) {
 		// 如果没有设置default选项，则默认取第一个
 		if key == 0 {
 			defaultConnectionName = conf.Name
-		}else if conf.Default {
+		}
+
+		if conf.Default {
 			defaultConnectionName = conf.Name
 		}
 
@@ -119,6 +126,11 @@ func InitPool(confItems ...Conf) (err error) {
 		if err != nil {
 			conf.ConnectFailedHandler(err)
 		}
+
+		log.System().Info("ConnectMysqlSuccess", log.Context{
+			"conf" : conf,
+			"default" : defaultConnectionName,
+		})
 
 		// 设置是否打印日志
 		connection.LogMode(conf.LogMode)
