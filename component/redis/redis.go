@@ -12,9 +12,6 @@ import (
 )
 
 
-var redisConnection *redis.Client
-var redisInitOnce sync.Once
-
 const (
 	defaultPort = 6379
 	defaultPoolSize = 100
@@ -22,8 +19,32 @@ const (
 	defaultIdleTimeout = 10*time.Second
 )
 
+var group *ConnectionGroup
+
+func init() {
+	group = &ConnectionGroup{
+		lock:        &sync.Mutex{},
+		connections: make(map[string]*redis.Client),
+	}
+}
+
+//
+func GetConnectionGroup() *ConnectionGroup {
+	return group
+}
+
+// ConnectionGroup 数据库连接组
+type ConnectionGroup struct {
+	lock        *sync.Mutex
+	defaultKey  string
+	connections map[string]*redis.Client
+}
+
+type ConnectFailedHandler func(err error)
+
 // Conf redis配置
 type Conf struct {
+	Key string
 	// 地址
 	Host string
 
@@ -38,6 +59,11 @@ type Conf struct {
 
 	// 最大尝试次数,默认3次
 	MaxRetries int
+
+	// 是否为默认连接
+	Default bool
+
+	ConnectFailedHandler ConnectFailedHandler
 
 	// 超时, 默认10s
 	IdleTimeout time.Duration
@@ -60,11 +86,31 @@ func (conf *Conf) complete() {
 	if conf.IdleTimeout == 0 {
 		conf.IdleTimeout = defaultIdleTimeout
 	}
+
+	if conf.ConnectFailedHandler == nil {
+		conf.ConnectFailedHandler = func(err error) {
+			fmt.Printf("redis %s connect failed:%s", conf.Key, err.Error())
+			os.Exit(-1)
+		}
+	}
 }
 
 // InitPool 初始化连接池
-func InitPool(conf Conf)  (err error) {
-	redisInitOnce.Do(func() {
+func InitPool(confItems ...Conf)  (err error) {
+	// 加锁
+	group.lock.Lock()
+
+	defaultConnectionKey := ""
+	for key, conf := range confItems {
+		// 如果没有设置default选项，则默认取第一个
+		if key == 0 {
+			defaultConnectionKey = conf.Key
+		}
+
+		if conf.Default {
+			defaultConnectionKey = conf.Key
+		}
+
 		conf.complete()
 
 		address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
@@ -78,20 +124,26 @@ func InitPool(conf Conf)  (err error) {
 		})
 
 		if _, err := client.Ping().Result();err != nil {
-			fmt.Println("Redis连接失败:", err)
-			os.Exit(-1)
+			conf.ConnectFailedHandler(err)
 		}
 
-		redisConnection = client
+		group.connections[conf.Key] = client
 		fmt.Println("连接Redis成功:",address)
-	})
+	}
+
+	group.defaultKey = defaultConnectionKey
 
 	return nil
 }
 
-// GetConnection 获取连接
+// GetConnection 获取默认连接
 func GetConnection() *redis.Client {
-	return redisConnection
+	return GetConnectionByKey(group.defaultKey)
+}
+
+// GetConnection 获取连接
+func GetConnectionByKey(key string) *redis.Client {
+	return group.connections[key]
 }
 
 

@@ -3,11 +3,16 @@ package mysql
 import (
 	"testing"
 	"github.com/stretchr/testify/assert"
-	"fmt"
 )
 
 func getConf() Conf {
 	return Conf{
+		Key: "db0",
+		Host: "127.0.0.1",
+		Port: 3306,
+		User: "root",
+		Password: "123456",
+		Default: true,
 		LogMode:true,
 	}
 }
@@ -30,14 +35,4 @@ func TestGetConnection(t *testing.T) {
 	assert.Nil(t, pingErr)
 
 	defer conn.Close()
-}
-
-func TestManyArg(t *testing.T)  {
-	many(4,5,6)
-}
-
-func many(ids ...int)  {
-	for key, value := range ids {
-		fmt.Println(key, value)
-	}
 }

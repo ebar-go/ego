@@ -13,6 +13,7 @@
 - 集成prometheus监控
 - 集成MNS
 - 集成参数验证器
+- 集成websocket
 
 ## 安装
 
@@ -415,9 +416,61 @@ func main() {
     
 }
 ```
-```
 
 ### test 单元测试
 
+### 支持websocket
+基于`github.com/gorilla/websocket`实现websocket
 
+```go
+package main
+import (
+	"github.com/ebar-go/ego/http"
+	"github.com/ebar-go/ego/ws"
+	"github.com/gin-gonic/gin"
+	"fmt"
+    "github.com/ebar-go/ego/helper"
+	nethttp "net/http"
+	)
+
+func main() {
+	// 使用协程启动
+	go ws.GetManager().Start()
+	
+    server := http.NewServer()
+    // 添加路由
+    server.Router.GET("/test", func(context *gin.Context) {
+        fmt.Println("hello,world")
+    })
+    server.Router.GET("/ws", func(context *gin.Context) {
+        conn, err := ws.GetUpgradeConnection(context.Writer, context.Request)
+        
+        if err != nil {
+        	nethttp.NotFound(context.Writer, context.Request)
+        	return
+        }
+        
+        
+        // TODO 根据tag扩展handler
+        
+        client := ws.DefaultClient(conn, func(ctx *ws.Context) string {
+        	// do something
+            return ctx.GetMessage()
+        })
+        
+        // 将用户信息放入扩展里
+        client.Extends["user"] = struct {
+         Name string
+        }{Name: "test"}
+        
+        ws.GetManager().RegisterClient(client)
+        
+        go client.Read()
+        go client.Write()
+    })
+    
+    helper.CheckErr("StartServer", server.Start(), true)
+}
+```
 ## TODO
+- 支持RPC

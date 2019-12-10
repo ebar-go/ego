@@ -91,6 +91,12 @@ func Default() *Response {
 	}
 }
 
+// String 序列化
+func (response *Response) String() string {
+	resp, _ := helper.JsonEncode(response)
+	return resp
+}
+
 // complete 补全必要参数
 func (response *Response) complete()  {
 	if &response.Meta == nil {

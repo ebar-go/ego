@@ -54,7 +54,13 @@ func RequestLog(c *gin.Context) {
 
 
 	responseBody := blw.body.String()
-	maxRequestCount := helper.Min(blw.body.Len() - 1, constant.DefaultMaxResponseSize)
+
+	// 获取响应数据长度，responseSize最小值为0
+	responseSize := helper.Max(0, blw.body.Len() - 1)
+
+	// 取最大值
+	maxResponseSize := helper.Min(responseSize, constant.DefaultMaxResponseSize)
+
 	// 日志格式
 	logContext["trace_id"] = traceId
 	logContext["request_uri"] = c.Request.RequestURI
@@ -64,7 +70,7 @@ func RequestLog(c *gin.Context) {
 	logContext["request_body"] = requestBody
 	logContext["request_time"] = requestTime
 	logContext["response_time"] = helper.GetTimeStampFloatStr()
-	logContext["response_body"] = responseBody[0:maxRequestCount]
+	logContext["response_body"] = responseBody[0:maxResponseSize]
 	logContext["time_used"] = fmt.Sprintf("%v", latency)
 	logContext["header"] = c.Request.Header
 

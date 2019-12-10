@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-	"github.com/ebar-go/ego/log"
 )
 
 const (
@@ -18,21 +17,22 @@ const (
 
 var group *ConnectionGroup
 
-func init()  {
+func init() {
 	group = &ConnectionGroup{
-		lock: &sync.Mutex{},
+		lock:        &sync.Mutex{},
 		connections: make(map[string]*gorm.DB),
 	}
 }
 
-func GetGroup() *ConnectionGroup  {
+// GetConnectionGroup 获取数据库连接池组
+func GetConnectionGroup() *ConnectionGroup {
 	return group
 }
 
 // ConnectionGroup 数据库连接组
 type ConnectionGroup struct {
-	lock *sync.Mutex
-	defaultKey string
+	lock        *sync.Mutex
+	defaultKey  string
 	connections map[string]*gorm.DB
 }
 
@@ -72,7 +72,7 @@ type Conf struct {
 	MaxOpenConnections int
 }
 
-func CloseConnectionGroup()  {
+func CloseConnectionGroup() {
 	if len(group.connections) == 0 {
 		return
 	}
@@ -83,6 +83,7 @@ func CloseConnectionGroup()  {
 
 	return
 }
+
 // complete 补全
 func (conf *Conf) complete() {
 	if conf.MaxIdleConnections == 0 {
@@ -95,7 +96,7 @@ func (conf *Conf) complete() {
 
 	if conf.ConnectFailedHandler == nil {
 		conf.ConnectFailedHandler = func(err error) {
-			fmt.Printf("database %s connect failed:%s", conf.Name, err.Error())
+			fmt.Printf("database %s connect failed:%s", conf.Key, err.Error())
 			os.Exit(-1)
 		}
 	}
@@ -103,8 +104,11 @@ func (conf *Conf) complete() {
 
 // GetDsn 获取dsn
 func (conf Conf) GetDsn() string {
-	address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
-	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local", conf.User, conf.Password, address, conf.Name)
+	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		conf.User,
+		conf.Password,
+		net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port)),
+		conf.Name)
 }
 
 // 初始化数据库连接池
@@ -129,11 +133,6 @@ func InitPool(confItems ...Conf) (err error) {
 		if err != nil {
 			conf.ConnectFailedHandler(err)
 		}
-
-		log.System().Info("ConnectMysqlSuccess", log.Context{
-			"conf" : conf,
-			"default" : defaultConnectionKey,
-		})
 
 		// 设置是否打印日志
 		connection.LogMode(conf.LogMode)

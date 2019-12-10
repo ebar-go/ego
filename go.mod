@@ -15,6 +15,7 @@ require (
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/gogap/errors v0.0.0-20160523102334-149c546090d0 // indirect
 	github.com/gogap/stack v0.0.0-20150131034635-fef68dddd4f8 // indirect
+	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/hashicorp/consul/api v1.3.0
 	github.com/jinzhu/gorm v1.9.11
 	github.com/kr/pretty v0.1.0 // indirect
