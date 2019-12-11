@@ -47,6 +47,11 @@ func (jwtAuth JwtAuth) parseToken(token string) (jwt.Claims, error) {
 	return tokenClaims.Claims, nil
 }
 
+// ParseToken 解析token,用于非http请求的验证
+func ParseToken(token string) (jwt.Claims, error) {
+	return jwtAuth.parseToken(token)
+}
+
 // GetCurrentClaims 获取解析jwt后的信息
 func GetCurrentClaims(ctx *gin.Context) interface{} {
 	claims, exist := ctx.Get(constant.JwtClaimsKey)

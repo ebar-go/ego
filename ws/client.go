@@ -40,7 +40,8 @@ var u = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true
 
 // GetUpgradeConnection get web socket connection
 func GetUpgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
-	return  u.Upgrade(w, r, nil)
+	respHeader := http.Header{"Sec-WebSocket-Protocol" :[]string{r.Header.Get("Sec-WebSocket-Protocol")} }
+	return  u.Upgrade(w, r, respHeader)
 }
 
 // DefaultClient
