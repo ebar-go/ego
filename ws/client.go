@@ -7,16 +7,32 @@ import (
 )
 
 type IClient interface {
+	OnOpen()
+	OnClose()
 	Read()
 	Write()
+	SendMessage(message []byte)
 }
 
 // Client is a websocket client
 type Client struct {
+	// 唯一标示
 	ID     string
+
+	// 句柄
 	Socket *websocket.Conn
+
+	// 发送字符内容
 	Send   chan []byte
+
+	// 处理方法
 	Handler IHandler
+
+	// 连接时的回调
+	OpenHandler func()
+
+	// 关闭时的回调
+	CloseHandler func()
 	Extends map[string]interface{}
 }
 
@@ -35,6 +51,24 @@ func DefaultClient(conn *websocket.Conn, handler IHandler) *Client {
 	return &Client{ID: uuid.NewV4().String(), Socket: conn, Send: make(chan []byte), Handler:handler, Extends: map[string]interface{}{}}
 }
 
+// Send
+func (c *Client) SendMessage(message []byte) {
+	c.Send <- message
+}
+
+// OnConnect
+func (c *Client) OnOpen() {
+	if c.OpenHandler != nil {
+		c.OpenHandler()
+	}
+}
+
+// OnClose
+func (c *Client) OnClose() {
+	if c.CloseHandler != nil {
+		c.CloseHandler()
+	}
+}
 
 
 // Read 读取数据

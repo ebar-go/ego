@@ -36,10 +36,12 @@ func DefaultManager() IWebSocketManager {
 }
 
 func (manager *ClientManager) RegisterClient(client *Client) {
+
 	manager.register <- client
 }
 
 func (manager *ClientManager) UnregisterClient(client *Client) {
+	client.OnClose()
 	manager.unregister <- client
 }
 
@@ -54,11 +56,15 @@ func (manager *ClientManager) Start() {
 		select {
 		case conn := <-manager.register: // new connection
 			manager.clients[conn] = true
+			conn.OnOpen()
+
 		case conn := <-manager.unregister: // close connection
+
 			if _, ok := manager.clients[conn]; ok {
 				close(conn.Send)
 				delete(manager.clients, conn)
 			}
+
 		case message := <-manager.broadcast: // Broadcast
 			for conn := range manager.clients {
 				select {
