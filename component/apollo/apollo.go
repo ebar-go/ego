@@ -13,6 +13,7 @@ type Conf struct {
 	Cluster string `json:"cluster"`
 	Namespace string `json:"namespaceName"`
 	Ip string `json:"ip"`
+	BackupConfigPath string `json:"backup_config_path"`
 }
 
 // Init 初始化apollo配置
@@ -23,6 +24,7 @@ func Init(conf Conf) error {
 			Cluster:       conf.Cluster,
 			Ip:            conf.Ip,
 			NamespaceName: conf.Namespace,
+			BackupConfigPath: conf.BackupConfigPath,
 		}, nil
 	})
 
