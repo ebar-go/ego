@@ -9,10 +9,19 @@ import (
 
 // Apollo apollo配置项
 type Conf struct {
+	// application id
 	AppId string `json:"appId"`
+
+	// apollo cluster
 	Cluster string `json:"cluster"`
+
+	// apollo application
 	Namespace string `json:"namespaceName"`
+
+	// server address ex:127.0.0.1:8080
 	Ip string `json:"ip"`
+
+	// apolloConfig.json path
 	BackupConfigPath string `json:"backup_config_path"`
 }
 
@@ -42,7 +51,7 @@ func GetStringValue(key , defaultValue string) string {
 	return agollo.GetStringValue(key, defaultValue)
 }
 
-// GetIntValue 获取整形配置
+// GetIntValue 获取整型配置
 func GetIntValue(key string , defaultValue int) int {
 	return agollo.GetIntValue(key, defaultValue)
 }

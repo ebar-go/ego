@@ -17,6 +17,7 @@ require (
 	github.com/gogap/stack v0.0.0-20150131034635-fef68dddd4f8 // indirect
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/hashicorp/consul/api v1.3.0
+	github.com/jinzhu/configor v1.1.1 // indirect
 	github.com/jinzhu/gorm v1.9.11
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/magiconair/properties v1.8.1
@@ -30,4 +31,7 @@ require (
 	github.com/tevid/gohamcrest v1.1.1 // indirect
 	github.com/valyala/fasthttp v1.6.0
 	github.com/zouyx/agollo v1.9.0
+	gopkg.in/gcfg.v1 v1.2.3
+	gopkg.in/warnings.v0 v0.1.2 // indirect
+	gopkg.in/yaml.v2 v2.2.2
 )
