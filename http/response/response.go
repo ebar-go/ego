@@ -22,7 +22,7 @@ func newInstance() *Response {
 				TraceId:   trace.GetTraceId(),
 			},
 		},
-		Errors: &ErrorItems{},
+		Errors: []ErrorItem{},
 	}
 }
 
@@ -32,8 +32,9 @@ type Response struct {
 	Message    string      `json:"message"`
 	Data       interface{} `json:"data"`
 	Meta       Meta        `json:"meta"`
-	Errors     IErrorItems `json:"errors"`
+	Errors     []ErrorItem `json:"errors"`
 }
+
 
 // SetStatusCode
 func (response *Response) SetStatusCode(code int) {
@@ -49,7 +50,8 @@ func (response *Response) SetMessage(message string) {
 	response.Message = message
 }
 
-func (response *Response) SetErrors(e IErrorItems) {
+// SetErrors set errors
+func (response *Response) SetErrors(e []ErrorItem) {
 	response.Errors = e
 }
 
@@ -59,7 +61,7 @@ func (response *Response) GetData() interface{} {
 }
 
 // GetErrors
-func (response *Response) GetErrors() IErrorItems {
+func (response *Response) GetErrors() []ErrorItem {
 	return response.Errors
 }
 

@@ -4,7 +4,6 @@ package response
 
 import (
 	"github.com/gin-gonic/gin"
-	"fmt"
 	"github.com/ebar-go/ego/http/constant"
 	"github.com/ebar-go/ego/component/pagination"
 	"github.com/ebar-go/ego/helper"
@@ -29,7 +28,7 @@ type IResponse interface {
 	SetMessage(message string)
 
 	// 设置错误信息
-	SetErrors(errors IErrorItems)
+	SetErrors(errors []ErrorItem)
 
 	// 获取信息
 	GetMessage() string
@@ -38,7 +37,7 @@ type IResponse interface {
 	GetData() interface{}
 
 	// 获取错误项
-	GetErrors() IErrorItems
+	GetErrors() []ErrorItem
 }
 
 // 数据对象
@@ -87,12 +86,11 @@ func Error(ctx *gin.Context, statusCode int, message string) {
 
 // Decode 解析json数据Response
 func Decode(result string) IResponse {
-	var resp Response
-	err := helper.JsonDecode([]byte(result), &resp)
+	resp := Default()
+	err := helper.JsonDecode([]byte(result), resp)
 	if err != nil {
-		fmt.Println(err)
 		return nil
 	}
 
-	return &resp
+	return resp
 }
