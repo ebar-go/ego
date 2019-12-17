@@ -48,11 +48,21 @@ func Map2Struct(mapInstance map[string]interface{}, obj interface{}) error {
 		return err
 	}
 
-	if err := json.Unmarshal(buf, obj); err!= nil {
+	if err := json.Unmarshal(buf, obj); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// FormatInterface 格式化interface
+func FormatInterface(source interface{}, target interface{}) error {
+	jsonStr, err := JsonEncode(source)
+	if err != nil {
+		return err
+	}
+
+	return JsonDecode([]byte(jsonStr), target)
 }
 
 // Float2String float转string
@@ -62,7 +72,7 @@ func Float2String(a float64) string {
 
 // Interface2Int interface转int
 func Interface2Int(i interface{}) int {
-	f , ok := i.(float64)
+	f, ok := i.(float64)
 	if !ok {
 		return 0
 	}
@@ -76,7 +86,7 @@ func Interface2Int(i interface{}) int {
 }
 
 // 将response序列化
-func  StringifyResponse(response *http.Response) (string, error) {
+func StringifyResponse(response *http.Response) (string, error) {
 	if response == nil {
 		return "", errors.New("没有响应数据")
 	}

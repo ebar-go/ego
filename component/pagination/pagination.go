@@ -13,7 +13,6 @@ type Paginator struct {
 	CurrentPage int `json:"current_page"`
 	TotalPages int `json:"total_pages"`
 	Link interface{} `json:"link"`
-	Items interface{} `json:"-"`
 }
 
 const (
@@ -50,37 +49,32 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
 }
 
 // PaginateSlice 根据切片分页
-func PaginateSlice(items []interface{}, currentPage, limit int) Paginator {
-	pagination := Paginator{
-		TotalCount: len(items),
-		CurrentPage: currentPage,
-		Limit: limit,
+func PaginateSlice(items []interface{}, currentPage, limit int) (paginate Paginator, result []interface{}) {
+	paginate.CurrentPage = currentPage
+	paginate.Limit = limit
+	paginate.TotalCount = len(items)
+
+	if paginate.Limit <= 0 {
+		paginate.Limit = defaultLimit
 	}
 
-	if pagination.Limit <= 0 {
-		pagination.Limit = defaultLimit
+	if paginate.CurrentPage <= 0 {
+		paginate.CurrentPage = defaultCurrentPage
 	}
 
-	if pagination.CurrentPage <= 0 {
-		pagination.CurrentPage = defaultCurrentPage
-	}
+	paginate.TotalPages = int(math.Ceil(float64(paginate.TotalCount) / float64(paginate.Limit))) //page总数
 
-	pagination.TotalPages = int(math.Ceil(float64(pagination.TotalCount) / float64(pagination.Limit))) //page总数
-
-	low := pagination.GetOffset()
-	high := helper.Min(pagination.TotalCount, low + pagination.Limit)
+	low := paginate.GetOffset()
+	high := helper.Min(paginate.TotalCount, low + paginate.Limit)
 
 	if low < high {
-		pagination.Items = items[low:high]
-		pagination.CurrentCount= high - low
+		paginate.CurrentCount= high - low
+		result = items[low:high]
 	}else {
-		pagination.Items = []interface{}{}
-		pagination.CurrentCount = 0
-
+		paginate.CurrentCount = 0
 	}
 
-
-	return pagination
+	return
 }
 
 // GetOffset 获取偏移量
