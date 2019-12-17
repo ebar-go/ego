@@ -7,7 +7,11 @@ require (
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/coocood/freecache v1.1.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51 // indirect
+	github.com/facebookgo/inject v0.0.0-20180706035515-f23751cae28b
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
+	github.com/facebookgo/structtag v0.0.0-20150214074306-217e25fb9691 // indirect
+	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
@@ -15,6 +19,7 @@ require (
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/gogap/errors v0.0.0-20160523102334-149c546090d0 // indirect
 	github.com/gogap/stack v0.0.0-20150131034635-fef68dddd4f8 // indirect
+	github.com/google/wire v0.4.0 // indirect
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/hashicorp/consul/api v1.3.0
 	github.com/jinzhu/configor v1.1.1 // indirect

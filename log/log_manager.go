@@ -11,13 +11,13 @@ var manager *Manager
 
 // Manager 系统日志管理器
 type Manager struct {
+	sync.Mutex
 	conf ManagerConf
 	rotateDate string // 分割日期
 	app *Logger
 	system *Logger
 	request *Logger
 	mq *Logger
-	initialize *sync.Mutex
 }
 
 // GetSystemParam
@@ -81,7 +81,6 @@ func InitManager(conf ManagerConf) {
 	if manager == nil {
 		manager = &Manager{
 			conf: conf,
-			initialize: new(sync.Mutex),
 		}
 
 	}
@@ -96,14 +95,15 @@ func (m *Manager) rotate() *Manager {
 	currentDateStr := helper.GetDateStr()
 	if currentDateStr != m.rotateDate {
 		// 加锁保证初始化
-		manager.initialize.Lock()
+		m.Lock()
+		defer m.Unlock()
 		m.rotateDate = currentDateStr
 
 		m.InitAppLogger()
 		m.InitRequestLogger()
 		m.InitSystemLogger()
 		m.InitMqLogger()
-		manager.initialize.Unlock()
+
 	}
 
 	return m

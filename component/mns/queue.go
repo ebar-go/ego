@@ -7,38 +7,53 @@ import (
 	"encoding/json"
 )
 
-// Queue 队列结构体
-type Queue struct {
+// IQueue 队列的接口
+type IQueue interface {
+	// 发送消息
+	SendMessage(message string) (ali_mns.MessageSendResponse, error)
+
+	// 接收消息
+	ReceiveMessage()
+
+	// 删除消息
+	DeleteMessage(receiptHandler string ) error
+
+	// 是否设置处理方法
+	HasHandler() bool
+}
+
+// Queue 队列
+type queue struct {
 	Name string // 队列名称
 	instance ali_mns.AliMNSQueue // 队列实例
-	Handler QueueHandler // 处理方式
+	handler QueueHandler // 处理方式
 	WaitSecond int
 }
 
 // QueueHandler 队列消息的处理器
 type QueueHandler func(params Params) error
 
-// SetHandler 设置队列消息处理器
-func (queue *Queue) SetHandler(handler QueueHandler)  {
-	queue.Handler = handler
+// HasHandler 是否有处理方法
+func (q *queue) HasHandler() bool {
+	return q.handler == nil
 }
 
 // SendMessage 发送消息
-func (queue *Queue) SendMessage(message string) (ali_mns.MessageSendResponse, error) {
+func (q *queue) SendMessage(message string) (ali_mns.MessageSendResponse, error) {
 	msg := ali_mns.MessageSendRequest{
 		MessageBody:  message,
 		DelaySeconds: 0,
 		Priority:     8}
 
-	resp, err := queue.instance.SendMessage(msg)
+	resp, err := q.instance.SendMessage(msg)
 	return resp, err
 }
 
 // ReceiveMessage 接收消息并处理
-func (queue *Queue) ReceiveMessage(waitSeconds int64) {
+func (q *queue) ReceiveMessage() {
 
-	if waitSeconds == 0 {
-		waitSeconds = 30
+	if q.WaitSecond == 0 {
+		q.WaitSecond = 30
 	}
 	endChan := make(chan int)
 	respChan := make(chan ali_mns.MessageReceiveResponse)
@@ -50,7 +65,7 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 				var params Params
 				log.System().Info("mqParams", log.Context{
 					"receiveTime" : helper.GetTimeStr(),
-					"queue_name" : queue.Name,
+					"queue_name" : q.Name,
 					"resp" : resp,
 					"message_id" : resp.MessageId,
 					"body" : resp.MessageBody,
@@ -66,13 +81,13 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 
 					log.Mq().Info("receiveMessage", log.Context{
 						"receiveTime" : helper.GetTimeStr(),
-						"queue_name" : queue.Name,
+						"queue_name" : q.Name,
 						"messageBody" : params.Content,
 						"tag" : params.Tag,
 						"trace_id" : params.TraceId,
 					})
 
-					if err := queue.Handler(params); err != nil {
+					if err := q.handler(params); err != nil {
 						log.System().Warn("processMessageFailed", log.Context{
 							"err" : err.Error(),
 							"trace" : helper.Trace(),
@@ -80,10 +95,10 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 
 					}else {
 						// 处理成功，删除消息
-						err := queue.DeleteMessage(resp.ReceiptHandle)
+						err := q.DeleteMessage(resp.ReceiptHandle)
 						log.Mq().Info("deleteMessage", log.Context{
 							"receiveTime" : helper.GetTimeStr(),
-							"queue_name" : queue.Name,
+							"queue_name" : q.Name,
 							"messageBody" : params.Content,
 							"tag" : params.Tag,
 							"trace_id" : params.TraceId,
@@ -107,11 +122,11 @@ func (queue *Queue) ReceiveMessage(waitSeconds int64) {
 	}()
 
 	// 通过chan去接收数据
-	queue.instance.ReceiveMessage(respChan, errChan, waitSeconds)
+	q.instance.ReceiveMessage(respChan, errChan, waitSeconds)
 	<-endChan
 }
 
 // DeleteMessage 删除消息
-func (queue *Queue) DeleteMessage(receiptHandler string ) error{
-	return queue.instance.DeleteMessage(receiptHandler)
+func (q *queue) DeleteMessage(receiptHandler string ) error{
+	return q.instance.DeleteMessage(receiptHandler)
 }

@@ -19,6 +19,7 @@ const (
 	defaultIdleTimeout = 10*time.Second
 )
 
+//
 var group *ConnectionGroup
 
 func init() {
@@ -28,7 +29,7 @@ func init() {
 	}
 }
 
-//
+// GetConnectionGroup 获取连接池组
 func GetConnectionGroup() *ConnectionGroup {
 	return group
 }

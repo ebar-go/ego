@@ -17,9 +17,14 @@ const (
 	defaultName = "app"
 )
 
+type IServer interface {
+	Start() error
+}
+
+
 // Server Web服务管理器
 type Server struct {
-	initialize *sync.Mutex
+	sync.Mutex
 	// 系统名称，可选
 	name string
 
@@ -62,7 +67,6 @@ func NewServer() *Server {
 		notFoundHandler: handler.NotFoundHandler,
 		appDebug: false,
 		Router: router,
-		initialize:new(sync.Mutex),
 		logPath: defaultLogPath,
 	}
 }
@@ -104,7 +108,7 @@ func (server *Server) SetPort(port int) {
 
 // Start 启动服务
 func (server *Server) Start() error {
-	server.initialize.Lock()
+	server.Lock()
 
 	// 404
 	server.Router.NoRoute(server.notFoundHandler)

@@ -2,43 +2,37 @@ package mns
 
 import (
 	"github.com/aliyun/aliyun-mns-go-sdk"
-	"os"
-	"github.com/ebar-go/ego/http/constant"
 	"github.com/ebar-go/ego/helper"
 	"encoding/base64"
 	"github.com/ebar-go/ego/log"
 	"encoding/json"
 )
 
-type Topic struct {
+// ITopic
+type ITopic interface {
+	// 发布消息
+	PublishMessage(params Params, filterTag string) (*ali_mns.MessageSendResponse, error)
+}
+
+// topic
+type topic struct {
 	Name string
 	instance ali_mns.AliMNSTopic
 }
 
+
 // PublishMessage 发布消息
-func (topic *Topic) PublishMessage(params Params, filterTag string) (*ali_mns.MessageSendResponse, error) {
+func (t *topic) PublishMessage(params Params, filterTag string) (*ali_mns.MessageSendResponse, error) {
 	bytes , err := json.Marshal(params)
 	if err != nil {
 		return nil, err
-	}
-
-	if params.ReferServiceName == "" {
-		params.ReferServiceName = os.Getenv(constant.EnvSystemName)
-	}
-
-	if params.TraceId == "" {
-		params.TraceId = helper.UniqueId()
-	}
-
-	if params.Sign == "" {
-		params.Sign = params.GenerateSign(client.conf.AccessKeySecret)
 	}
 
 	request := ali_mns.MessagePublishRequest{
 		MessageBody: base64.StdEncoding.EncodeToString(bytes),
 		MessageTag: filterTag,
 	}
-	resp, err := topic.instance.PublishMessage(request)
+	resp, err := t.instance.PublishMessage(request)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +43,7 @@ func (topic *Topic) PublishMessage(params Params, filterTag string) (*ali_mns.Me
 		"msectime" : helper.GetTimeStampFloatStr(),
 		"message_id" : resp.MessageId,
 		"status_code" : resp.Code,
-		"topic_name" : topic.Name,
+		"topic_name" : t.Name,
 		"message_tag" : params.Tag,
 		"global_trace_id" : helper.NewTraceId(),
 		"trace_id": params.TraceId,
