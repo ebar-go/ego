@@ -122,7 +122,7 @@ func (q *queue) ReceiveMessage() {
 	}()
 
 	// 通过chan去接收数据
-	q.instance.ReceiveMessage(respChan, errChan, waitSeconds)
+	q.instance.ReceiveMessage(respChan, errChan, int64(q.WaitSecond))
 	<-endChan
 }
 
