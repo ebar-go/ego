@@ -85,7 +85,7 @@ func Interface2Int(i interface{}) int {
 	return 0
 }
 
-// 将response序列化
+// StringifyResponse 将response序列化
 func StringifyResponse(response *http.Response) (string, error) {
 	if response == nil {
 		return "", errors.New("没有响应数据")

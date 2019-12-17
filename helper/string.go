@@ -41,6 +41,7 @@ func NewRequestId() string {
 	return constant.RequestIdPrefix + UniqueId()
 }
 
+// HashCode
 func HashCode(s string) int {
 	v := int(crc32.ChecksumIEEE([]byte(s)))
 	if v >= 0 {
@@ -53,6 +54,7 @@ func HashCode(s string) int {
 	return 0
 }
 
+// DecodeBase64Str 解析base64
 func DecodeBase64Str(encoded string) string {
 	decoded, err := base64.StdEncoding.DecodeString(encoded)
 	if err != nil {

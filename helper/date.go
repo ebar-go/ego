@@ -10,6 +10,7 @@ const(
 	defaultDateFormat = "2006-01-02"
 )
 
+// GetTime 获取本地化后的时间
 func GetTime() time.Time {
 	var cstZone = time.FixedZone("CST", 8*3600)       // 东八
 	return time.Now().In(cstZone)

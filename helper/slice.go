@@ -19,6 +19,7 @@ func ArrayUniqueInt(items []int) []int {
 	return result
 }
 
+// SliceIntToString 切片int转字符串
 func SliceIntToString(items []int) []string {
 	result := make([]string, 0, len(items))
 	for _, item := range items {
