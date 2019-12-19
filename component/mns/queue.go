@@ -35,7 +35,7 @@ type QueueHandler func(params Params) error
 
 // HasHandler 是否有处理方法
 func (q *queue) HasHandler() bool {
-	return q.handler == nil
+	return q.handler != nil
 }
 
 // SendMessage 发送消息
