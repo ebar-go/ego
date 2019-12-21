@@ -2,6 +2,7 @@ package mns
 
 import (
 	"github.com/aliyun/aliyun-mns-go-sdk"
+	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/helper"
 	"encoding/base64"
 	"github.com/ebar-go/ego/log"
@@ -20,9 +21,10 @@ type topic struct {
 	instance ali_mns.AliMNSTopic
 }
 
-
 // PublishMessage 发布消息
 func (t *topic) PublishMessage(params Params, filterTag string) (*ali_mns.MessageSendResponse, error) {
+	params.ReferServiceName = helper.DefaultString(params.ReferServiceName, config.Instance.ServiceName)
+
 	bytes , err := json.Marshal(params)
 	if err != nil {
 		return nil, err

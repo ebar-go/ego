@@ -34,9 +34,16 @@ type IClient interface {
 
 // Client MNS客户端
 type Client struct {
+	// 配置
 	conf Conf
+
+	// 阿里云mns实例
 	instance ali_mns.MNSClient
+
+	// 队列
 	queueItems map[string]Queue
+
+	// 主题
 	topicItems map[string]Topic
 }
 
@@ -62,7 +69,6 @@ func (cli *Client) GenerateSign(str string) string {
 func (cli *Client) AddTopic(name string) {
 	t := &topic{Name:name, instance:ali_mns.NewMNSTopic(name, cli.instance)}
 	cli.topicItems[name] = t
-
 }
 
 // AddQueue 实例化队列
@@ -74,7 +80,6 @@ func (cli *Client) AddQueue(name string, handler QueueHandler, waitSecond int) {
 	q.instance = ali_mns.NewMNSQueue(name, cli.instance)
 	cli.queueItems[name] = q
 }
-
 
 // GetTopic 获取主题
 func (cli *Client) GetTopic(name string) Topic {

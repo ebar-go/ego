@@ -14,11 +14,20 @@ import (
 
 // Service 服务
 type Service struct {
-	ID string // 服务ID
-	Name string // 服务名称
-	Address string // 服务地址
-	Port int // 服务端口
-	Tags []string // 服务标签
+	// 服务ID
+	ID string
+
+	// 服务名称
+	Name string
+
+	// 服务地址
+	Address string
+
+	// 服务端口
+	Port int
+
+	// 服务标签
+	Tags []string
 }
 
 // Client 客户端

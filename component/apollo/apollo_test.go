@@ -72,9 +72,13 @@ func TestGetBoolValue(t *testing.T) {
 	fmt.Println(GetBoolValue("APP_DEBUG", false))
 }
 
+// TestGetFloatValue
+func TestGetFloatValue(t *testing.T) {
+	fmt.Println(GetFloatValue("FLOAT_TEST",10.22))
+}
+
 // TestMain main
 func TestMain(m *testing.M) {
-	fmt.Println(prepareConf())
 	_= Init(prepareConf())
 	m.Run()
 }

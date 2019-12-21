@@ -40,7 +40,6 @@ func Init(conf Conf) error {
 	return agollo.Start()
 }
 
-
 // ListenApolloChangeEvent 监听配置变动
 func ListenChangeEvent() <-chan *agollo.ChangeEvent {
 	return agollo.ListenChangeEvent()
