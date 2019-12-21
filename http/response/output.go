@@ -3,10 +3,9 @@
 package response
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/ebar-go/ego/http/constant"
 	"github.com/ebar-go/ego/component/pagination"
 	"github.com/ebar-go/ego/helper"
+	"github.com/gin-gonic/gin"
 	"reflect"
 )
 
@@ -66,7 +65,7 @@ func Paginate(ctx *gin.Context, data interface{}, paginate *pagination.Paginator
 
 // Json 输出json
 func Json(ctx *gin.Context, response IResponse) {
-	ctx.JSON(constant.StatusOk, response)
+	ctx.JSON(200, response)
 }
 
 // Success 成功的输出

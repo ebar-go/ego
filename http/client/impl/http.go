@@ -1,19 +1,19 @@
 package impl
 
 import (
-	"time"
-	"net/http"
-	"net"
-	"github.com/pkg/errors"
 	"github.com/ebar-go/ego/helper"
 	"github.com/ebar-go/ego/http/client/request"
+	"github.com/pkg/errors"
+	"net"
+	"net/http"
 	"strings"
-	"github.com/ebar-go/ego/http/constant"
+	"time"
 )
 
 const(
 	DefaultMaxIdleConns = 100
 	DefaultMaxIdleConnsPerHost = 100
+	HttpSchema = "http://"
 )
 
 // HttpClient http客户端,支持长连接
@@ -41,9 +41,9 @@ func NewHttpClient() HttpClient {
 }
 
 // NewRequest 实例化request
-func (client HttpClient) NewRequest(param request.Param) request.IRequest {
-	if !strings.HasPrefix(param.Url, constant.HttpSchema) {
-		param.Url = constant.HttpSchema + param.Url
+func (client HttpClient) NewRequest(param request.Param) *http.Request {
+	if !strings.HasPrefix(param.Url, HttpSchema) {
+		param.Url = HttpSchema + param.Url
 	}
 
 	req, err := http.NewRequest(param.Method, param.Url, param.Body)
@@ -65,7 +65,9 @@ func (client HttpClient) Execute(request request.IRequest) (string, error) {
 	if !ok {
 		return "", errors.New("request not *http.request")
 	}
-	defer req.Body.Close()
+	defer func() {
+		_ = req.Body.Close()
+	}()
 
 	resp, err := client.clientPool.Do(req)
 	if err != nil {

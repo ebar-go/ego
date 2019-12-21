@@ -1,61 +1,62 @@
 package log
 
 import (
-	"testing"
-	"os"
-	"fmt"
 	"github.com/ebar-go/ego/helper"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 
-// TestLogger_Init 测试初始化
-func TestLogger_New(t *testing.T) {
+// TestNew 测试初始化
+func TestNew(t *testing.T) {
 	logger := New()
 	assert.NotNil(t, logger)
 }
 
+func TestNewFileLogger(t *testing.T) {
+	filePath := "/tmp/system.log"
+	logger := NewFileLogger(filePath)
+	assert.NotNil(t, logger)
+}
 
-
-func TestLogger_SetOutWriter(t *testing.T) {
-	logger := New()
-	filePath := helper.GetCurrentPath() + "/system.log"
-	fmt.Println(filePath)
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err == nil {
-		logger.SetOutWriter(file)
-	}
-
-	assert.Equal(t, file, logger.instance.Out)
+func prepareLogger() Logger {
+	return NewFileLogger("/tmp/test.log")
+}
+// TestLogger_Info 测试Info
+func TestLogger_Info(t *testing.T) {
+	traceId := helper.UniqueId()
+	prepareLogger().Info("A group of walrus emerges from the ocean", Context{"trace_id": traceId,"hello":"world"})
 }
 
 // TestLogger_Info 测试Info
-func TestLogger_Info(t *testing.T) {
-	logger := New()
-	logger.SetSystemParam(LogSystemParam{
-		Channel: "REQUEST",
-		ServiceName:"stock-manage",
-		ServicePort:9523,
+func TestLogger_Debug(t *testing.T) {
+	traceId := helper.UniqueId()
+	prepareLogger().Debug("A group of walrus emerges from the ocean", Context{"trace_id": traceId,"hello":"world"})
+}
+
+// TestLogger_Info 测试Info
+func TestLogger_Warn(t *testing.T) {
+	traceId := helper.UniqueId()
+	prepareLogger().Warn("A group of walrus emerges from the ocean", Context{"trace_id": traceId,"hello":"world"})
+}
+
+// TestLogger_Info 测试Info
+func TestLogger_Error(t *testing.T) {
+	traceId := helper.UniqueId()
+	prepareLogger().Error("A group of walrus emerges from the ocean", Context{"trace_id": traceId,"hello":"world"})
+}
+
+func TestInitManager(t *testing.T) {
+	InitManager(ManagerConf{
+		SystemName: "test",
+		SystemPort: 8080,
+		LogPath:    "/tmp",
 	})
 
-	traceId := helper.UniqueId()
-	logger.Info("A group of walrus emerges from the ocean", Context{"trace_id": traceId})
+	assert.NotNil(t, App())
+	assert.NotNil(t, Mq())
+	assert.NotNil(t, System())
+	assert.NotNil(t, Request())
 }
 
-
-func TestLoggerFile(t *testing.T)  {
-	var err error
-	logger := New()
-
-
-	filePath := helper.GetCurrentPath() + "/system.log"
-	fmt.Println(filePath)
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err == nil {
-		logger.SetOutWriter(file)
-	}else {
-		fmt.Println("err:" + err.Error())
-	}
-
-}
 

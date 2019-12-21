@@ -15,7 +15,8 @@ func NewFastHttpClient() FastHttpClient {
 	return FastHttpClient{}
 }
 
-func (client FastHttpClient) NewRequest(param request.Param) request.IRequest {
+// NewRequest
+func (client FastHttpClient) NewRequest(param request.Param) *fasthttp.Request {
 	req := fasthttp.AcquireRequest()
 
 	req.Header.SetContentType("application/json")
@@ -29,7 +30,7 @@ func (client FastHttpClient) NewRequest(param request.Param) request.IRequest {
 
 	if param.Body != nil {
 		buf := new(bytes.Buffer)
-		buf.ReadFrom(param.Body)
+		_, _ = buf.ReadFrom(param.Body)
 		req.SetBody(buf.Bytes())
 	}
 

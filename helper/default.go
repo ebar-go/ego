@@ -8,3 +8,12 @@ func DefaultInt(v int, defaultV int) int {
 
 	return v
 }
+
+// DefaultString if v is empty, return defaultV
+func DefaultString(v string, defaultV string) string  {
+	if v == "" {
+		return defaultV
+	}
+
+	return v
+}

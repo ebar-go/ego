@@ -7,12 +7,20 @@ import (
 
 // Paginator 分页器
 type Paginator struct {
-	TotalCount int `json:"total"` // 总条数
-	CurrentCount int `json:"count"` // 当前页的数据项数量
-	Limit int `json:"per_page"` // 每页行数
+	// 总条数
+	TotalCount int `json:"total"`
+
+	// 当前页的数据项数量
+	CurrentCount int `json:"count"`
+
+	// 每页行数
+	Limit int `json:"per_page"`
+
+	// 当前页数
 	CurrentPage int `json:"current_page"`
+
+	// 总页数
 	TotalPages int `json:"total_pages"`
-	Link interface{} `json:"link"`
 }
 
 const (
@@ -20,7 +28,7 @@ const (
 	defaultCurrentPage = 1
 )
 
-// Paginate 获取分页实例
+// Paginate 根据总条数、当前页数、每页行数分页
 func Paginate(totalCount, currentPage, limit int) Paginator {
 	pagination := Paginator{
 		TotalCount: totalCount,

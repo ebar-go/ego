@@ -65,7 +65,7 @@ func (v *Validator) lazyInit() {
 		})
 
 		// 使用中文
-		zh_translations.RegisterDefaultTranslations(v.validate, trans)
+		_ = zh_translations.RegisterDefaultTranslations(v.validate, trans)
 	})
 }
 

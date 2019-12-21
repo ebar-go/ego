@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 	"github.com/ebar-go/ego/helper"
+	"os"
 )
 
 
@@ -33,4 +34,9 @@ func LoadJson(conf interface{}, filePath string) error {
 	}
 
 	return helper.JsonDecode(jsonBytes, conf)
+}
+
+// 获取环境变量
+func Getenv(name string) string {
+	return os.Getenv(name)
 }

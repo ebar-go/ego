@@ -1,14 +1,13 @@
 package helper
 
 import (
-	"encoding/hex"
 	"crypto/md5"
 	"crypto/sha1"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/satori/go.uuid"
-	"github.com/ebar-go/ego/http/constant"
 	"hash/crc32"
-	"encoding/base64"
 )
 
 //生成32位md5字串
@@ -33,12 +32,12 @@ func UniqueId() string {
 
 // NewTraceId 生成全局ID
 func NewTraceId() string {
-	return constant.TraceIdPrefix + UniqueId()
+	return "TraceId" + UniqueId()
 }
 
 // NewRequestId 生成请求ID
 func NewRequestId() string {
-	return constant.RequestIdPrefix + UniqueId()
+	return "RequestId" + UniqueId()
 }
 
 // HashCode

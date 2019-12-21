@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 )
 
-// IQueue 队列的接口
-type IQueue interface {
+// Queue 队列接口
+type Queue interface {
 	// 发送消息
 	SendMessage(message string) (ali_mns.MessageSendResponse, error)
 

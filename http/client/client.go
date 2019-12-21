@@ -5,20 +5,20 @@ import (
 	"github.com/ebar-go/ego/http/client/request"
 )
 
-// IClient Http客户端
-type IClient interface {
+// Client Http客户端
+type Client interface {
 	Execute(request request.IRequest) (string, error)
 	NewRequest(param request.Param) request.IRequest
 }
 
-func NewHttpClient() IClient {
+func NewHttpClient() impl.HttpClient {
 	return impl.NewHttpClient()
 }
 
-func NewFastHttpClient() IClient {
+func NewFastHttpClient() impl.FastHttpClient {
 	return impl.NewFastHttpClient()
 }
 
-func NewKongClient() IClient {
+func NewKongClient() impl.KongClient {
 	return impl.KongClient{}
 }

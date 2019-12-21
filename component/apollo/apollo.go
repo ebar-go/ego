@@ -60,3 +60,8 @@ func GetIntValue(key string , defaultValue int) int {
 func GetBoolValue(key string, defaultValue bool) bool {
 	return agollo.GetBoolValue(key, defaultValue)
 }
+
+// GetFloatValue 获取浮点型配置
+func GetFloatValue(key string, defaultV float64) float64 {
+	return agollo.GetFloatValue(key, defaultV)
+}

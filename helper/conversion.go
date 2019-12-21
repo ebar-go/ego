@@ -107,3 +107,12 @@ func StringifyResponse(response *http.Response) (string, error) {
 
 	return string(data), nil
 }
+
+func String2Int(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+
+	return i
+}

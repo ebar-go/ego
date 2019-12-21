@@ -1,12 +1,12 @@
 package apollo
 
 import (
-	"testing"
-	"fmt"
-	"github.com/robfig/cron"
 	"encoding/json"
+	"fmt"
+	config2 "github.com/ebar-go/ego/config"
+	"github.com/robfig/cron"
 	"github.com/stretchr/testify/assert"
-	"github.com/ebar-go/ego/component/config"
+	"testing"
 )
 
 // prepareConf
@@ -22,7 +22,7 @@ func prepareConf() Conf {
 	}{}
 
 
-	if err := config.LoadYaml(&conf, "/tmp/app.yaml"); err != nil {
+	if err := config2.LoadYaml(&conf, "/tmp/app.yaml"); err != nil {
 		panic(err)
 	}
 
@@ -75,6 +75,6 @@ func TestGetBoolValue(t *testing.T) {
 // TestMain main
 func TestMain(m *testing.M) {
 	fmt.Println(prepareConf())
-	Init(prepareConf())
+	_= Init(prepareConf())
 	m.Run()
 }

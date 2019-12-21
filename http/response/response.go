@@ -2,18 +2,17 @@ package response
 
 import (
 	"fmt"
-	"reflect"
-	"github.com/ebar-go/ego/http/constant"
-	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/component/pagination"
+	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/helper"
+	"reflect"
 	"strconv"
 )
 
 // newInstance 实例化response
 func newInstance() *Response {
 	return &Response{
-		StatusCode: constant.StatusOk,
+		StatusCode: 200,
 		Message:    "",
 		Data:       nil,
 		Meta: Meta{
@@ -90,7 +89,7 @@ func (respone *Response) SetData(data interface{}) {
 
 // IsSuccess 是否已成功
 func (response *Response) IsSuccess() bool {
-	return formatStatusCode(response.StatusCode) == strconv.Itoa(constant.StatusOk)
+	return formatStatusCode(response.StatusCode) == strconv.Itoa(200)
 }
 
 // formatStatusCode 格式化

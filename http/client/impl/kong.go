@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/http/constant"
-	"github.com/valyala/fasthttp"
-	"time"
 	"github.com/ebar-go/ego/http/client/request"
+	"time"
 )
 
 
@@ -31,7 +29,7 @@ func (kong KongClient) GetCompleteUrl(router, uri string) string {
 // GetEncodeToken 获取加密的token
 func (kong KongClient) GenerateToken() (string, error) {
 	if kong.TokenExpireTime == 0 {
-		kong.TokenExpireTime = constant.JwtExpiredTime
+		kong.TokenExpireTime = 3600
 	}
 	now := time.Now().Unix()
 	exp := now + int64(kong.TokenExpireTime)
@@ -53,10 +51,10 @@ func (kong KongClient) NewRequest(param request.Param) request.IRequest {
 	param.AddHeader("Refer-Service-Name", kong.ReferServiceName)
 	param.AddHeader("Refer-Request-Host", kong.ReferRequestHost)
 	param.AddHeader("X-Service-User", kong.XServiceUser)
-	param.AddHeader(constant.GatewayTrace, trace.GetTraceId())
-	param.AddHeader(constant.JwtTokenHeader, fmt.Sprintf("%s %s", constant.JwtTokenMethod,jwtToken))
+	param.AddHeader("gateway-trace", trace.GetTraceId())
+	param.AddHeader("Authorization", fmt.Sprintf("Bearer %s", jwtToken))
 
-	return NewFastHttpClient().NewRequest(param).(*fasthttp.Request)
+	return NewFastHttpClient().NewRequest(param)
 }
 
 // Send 发送http请求，得到响应

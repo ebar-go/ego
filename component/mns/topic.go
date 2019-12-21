@@ -8,8 +8,8 @@ import (
 	"encoding/json"
 )
 
-// ITopic
-type ITopic interface {
+// Topic
+type Topic interface {
 	// 发布消息
 	PublishMessage(params Params, filterTag string) (*ali_mns.MessageSendResponse, error)
 }

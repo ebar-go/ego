@@ -20,13 +20,13 @@ type IClient interface {
 	AddTopic(name string)
 
 	// 获取主题
-	GetTopic(name string) ITopic
+	GetTopic(name string) Topic
 
 	// 添加队列
 	AddQueue(name string, handler QueueHandler, waitSecond int)
 
 	// 获取队列
-	GetQueue(name string) IQueue
+	GetQueue(name string) Queue
 
 	// 监听队列
 	ListenQueues()
@@ -36,8 +36,8 @@ type IClient interface {
 type Client struct {
 	conf Conf
 	instance ali_mns.MNSClient
-	queueItems map[string]IQueue
-	topicItems map[string]ITopic
+	queueItems map[string]Queue
+	topicItems map[string]Topic
 }
 
 // NewClient 实例化
@@ -47,8 +47,8 @@ func NewClient(conf Conf) IClient {
 	cli.instance = ali_mns.NewAliMNSClient(conf.Url,
 		conf.AccessKeyId,
 		conf.AccessKeySecret)
-	cli.queueItems = make(map[string]IQueue)
-	cli.topicItems = make(map[string]ITopic)
+	cli.queueItems = make(map[string]Queue)
+	cli.topicItems = make(map[string]Topic)
 
 	return cli
 }
@@ -77,7 +77,7 @@ func (cli *Client) AddQueue(name string, handler QueueHandler, waitSecond int) {
 
 
 // GetTopic 获取主题
-func (cli *Client) GetTopic(name string) ITopic {
+func (cli *Client) GetTopic(name string) Topic {
 	if _ , ok := cli.topicItems[name]; !ok {
 		cli.AddTopic(name)
 	}
@@ -86,7 +86,7 @@ func (cli *Client) GetTopic(name string) ITopic {
 }
 
 // GetQueue 获取队列
-func (cli *Client) GetQueue(name string) IQueue{
+func (cli *Client) GetQueue(name string) Queue{
 	return cli.queueItems[name]
 }
 

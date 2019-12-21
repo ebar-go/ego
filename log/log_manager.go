@@ -3,141 +3,123 @@ package log
 import (
 	"github.com/ebar-go/ego/helper"
 	"path"
-	"github.com/ebar-go/ego/http/constant"
 	"sync"
 )
 
-var manager *Manager
+const (
+	DefaultLogPath = "/wwwlogs/"
+	SystemLogPrefix = "system_"
+	RequestLogPrefix = "request_"
+	AppLogPrefix = "app_"
+	MqLogPrefix = "mq_"
+	LogSuffix = ".log"
 
-// Manager 系统日志管理器
-type Manager struct {
+	AppLogComponentName = "app"
+	TraceLogComponentName = "trace"
+	MqLogComponentName = "mq"
+	SystemLogComponentName = "phplogs"
+)
+
+var m Manager
+
+// Manager 接口
+type Manager interface {
+	rotate() *manager
+}
+
+// InitManager 初始化管理器
+func InitManager(conf ManagerConf)  {
+	conf.LogPath = helper.DefaultString(conf.LogPath, DefaultLogPath)
+	instance := &manager{conf:conf}
+	instance.rotate()
+
+	m = instance
+}
+
+// manager 系统日志管理器
+type manager struct {
 	sync.Mutex
 	conf ManagerConf
 	rotateDate string // 分割日期
-	app *Logger
-	system *Logger
-	request *Logger
-	mq *Logger
-}
-
-// GetSystemParam
-func (conf ManagerConf) GetSystemParam() SystemParam {
-	return SystemParam{
-		ServiceName: conf.SystemName,
-		ServicePort: conf.SystemPort,
-	}
+	app Logger
+	system Logger
+	request Logger
+	mq Logger
 }
 
 // InitAppLogger
-func (manager *Manager) InitAppLogger()  {
-	filePath := path.Join(manager.conf.LogPath,
-		constant.AppLogComponentName,
-		manager.conf.SystemName,
-		constant.AppLogPrefix + manager.rotateDate + constant.LogSuffix)
+func (manager *manager) InitAppLogger()  {
+	filePath := manager.GetLogPath(AppLogComponentName, AppLogPrefix)
 	manager.app = NewFileLogger(filePath)
-	manager.app.SetSystemParam(manager.conf.GetSystemParam())
 }
 
 // InitRequestLogger
-func (manager *Manager) InitRequestLogger()  {
-	filePath := path.Join(manager.conf.LogPath,
-		constant.TraceLogComponentName,
-		manager.conf.SystemName,
-		constant.RequestLogPrefix + manager.rotateDate + constant.LogSuffix)
+func (manager *manager) InitRequestLogger()  {
+	filePath := manager.GetLogPath(TraceLogComponentName, RequestLogPrefix)
 	manager.request = NewFileLogger(filePath)
-	manager.request.SetSystemParam(manager.conf.GetSystemParam())
 }
 
 // InitSystemLogger
-func (manager *Manager) InitSystemLogger()  {
-	filePath := path.Join(manager.conf.LogPath,
-		constant.SystemLogComponentName,
-		manager.conf.SystemName,
-		constant.SystemLogPrefix + manager.rotateDate + constant.LogSuffix)
+func (manager *manager) InitSystemLogger()  {
+	filePath := manager.GetLogPath(SystemLogComponentName, SystemLogPrefix)
 	manager.system = NewFileLogger(filePath)
-	manager.system.SetSystemParam(manager.conf.GetSystemParam())
+}
+
+// GetLogPath 根据组件名称获取日志路径
+func (manager *manager) GetLogPath(componentName, prefix string) string {
+	return path.Join(manager.conf.LogPath,
+		componentName,
+		manager.conf.SystemName,
+		prefix + manager.rotateDate + LogSuffix)
 }
 
 // InitMqLogger
-func (manager *Manager) InitMqLogger()  {
-	filePath := path.Join(manager.conf.LogPath,
-		constant.MqLogComponentName,
-		manager.conf.SystemName,
-		constant.MqLogPrefix + manager.rotateDate + constant.LogSuffix)
+func (manager *manager) InitMqLogger()  {
+	filePath := manager.GetLogPath(MqLogComponentName, MqLogPrefix)
 	manager.mq = NewFileLogger(filePath)
-	manager.mq.SetSystemParam(manager.conf.GetSystemParam())
 }
 
 // ManagerConf 日志配置
 type ManagerConf struct {
 	SystemName string
 	SystemPort int
-	AppDebug bool
 	LogPath string
 }
 
-// InitManager 初始化日志管理器
-func InitManager(conf ManagerConf) {
-	if manager == nil {
-		manager = &Manager{
-			conf: conf,
-		}
-
-	}
-
-	manager.rotate()
-
-}
-
 // rotate 分割日志文件
-func (m *Manager) rotate() *Manager {
-
+func (m *manager) rotate() *manager {
 	currentDateStr := helper.GetDateStr()
 	if currentDateStr != m.rotateDate {
-		// 加锁保证初始化
 		m.Lock()
 		defer m.Unlock()
+
 		m.rotateDate = currentDateStr
 
 		m.InitAppLogger()
 		m.InitRequestLogger()
 		m.InitSystemLogger()
 		m.InitMqLogger()
-
 	}
 
 	return m
 }
 
-// App 应用日志
-func App() *Logger {
-	if manager == nil {
-		return New()
-	}
-	return manager.rotate().app
+// App
+func App() Logger  {
+	return m.rotate().app
 }
 
-// System 系统日志
-func System() *Logger {
-	if manager == nil {
-		return New()
-	}
-	return manager.rotate().system
+// Request
+func Request() Logger  {
+	return m.rotate().request
 }
 
-// Request 请求日志
-func Request() *Logger {
-	if manager == nil {
-		return New()
-	}
-	return manager.rotate().request
+// System
+func System() Logger  {
+	return m.rotate().system
 }
 
-// Mq 消息队列日志
-func Mq() *Logger {
-	if manager == nil {
-		return New()
-	}
-	return manager.rotate().mq
+// Mq
+func Mq() Logger  {
+	return m.rotate().mq
 }
-

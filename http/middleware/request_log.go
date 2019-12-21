@@ -1,18 +1,17 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"bytes"
 	"fmt"
-	"time"
-	"github.com/ebar-go/ego/log"
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/http/constant"
-	"strings"
+	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/log"
+	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
 )
 
 // bodyLogWriter 读取响应Writer
@@ -37,13 +36,12 @@ func RequestLog(c *gin.Context) {
 	requestBody := getRequestBody(c)
 
 	// 从头部信息获取
-	traceId := c.GetHeader(constant.GatewayTrace)
+	traceId := c.GetHeader("gateway-trace")
 	if strings.TrimSpace(traceId) == "" {
 		traceId = helper.NewTraceId()
 	}
 	trace.SetTraceId(traceId)
 	defer trace.DeleteTraceId()
-	helper.Debug(traceId)
 
 	c.Next()
 
@@ -52,14 +50,10 @@ func RequestLog(c *gin.Context) {
 
 	logContext := log.Context{}
 
-
+	// 获取响应内容
 	responseBody := blw.body.String()
-
-	// 获取响应数据长度，responseSize最小值为0
-	responseSize := helper.Max(0, blw.body.Len() - 1)
-
-	// 取最大值
-	maxResponseSize := helper.Min(responseSize, constant.DefaultMaxResponseSize)
+	// 截断响应内容
+	maxResponseSize := helper.Min(helper.Max(0, blw.body.Len() - 1), config.Instance.MaxResponseLogSize)
 
 	// 日志格式
 	logContext["trace_id"] = traceId
@@ -95,13 +89,14 @@ func getRequestBody(c *gin.Context) interface{} {
 		bodyBytes, err := ioutil.ReadAll(c.Request.Body)
 		if err != nil {
 			fmt.Println(err)
+			return nil
 		}
 
 		// 新建缓冲区并替换原有Request.body
 		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 		var params interface{}
-		json.Unmarshal(bodyBytes, &params)
+		_ = helper.JsonDecode(bodyBytes, params)
 		return params
 
 	}

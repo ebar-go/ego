@@ -3,37 +3,49 @@ package middleware
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/ebar-go/ego/http/constant"
+	"github.com/ebar-go/ego/container"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/gin-gonic/gin"
 	"strings"
 )
 
-var jwtAuth = new(JwtAuth)
+const (
+	ClaimsKey = "jwt_claims"
+)
+
+// Jwt json web token
+type Jwt interface {
+	// 解析token
+	ParseToken(token string) (jwt.Claims, error)
+
+	// 创建token
+	CreateToken(claimsCreator func() jwt.Claims) (string, error)
+}
+
+func NewJwt(signKey []byte) Jwt {
+	return &JwtAuth{SignKey: signKey}
+}
 
 // JwtAuth jwt
 type JwtAuth struct {
-	SigningKey []byte
+	SignKey []byte
 }
 
-// SetJwtSigningKey 设置jwt的秘钥
-func SetJwtSigningKey(key []byte)  {
-	jwtAuth.SigningKey = key
-}
-
-var TokenNotExist = errors.New("token not exist")
-var TokenValidateFailed = errors.New("token validate failed")
+var (
+	TokenNotExist       = errors.New("token not exist")
+	TokenValidateFailed = errors.New("token validate failed")
+)
 
 // CreateToken 生成一个token
 func (jwtAuth JwtAuth) CreateToken(claimsCreator func() jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsCreator())
-	return token.SignedString(jwtAuth.SigningKey)
+	return token.SignedString(jwtAuth.SignKey)
 }
 
-// parseToken 解析Token
-func (jwtAuth JwtAuth) parseToken(token string) (jwt.Claims, error) {
+// ParseToken 解析Token
+func (jwtAuth JwtAuth) ParseToken(token string) (jwt.Claims, error) {
 	tokenClaims, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		return jwtAuth.SigningKey, nil
+		return jwtAuth.SignKey, nil
 	})
 
 	if err != nil {
@@ -47,14 +59,9 @@ func (jwtAuth JwtAuth) parseToken(token string) (jwt.Claims, error) {
 	return tokenClaims.Claims, nil
 }
 
-// ParseToken 解析token,用于非http请求的验证
-func ParseToken(token string) (jwt.Claims, error) {
-	return jwtAuth.parseToken(token)
-}
-
 // GetCurrentClaims 获取解析jwt后的信息
 func GetCurrentClaims(ctx *gin.Context) interface{} {
-	claims, exist := ctx.Get(constant.JwtClaimsKey)
+	claims, exist := ctx.Get(ClaimsKey)
 	if !exist {
 		return nil
 	}
@@ -63,30 +70,32 @@ func GetCurrentClaims(ctx *gin.Context) interface{} {
 }
 
 // validateToken 验证token
-func (jwtAuth JwtAuth) validateToken(ctx *gin.Context) (error) {
+func validateToken(ctx *gin.Context) error {
 	// 获取token
-	tokenStr := ctx.GetHeader(constant.JwtTokenHeader)
+	tokenStr := ctx.GetHeader("Authorization")
 	kv := strings.Split(tokenStr, " ")
-	if len(kv) != 2 || kv[0] != constant.JwtTokenMethod {
+	if len(kv) != 2 || kv[0] != "Bearer" {
 		return TokenNotExist
 	}
 
-	claims, err := jwtAuth.parseToken(kv[1])
-	if err != nil {
-		return err
-	}
+	return container.App.Invoke(func(jwtAuth Jwt) error {
+		claims, err := jwtAuth.ParseToken(kv[1])
+		if err != nil {
+			return err
+		}
 
-	// token存入context
-	ctx.Set(constant.JwtClaimsKey, claims)
-	return  nil
+		// token存入context
+		ctx.Set(ClaimsKey, claims)
+		return nil
+	})
 }
 
 // JWT gin的jwt中间件
 func JWT(ctx *gin.Context) {
 
 	// 解析token
-	if err := jwtAuth.validateToken(ctx);err != nil {
-		response.Error(ctx, constant.StatusUnauthorized, err.Error())
+	if err := validateToken(ctx); err != nil {
+		response.Error(ctx, 401, err.Error())
 
 		ctx.Abort()
 		return
