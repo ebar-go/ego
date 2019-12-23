@@ -11,14 +11,17 @@ type Client interface {
 	NewRequest(param request.Param) request.IRequest
 }
 
+// NewHttpClient 官方http客户端
 func NewHttpClient() impl.HttpClient {
 	return impl.NewHttpClient()
 }
 
+// NewFastHttpClient fastHttp客户端
 func NewFastHttpClient() impl.FastHttpClient {
 	return impl.NewFastHttpClient()
 }
 
+// NewKongClient Kong网关客户端
 func NewKongClient() impl.KongClient {
 	return impl.KongClient{}
 }

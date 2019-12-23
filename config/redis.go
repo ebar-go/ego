@@ -1,5 +1,4 @@
-// redis 包提供redis客户端的连接与初始化
-package redis
+package config
 
 import (
 	"github.com/ebar-go/ego/helper"
@@ -9,15 +8,8 @@ import (
 	"time"
 )
 
-const (
-	defaultPort        = 6379
-	defaultPoolSize    = 100
-	defaultMaxRetries  = 3
-	defaultIdleTimeout = 10 * time.Second
-)
-
-// Conf redis配置
-type Conf struct {
+// RedisConfig redis配置
+type RedisConfig struct {
 	// 地址
 	Host string
 
@@ -40,34 +32,35 @@ type Conf struct {
 	IdleTimeout time.Duration
 }
 
+const (
+	redisDefaultPort        = 6379
+	redisDefaultPoolSize    = 100
+	redisDefaultMaxRetries  = 3
+	redisDefaultIdleTimeout = 10 * time.Second
+)
+
 // complete 自动补全
-func (conf *Conf) complete() {
-	conf.Port = helper.DefaultInt(conf.Port, defaultPort)
-	conf.PoolSize = helper.DefaultInt(conf.PoolSize, defaultPoolSize)
-	conf.MaxRetries = helper.DefaultInt(conf.MaxRetries, defaultMaxRetries)
+func (conf *RedisConfig) complete() {
+	conf.Port = helper.DefaultInt(conf.Port, redisDefaultPort)
+	conf.PoolSize = helper.DefaultInt(conf.PoolSize, redisDefaultPoolSize)
+	conf.MaxRetries = helper.DefaultInt(conf.MaxRetries, redisDefaultMaxRetries)
 
 	if conf.IdleTimeout == 0 {
-		conf.IdleTimeout = defaultIdleTimeout
+		conf.IdleTimeout = redisDefaultIdleTimeout
 	}
 }
 
-// Open 初始化连接池
-func Open(conf Conf) (*redis.Client, error) {
+// Options 转换为options
+func (conf *RedisConfig) Options() *redis.Options {
 	conf.complete()
 
 	address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
 
-	client := redis.NewClient(&redis.Options{
+	return &redis.Options{
 		Addr:        address,
 		Password:    conf.Auth,
 		PoolSize:    conf.PoolSize,    // Redis连接池大小
 		MaxRetries:  conf.MaxRetries,  // 最大重试次数
 		IdleTimeout: conf.IdleTimeout, // 空闲链接超时时间
-	})
-
-	if _, err := client.Ping().Result(); err != nil {
-		return nil, err
 	}
-
-	return client, nil
 }

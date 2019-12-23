@@ -2,40 +2,49 @@ package config
 
 import (
 	"github.com/ebar-go/ego/helper"
-	"gopkg.in/gcfg.v1"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
 )
 
-// Load 加载ini配置
-func LoadIni(conf interface{}, filePath string) error {
-	return gcfg.ReadFileInto(conf, filePath)
+// Config 系统配置项
+type Config struct {
+	// 服务名称
+	ServiceName string
+
+	// 服务端口号
+	ServicePort int
+
+	// 响应日志最大长度
+	MaxResponseLogSize int
+
+	// 日志路径
+	LogPath string
+
+	// jwt的key
+	JwtSignKey []byte
+
+	// redis config
+	RedisConfig *RedisConfig
+
+	// mysql config
+	MysqlConfig *MysqlConfig
+
+	// mns config
+	MnsConfig MnsConfig
 }
 
-// Load 加载yaml配置
-func LoadYaml(conf interface{}, filePath string) error {
-	yamlFile, err := ioutil.ReadFile(filePath)
+// init 通过读取环境变量初始化系统配置
+func NewInstance() *Config {
+	instance := &Config{}
+	instance.ServiceName = helper.DefaultString(Getenv("SERVICE_NAME"), "app")
+	instance.ServicePort = helper.DefaultInt(helper.String2Int(Getenv("SERVICE_PORT")), 8080)
 
-	if err != nil {
-		return err
-	}
+	instance.LogPath = helper.DefaultString(Getenv("LOG_PATH"), "/tmp")
+	instance.MaxResponseLogSize = helper.DefaultInt(helper.String2Int(Getenv("MAX_RESPONSE_LOG_SIZE")), 1000)
 
-	return yaml.Unmarshal(yamlFile, conf)
-}
+	instance.JwtSignKey = []byte(Getenv("JWT_SIGN_KEY"))
 
-// Load 加载json配置
-func LoadJson(conf interface{}, filePath string) error {
-	jsonBytes, err := ioutil.ReadFile(filePath)
+	// TODO init mysql config
 
-	if err != nil {
-		return err
-	}
+	// TODO init redis config
 
-	return helper.JsonDecode(jsonBytes, conf)
-}
-
-// 获取环境变量
-func Getenv(name string) string {
-	return os.Getenv(name)
+	return instance
 }

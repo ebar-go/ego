@@ -1,12 +1,13 @@
 package mysql
 
 import (
+	"github.com/ebar-go/ego/config"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func getConf() Conf {
-	return Conf{
+func getConf() config.MysqlConfig {
+	return config.MysqlConfig{
 		Host:     "127.0.0.1",
 		Port:     3306,
 		User:     "root",

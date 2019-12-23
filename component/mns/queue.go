@@ -3,8 +3,9 @@ package mns
 import (
 	"encoding/json"
 	"github.com/aliyun/aliyun-mns-go-sdk"
+	"github.com/ebar-go/ego/app"
+	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/helper"
-	"github.com/ebar-go/ego/log"
 )
 
 // Queue 队列接口
@@ -63,7 +64,7 @@ func (q *queue) ReceiveMessage() {
 		case resp := <-respChan:
 			{
 				var params Params
-				log.System().Info("mqParams", log.Context{
+				app.LogManager().System().Info("mqParams", log.Context{
 					"receiveTime": helper.GetTimeStr(),
 					"queue_name":  q.Name,
 					"resp":        resp,
@@ -73,13 +74,13 @@ func (q *queue) ReceiveMessage() {
 
 				// 解析消息
 				if err := json.Unmarshal([]byte(helper.DecodeBase64Str(resp.MessageBody)), &params); err != nil {
-					log.System().Error("invalidMessageBody", log.Context{
+					app.LogManager().System().Error("invalidMessageBody", log.Context{
 						"err":   err.Error(),
 						"trace": helper.Trace(),
 					})
 				} else {
 
-					log.Mq().Info("receiveMessage", log.Context{
+					app.LogManager().Mq().Info("receiveMessage", log.Context{
 						"receiveTime": helper.GetTimeStr(),
 						"queue_name":  q.Name,
 						"messageBody": params.Content,
@@ -88,7 +89,7 @@ func (q *queue) ReceiveMessage() {
 					})
 
 					if err := q.handler(params); err != nil {
-						log.System().Warn("processMessageFailed", log.Context{
+						app.LogManager().System().Warn("processMessageFailed", log.Context{
 							"err":   err.Error(),
 							"trace": helper.Trace(),
 						})
@@ -96,7 +97,7 @@ func (q *queue) ReceiveMessage() {
 					} else {
 						// 处理成功，删除消息
 						err := q.DeleteMessage(resp.ReceiptHandle)
-						log.Mq().Info("deleteMessage", log.Context{
+						app.LogManager().Mq().Info("deleteMessage", log.Context{
 							"receiveTime": helper.GetTimeStr(),
 							"queue_name":  q.Name,
 							"messageBody": params.Content,
@@ -112,7 +113,7 @@ func (q *queue) ReceiveMessage() {
 			}
 		case err := <-errChan:
 			{
-				log.System().Info("receiveMessageFailed", log.Context{
+				app.LogManager().System().Info("receiveMessageFailed", log.Context{
 					"err":   err.Error(),
 					"trace": helper.Trace(),
 				})

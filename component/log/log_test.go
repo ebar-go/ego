@@ -46,15 +46,15 @@ func TestLogger_Error(t *testing.T) {
 	prepareLogger().Error("A group of walrus emerges from the ocean", Context{"trace_id": traceId, "hello": "world"})
 }
 
-func TestInitManager(t *testing.T) {
-	InitManager(ManagerConf{
+func TestNewManager(t *testing.T) {
+	manager := NewManager(ManagerConf{
 		SystemName: "test",
 		SystemPort: 8080,
 		LogPath:    "/tmp",
 	})
 
-	assert.NotNil(t, App())
-	assert.NotNil(t, Mq())
-	assert.NotNil(t, System())
-	assert.NotNil(t, Request())
+	assert.NotNil(t, manager.App())
+	assert.NotNil(t, manager.Mq())
+	assert.NotNil(t, manager.System())
+	assert.NotNil(t, manager.Request())
 }

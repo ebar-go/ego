@@ -102,12 +102,13 @@ func StringifyResponse(response *http.Response) (string, error) {
 
 	// 关闭响应
 	defer func() {
-		response.Body.Close()
+		_ = response.Body.Close()
 	}()
 
 	return string(data), nil
 }
 
+// String2Int string转int
 func String2Int(s string) int {
 	i, err := strconv.Atoi(s)
 	if err != nil {

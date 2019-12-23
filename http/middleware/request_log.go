@@ -3,10 +3,10 @@ package middleware
 import (
 	"bytes"
 	"fmt"
+	"github.com/ebar-go/ego/app"
+	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/helper"
-	"github.com/ebar-go/ego/log"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -53,7 +53,7 @@ func RequestLog(c *gin.Context) {
 	// 获取响应内容
 	responseBody := blw.body.String()
 	// 截断响应内容
-	maxResponseSize := helper.Min(helper.Max(0, blw.body.Len()-1), config.Instance.MaxResponseLogSize)
+	maxResponseSize := helper.Min(helper.Max(0, blw.body.Len()-1), app.Config().MaxResponseLogSize)
 
 	// 日志格式
 	logContext["trace_id"] = traceId
@@ -68,8 +68,7 @@ func RequestLog(c *gin.Context) {
 	logContext["time_used"] = fmt.Sprintf("%v", latency)
 	logContext["header"] = c.Request.Header
 
-	go log.Request().Info("REQUEST LOG", logContext)
-
+	go app.LogManager().Request().Info("REQUEST LOG", logContext)
 }
 
 // GetRequestBody 获取请求参数

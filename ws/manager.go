@@ -1,87 +1,84 @@
 package ws
 
-// IWebSocketManager ws管理器接口
-type IWebSocketManager interface {
-	Start()
+import (
+	"fmt"
+)
+
+// Manager ws管理器接口
+type Manager interface {
+	// register client
 	RegisterClient(client *Client)
+
+	// unregister client
 	UnregisterClient(client *Client)
+
+	// broadcast message
 	Broadcast(message string)
+
+	// send message
 	Send(message []byte, ignore *Client)
+
+	Start()
 }
 
-// ClientManager is a websocket manager
-type ClientManager struct {
-	clients    map[*Client]bool
-	broadcast  chan []byte
-	register   chan *Client
-	unregister chan *Client
+// manager is a websocket manager
+type manager struct {
+	clients    map[string]*Client
+	Register   chan *Client
+	Unregister chan *Client
 }
 
-var manager = DefaultManager()
-
-// GetManager
-func GetManager() IWebSocketManager {
-	return manager
-}
-
-// Manager define a ws server manager
-func DefaultManager() IWebSocketManager {
-	return &ClientManager{
-		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
+// NewManager define a ws server manager
+func NewManager() Manager {
+	return &manager{
+		clients:    make(map[string]*Client),
+		Register:   make(chan *Client),
+		Unregister: make(chan *Client),
 	}
 }
 
-func (manager *ClientManager) RegisterClient(client *Client) {
-
-	manager.register <- client
+// RegisterClient 注册客户端
+func (manager *manager) RegisterClient(client *Client) {
+	manager.Register <- client
 }
 
-func (manager *ClientManager) UnregisterClient(client *Client) {
-	client.OnClose()
-	manager.unregister <- client
+// UnregisterClient 注销客户端
+func (manager *manager) UnregisterClient(client *Client) {
+	manager.Unregister <- client
 }
 
-// Broadcast 官博
-func (manager *ClientManager) Broadcast(message string) {
-	manager.broadcast <- []byte(message)
-}
-
-// Start is to start a ws server
-func (manager *ClientManager) Start() {
+// Start
+func (manager *manager) Start() {
 	for {
 		select {
-		case conn := <-manager.register: // new connection
-			manager.clients[conn] = true
-			conn.OnOpen()
+		case client := <-manager.Register:
+			manager.clients[client.ID] = client
+			client.OnOpen()
 
-		case conn := <-manager.unregister: // close connection
-
-			if _, ok := manager.clients[conn]; ok {
-				close(conn.Send)
-				delete(manager.clients, conn)
+			// emm..如果不这么做，没有想到更好的办法在defer时删除manager的client
+			client.manager = manager
+			manager.Broadcast(fmt.Sprintf("%s is registered", client.ID))
+		case client := <-manager.Unregister:
+			if _, ok := manager.clients[client.ID]; ok {
+				delete(manager.clients, client.ID)
 			}
-
-		case message := <-manager.broadcast: // Broadcast
-			for conn := range manager.clients {
-				select {
-				case conn.Send <- message:
-				default:
-					close(conn.Send)
-					delete(manager.clients, conn)
-				}
-			}
+			manager.Broadcast(fmt.Sprintf("%s is unregistered", client.ID))
 		}
 	}
 }
 
-// Send is to send ws message to ws client
-func (manager *ClientManager) Send(message []byte, ignore *Client) {
-	for conn := range manager.clients {
-		if conn != ignore {
-			conn.Send <- message
+// Broadcast 广播消息
+func (manager *manager) Broadcast(message string) {
+	for _, conn := range manager.clients {
+		conn.SendMessage([]byte(message))
+	}
+}
+
+// Send send message to clients and ignore someone
+func (manager *manager) Send(message []byte, ignore *Client) {
+	for id, conn := range manager.clients {
+		if id != ignore.ID {
+			conn.SendMessage(message)
 		}
 	}
 }

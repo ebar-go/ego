@@ -5,14 +5,8 @@ import (
 	"github.com/ebar-go/ego/helper"
 )
 
-// Conf 阿里云MNS 配置项
-type Conf struct {
-	Url             string `json:"url"`
-	AccessKeyId     string `json:"access_key_id"`
-	AccessKeySecret string `json:"access_key_secret"`
-}
-
-type IClient interface {
+// Client mns客户端接口
+type Client interface {
 	// 生成params的sign字段
 	GenerateSign(str string) string
 
@@ -33,9 +27,9 @@ type IClient interface {
 }
 
 // Client MNS客户端
-type Client struct {
+type client struct {
 	// 配置
-	conf Conf
+	accessKeySecret string
 
 	// 阿里云mns实例
 	instance ali_mns.MNSClient
@@ -48,12 +42,10 @@ type Client struct {
 }
 
 // NewClient 实例化
-func NewClient(conf Conf) IClient {
-	cli := new(Client)
-	cli.conf = conf
-	cli.instance = ali_mns.NewAliMNSClient(conf.Url,
-		conf.AccessKeyId,
-		conf.AccessKeySecret)
+func NewClient(url, accessKeyId, accessKeySecret string) Client {
+	cli := new(client)
+	cli.accessKeySecret = accessKeySecret
+	cli.instance = ali_mns.NewAliMNSClient(url, accessKeyId, accessKeySecret)
 	cli.queueItems = make(map[string]Queue)
 	cli.topicItems = make(map[string]Topic)
 
@@ -61,18 +53,18 @@ func NewClient(conf Conf) IClient {
 }
 
 // GenerateSign 生成签名
-func (cli *Client) GenerateSign(str string) string {
-	return helper.GetMd5String(str + cli.conf.AccessKeySecret)
+func (cli *client) GenerateSign(str string) string {
+	return helper.GetMd5String(str + cli.accessKeySecret)
 }
 
 // NewTopic 实例化主题
-func (cli *Client) AddTopic(name string) {
+func (cli *client) AddTopic(name string) {
 	t := &topic{Name: name, instance: ali_mns.NewMNSTopic(name, cli.instance)}
 	cli.topicItems[name] = t
 }
 
 // AddQueue 实例化队列
-func (cli *Client) AddQueue(name string, handler QueueHandler, waitSecond int) {
+func (cli *client) AddQueue(name string, handler QueueHandler, waitSecond int) {
 	q := new(queue)
 	q.Name = name
 	q.handler = handler
@@ -82,7 +74,7 @@ func (cli *Client) AddQueue(name string, handler QueueHandler, waitSecond int) {
 }
 
 // GetTopic 获取主题
-func (cli *Client) GetTopic(name string) Topic {
+func (cli *client) GetTopic(name string) Topic {
 	if _, ok := cli.topicItems[name]; !ok {
 		cli.AddTopic(name)
 	}
@@ -91,12 +83,12 @@ func (cli *Client) GetTopic(name string) Topic {
 }
 
 // GetQueue 获取队列
-func (cli *Client) GetQueue(name string) Queue {
+func (cli *client) GetQueue(name string) Queue {
 	return cli.queueItems[name]
 }
 
 // ListenQueues 监听队列
-func (cli *Client) ListenQueues() {
+func (cli *client) ListenQueues() {
 	if len(cli.queueItems) == 0 {
 		return
 	}

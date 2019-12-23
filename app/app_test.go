@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/ebar-go/ego/log"
+	"github.com/ebar-go/ego/component/log"
 	"github.com/magiconair/properties/assert"
 	"testing"
 )

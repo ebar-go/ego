@@ -1,8 +1,6 @@
 package http
 
 import (
-	"github.com/ebar-go/ego/config"
-	"github.com/ebar-go/ego/event"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/gin-gonic/gin"
@@ -19,6 +17,7 @@ type Server struct {
 	// gin的路由
 	Router *gin.Engine
 
+	// not found handler
 	NotFoundHandler func(ctx *gin.Context)
 }
 
@@ -40,15 +39,6 @@ func NewServer() *Server {
 func (server *Server) Start(port int) error {
 	// 防重复操作
 	server.mu.Lock()
-
-	// 设置端口
-	config.Instance.ServicePort = port
-
-	// 准备容器
-	event.PrepareContainer()
-
-	// 准备日志管理器
-	event.PrepareLogManager()
 
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)

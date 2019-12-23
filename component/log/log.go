@@ -23,7 +23,7 @@ type Logger interface {
 // logger 日志结构体
 type logger struct {
 	instance *logrus.Logger // logrus实例
-	extends Context
+	extends  Context
 }
 
 type Context map[string]interface{}

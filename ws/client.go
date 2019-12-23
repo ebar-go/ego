@@ -1,29 +1,26 @@
 package ws
 
 import (
+	"github.com/ebar-go/ego/helper"
 	"github.com/gorilla/websocket"
 	"github.com/satori/go.uuid"
-	"net/http"
 )
 
+// IClient
 type IClient interface {
 	OnOpen()
 	OnClose()
-	Read()
-	Write()
+	Listen()
 	SendMessage(message []byte)
 }
 
 // Client is a websocket client
 type Client struct {
-	// 唯一标示
+	// unique id
 	ID string
 
-	// 句柄
-	Socket *websocket.Conn
-
-	// 发送字符内容
-	Send chan []byte
+	// connection
+	Conn *websocket.Conn
 
 	// 处理方法
 	Handler IHandler
@@ -33,28 +30,30 @@ type Client struct {
 
 	// 关闭时的回调
 	CloseHandler func()
-	Extends      map[string]interface{}
+
+	// 扩展字段
+	Extends map[string]interface{}
+
+	manager Manager
 }
 
-var u = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }} // use default options
-
-// GetUpgradeConnection get web socket connection
-func GetUpgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
-	respHeader := http.Header{"Sec-WebSocket-Protocol": []string{r.Header.Get("Sec-WebSocket-Protocol")}}
-	return u.Upgrade(w, r, respHeader)
-}
-
-// DefaultClient
-func DefaultClient(conn *websocket.Conn, handler IHandler) *Client {
+// NewClient return Client
+func NewClient(conn *websocket.Conn, handler IHandler) *Client {
 	if handler == nil {
 		handler = DefaultHandler
 	}
-	return &Client{ID: uuid.NewV4().String(), Socket: conn, Send: make(chan []byte), Handler: handler, Extends: map[string]interface{}{}}
+	return &Client{
+		ID:      uuid.NewV4().String(),
+		Conn:    conn,
+		Handler: handler,
+		Extends: map[string]interface{}{},
+	}
 }
 
-// Send
+// SendMessage
 func (c *Client) SendMessage(message []byte) {
-	c.Send <- message
+	_ = c.Conn.WriteMessage(websocket.TextMessage, message)
+
 }
 
 // OnConnect
@@ -71,18 +70,23 @@ func (c *Client) OnClose() {
 	}
 }
 
-// Read 读取数据
-func (c *Client) Read() {
+// 关闭连接
+func (c *Client) close() {
+	c.OnClose()
+	_ = c.Conn.Close()
+	c.manager.UnregisterClient(c)
+}
+
+// Listen 监听
+func (c *Client) Listen() {
 	defer func() {
-		manager.UnregisterClient(c)
-		c.Socket.Close()
+		c.close()
 	}()
 
 	for {
-		_, message, err := c.Socket.ReadMessage()
+		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
-			manager.UnregisterClient(c)
-			c.Socket.Close()
+			helper.Debug(err)
 			break
 		}
 
@@ -93,26 +97,7 @@ func (c *Client) Read() {
 			ctx.Set(key, value)
 		}
 
-		// get response and send
-		manager.Broadcast(c.Handler(ctx))
-	}
-}
-
-// Write 写数据
-func (c *Client) Write() {
-	defer func() {
-		c.Socket.Close()
-	}()
-
-	for {
-		select {
-		case message, ok := <-c.Send:
-			if !ok {
-				c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
-				return
-			}
-
-			c.Socket.WriteMessage(websocket.TextMessage, message)
-		}
+		result := c.Handler(ctx)
+		c.SendMessage([]byte(result))
 	}
 }

@@ -201,7 +201,7 @@ func main() {//
 ```go
 package main
 import (
-       	"github.com/ebar-go/ego/log"
+       	"github.com/ebar-go/ego/component/log"
        	"os"
        )
 func main() {
@@ -215,7 +215,7 @@ func main() {
 ```go
 package main
 import (
-       	"github.com/ebar-go/ego/log"
+       	"github.com/ebar-go/ego/component/log"
        	"os"
        )
 func main() {
