@@ -1,18 +1,18 @@
 package mysql
 
 import (
+	"fmt"
+	"github.com/ebar-go/ego/helper"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"fmt"
 	"net"
 	"strconv"
-	"github.com/ebar-go/ego/helper"
 )
 
 const (
 	defaultIdleConnections = 10
 	defaultOpenConnections = 40
-	defaultPort = 3306
+	defaultPort            = 3306
 )
 
 // Open 创建连接池

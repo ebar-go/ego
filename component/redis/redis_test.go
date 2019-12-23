@@ -1,8 +1,8 @@
 package redis
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func getConf() Conf {
@@ -22,4 +22,3 @@ func TestInitPool(t *testing.T) {
 	defer cli.Close()
 
 }
-

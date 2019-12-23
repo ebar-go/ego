@@ -1,14 +1,13 @@
 package impl
 
 import (
-	"github.com/valyala/fasthttp"
-	"github.com/pkg/errors"
-	"github.com/ebar-go/ego/http/client/request"
 	"bytes"
+	"github.com/ebar-go/ego/http/client/request"
+	"github.com/pkg/errors"
+	"github.com/valyala/fasthttp"
 )
 
 type FastHttpClient struct {
-
 }
 
 func NewFastHttpClient() FastHttpClient {

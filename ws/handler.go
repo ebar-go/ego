@@ -27,7 +27,6 @@ func (ctx *Context) GetMessage() string {
 	return ctx.message
 }
 
-
 func DefaultHandler(ctx *Context) string {
 	// do nothing
 	return ctx.message

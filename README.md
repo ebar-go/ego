@@ -42,7 +42,7 @@ func main() {
         fmt.Println("hello,world")
     })
     
-    helper.CheckErr("StartServer", server.Start(), true)
+    helper.FatalError("StartServer", server.Start(8080))
 }
 ```
 

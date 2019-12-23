@@ -4,7 +4,6 @@ package log
 import (
 	"fmt"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/helper"
 	"github.com/sirupsen/logrus"
 	"os"
@@ -18,11 +17,13 @@ type Logger interface {
 	Warn(message string, context Context)
 	Error(message string, context Context)
 	Fatal(message string, context Context)
+	SetExtends(extends Context)
 }
 
 // logger 日志结构体
 type logger struct {
-	instance     *logrus.Logger // logrus实例
+	instance *logrus.Logger // logrus实例
+	extends Context
 }
 
 type Context map[string]interface{}
@@ -41,8 +42,8 @@ func NewFileLogger(filePath string) Logger {
 
 	if !helper.IsPathExist(filePath) {
 		err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
-		if err != nil{
-			fmt.Printf("Failed to init logger:%s,%s\n", filePath ,err.Error())
+		if err != nil {
+			fmt.Printf("Failed to init logger:%s,%s\n", filePath, err.Error())
 			return logger
 		}
 	}
@@ -51,13 +52,12 @@ func NewFileLogger(filePath string) Logger {
 	if err == nil {
 		logger.instance.Out = file
 		fmt.Printf("Init Logger Success:%s\n", filePath)
-	}else {
-		fmt.Printf("Failed to init logger:%s,%s\n", filePath ,err.Error())
+	} else {
+		fmt.Printf("Failed to init logger:%s,%s\n", filePath, err.Error())
 	}
 
 	return logger
 }
-
 
 // getDefaultLogInstance 实例化默认日志实例
 func defaultInstance() *logrus.Logger {
@@ -78,6 +78,10 @@ func defaultInstance() *logrus.Logger {
 	return instance
 }
 
+func (l *logger) SetExtends(extends Context) {
+	l.extends = extends
+}
+
 // withFields 携带字段
 func (l *logger) withFields(context Context) *logrus.Entry {
 	if _, ok := context["trace_id"]; !ok {
@@ -85,10 +89,7 @@ func (l *logger) withFields(context Context) *logrus.Entry {
 	}
 
 	return l.instance.WithFields(logrus.Fields{
-		"context": helper.MergeMaps(Context{
-			"service_name": config.Instance.ServiceName,
-			"service_port": config.Instance.ServicePort,
-		}, context),
+		"context": helper.MergeMaps(l.extends, context),
 	})
 }
 

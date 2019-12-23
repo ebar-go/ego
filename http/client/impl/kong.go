@@ -8,17 +8,16 @@ import (
 	"time"
 )
 
-
 // Kong kong客户端
 type KongClient struct {
-	Iss string // 签名
-	Secret string // 秘钥
+	Iss              string // 签名
+	Secret           string // 秘钥
 	ReferServiceName string
 	ReferRequestHost string
-	GatewayTrace string
-	XServiceUser string
-	TokenExpireTime int // jwt过滤时间
-	Address string // kong网关地址
+	GatewayTrace     string
+	XServiceUser     string
+	TokenExpireTime  int    // jwt过滤时间
+	Address          string // kong网关地址
 }
 
 // GetCompleteUrl 获取完整的地址
@@ -34,19 +33,19 @@ func (kong KongClient) GenerateToken() (string, error) {
 	now := time.Now().Unix()
 	exp := now + int64(kong.TokenExpireTime)
 	claim := jwt.MapClaims{
-		"iss":       kong.Iss,
-		"iat":      now,
+		"iss": kong.Iss,
+		"iat": now,
 		"exp": exp,
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,claim)
-	tokenStr,err  := token.SignedString([]byte(kong.Secret))
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	tokenStr, err := token.SignedString([]byte(kong.Secret))
 	return tokenStr, err
 }
 
 // NewRequest
 func (kong KongClient) NewRequest(param request.Param) request.IRequest {
 	// 生成kong的token
-	jwtToken , _ := kong.GenerateToken()
+	jwtToken, _ := kong.GenerateToken()
 	param.AddHeader("Accept-Encoding", "charset=UTF-8")
 	param.AddHeader("Refer-Service-Name", kong.ReferServiceName)
 	param.AddHeader("Refer-Request-Host", kong.ReferRequestHost)

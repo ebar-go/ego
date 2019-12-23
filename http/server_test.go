@@ -24,8 +24,7 @@ func TestServer_Start(t *testing.T) {
 	assert.Nil(t, app.Start(config.Instance.ServicePort))
 }
 
-
-func TestMain(m *testing.M)  {
+func TestMain(m *testing.M) {
 
 	m.Run()
 }

@@ -36,4 +36,3 @@ func (t *Timestamp) Scan(v interface{}) error {
 	}
 	return fmt.Errorf("can not convert %v to timestamp", v)
 }
-

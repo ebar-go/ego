@@ -1,13 +1,13 @@
 package trace
 
 import (
-	"sync"
 	"github.com/petermattis/goid"
+	"sync"
 )
 
 var (
 	traceIds = map[int64]string{}
-	rwm        sync.RWMutex
+	rwm      sync.RWMutex
 )
 
 // SetTraceId

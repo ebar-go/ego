@@ -4,11 +4,9 @@ import (
 	"github.com/ebar-go/ego/helper"
 )
 
-// 系统日志实例
-var Instance = new(SystemConfig)
 
-// SystemConfig 系统日志
-type SystemConfig struct {
+// Options 系统配置项
+type Config struct {
 	// 服务名称
 	ServiceName string
 
@@ -26,12 +24,15 @@ type SystemConfig struct {
 }
 
 // init 通过读取环境变量初始化系统配置
-func init()  {
-	Instance.ServiceName = helper.DefaultString(Getenv("SERVICE_NAME"), "app")
-	Instance.ServicePort = helper.DefaultInt(helper.String2Int(Getenv("SERVICE_PORT")), 8080)
+func NewInstance() *Config {
+	instance := &Config{}
+	instance.ServiceName = helper.DefaultString(Getenv("SERVICE_NAME"), "app")
+	instance.ServicePort = helper.DefaultInt(helper.String2Int(Getenv("SERVICE_PORT")), 8080)
 
-	Instance.LogPath = helper.DefaultString(Getenv("LOG_PATH"), "/tmp")
-	Instance.MaxResponseLogSize = helper.DefaultInt(helper.String2Int(Getenv("MAX_RESPONSE_LOG_SIZE")), 1000)
+	instance.LogPath = helper.DefaultString(Getenv("LOG_PATH"), "/tmp")
+	instance.MaxResponseLogSize = helper.DefaultInt(helper.String2Int(Getenv("MAX_RESPONSE_LOG_SIZE")), 1000)
 
-	Instance.JwtSignKey = []byte(Getenv("JWT_SIGN_KEY"))
+	instance.JwtSignKey = []byte(Getenv("JWT_SIGN_KEY"))
+
+	return instance
 }

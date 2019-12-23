@@ -1,6 +1,6 @@
 /**
 Apollo配置初始化、监听配置变动、获取配置
- */
+*/
 package apollo
 
 import (
@@ -27,12 +27,12 @@ type Conf struct {
 
 // Init 初始化apollo配置
 func Init(conf Conf) error {
-	agollo.InitCustomConfig(func () (*agollo.AppConfig, error) {
+	agollo.InitCustomConfig(func() (*agollo.AppConfig, error) {
 		return &agollo.AppConfig{
-			AppId:         conf.AppId,
-			Cluster:       conf.Cluster,
-			Ip:            conf.Ip,
-			NamespaceName: conf.Namespace,
+			AppId:            conf.AppId,
+			Cluster:          conf.Cluster,
+			Ip:               conf.Ip,
+			NamespaceName:    conf.Namespace,
 			BackupConfigPath: conf.BackupConfigPath,
 		}, nil
 	})
@@ -46,12 +46,12 @@ func ListenChangeEvent() <-chan *agollo.ChangeEvent {
 }
 
 // GetStringValue 获取字符串配置
-func GetStringValue(key , defaultValue string) string {
+func GetStringValue(key, defaultValue string) string {
 	return agollo.GetStringValue(key, defaultValue)
 }
 
 // GetIntValue 获取整型配置
-func GetIntValue(key string , defaultValue int) int {
+func GetIntValue(key string, defaultValue int) int {
 	return agollo.GetIntValue(key, defaultValue)
 }
 

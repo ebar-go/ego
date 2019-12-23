@@ -12,25 +12,24 @@ import (
 // prepareConf
 func prepareConf() Conf {
 	var conf = struct {
-		Apollo struct{
-			AppId string `yaml:"appId"`
-			Cluster string
-			Namespace string
-			Ip string
+		Apollo struct {
+			AppId            string `yaml:"appId"`
+			Cluster          string
+			Namespace        string
+			Ip               string
 			BackupConfigPath string `yaml:"backConfigPath"`
 		}
 	}{}
-
 
 	if err := config2.LoadYaml(&conf, "/tmp/app.yaml"); err != nil {
 		panic(err)
 	}
 
 	return Conf{
-		AppId: conf.Apollo.AppId,
-		Cluster: conf.Apollo.Cluster,
-		Ip: conf.Apollo.Ip,
-		Namespace: conf.Apollo.Namespace,
+		AppId:            conf.Apollo.AppId,
+		Cluster:          conf.Apollo.Cluster,
+		Ip:               conf.Apollo.Ip,
+		Namespace:        conf.Apollo.Namespace,
 		BackupConfigPath: conf.Apollo.BackupConfigPath,
 	}
 }
@@ -59,12 +58,12 @@ func TestListenChangeEvent(t *testing.T) {
 // TestGetStringValue 测试获取配置
 func TestGetStringValue(t *testing.T) {
 
-	fmt.Println(GetStringValue("LOG_FILE",""))
+	fmt.Println(GetStringValue("LOG_FILE", ""))
 }
 
 // TestGetIntValue
 func TestGetIntValue(t *testing.T) {
-	fmt.Println(GetIntValue("HTTP_PORT",8080))
+	fmt.Println(GetIntValue("HTTP_PORT", 8080))
 }
 
 // TestGetBoolValue
@@ -74,11 +73,11 @@ func TestGetBoolValue(t *testing.T) {
 
 // TestGetFloatValue
 func TestGetFloatValue(t *testing.T) {
-	fmt.Println(GetFloatValue("FLOAT_TEST",10.22))
+	fmt.Println(GetFloatValue("FLOAT_TEST", 10.22))
 }
 
 // TestMain main
 func TestMain(m *testing.M) {
-	_= Init(prepareConf())
+	_ = Init(prepareConf())
 	m.Run()
 }

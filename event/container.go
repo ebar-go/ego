@@ -8,7 +8,7 @@ import (
 	"github.com/ebar-go/ego/log"
 )
 
-func PrepareContainer()  {
+func PrepareContainer() {
 	c := container.New()
 
 	// 初始化JWT
@@ -19,11 +19,10 @@ func PrepareContainer()  {
 	container.App = c
 }
 
-func PrepareLogManager()  {
+func PrepareLogManager() {
 	log.InitManager(log.ManagerConf{
-		SystemName:   config.Instance.ServiceName,
+		SystemName: config.Instance.ServiceName,
 		SystemPort: config.Instance.ServicePort,
 		LogPath:    config.Instance.LogPath,
 	})
 }
-

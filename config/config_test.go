@@ -9,11 +9,11 @@ import (
 // TestLoadYaml
 func TestLoadYaml(t *testing.T) {
 	var conf = struct {
-		Apollo struct{
-			AppId string `yaml:"appId"`
-			Cluster string
-			Namespace string
-			Ip string
+		Apollo struct {
+			AppId            string `yaml:"appId"`
+			Cluster          string
+			Namespace        string
+			Ip               string
 			BackupConfigPath string `yaml:"backConfigPath"`
 		}
 	}{}
@@ -26,7 +26,7 @@ func TestLoadYaml(t *testing.T) {
 // TestLoadIni
 func TestLoadIni(t *testing.T) {
 	conf := struct {
-		DB struct{
+		DB struct {
 			Host string
 			Port int
 		}
@@ -39,9 +39,9 @@ func TestLoadIni(t *testing.T) {
 // TestLoadJson
 func TestLoadJson(t *testing.T) {
 	conf := struct {
-		DB struct{
+		DB struct {
 			Host string `json:"host"`
-			Port int `json:"port"`
+			Port int    `json:"port"`
 		} `json:"db"`
 	}{}
 

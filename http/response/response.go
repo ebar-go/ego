@@ -34,7 +34,6 @@ type Response struct {
 	Errors     []ErrorItem `json:"errors"`
 }
 
-
 // SetStatusCode
 func (response *Response) SetStatusCode(code int) {
 	response.StatusCode = code

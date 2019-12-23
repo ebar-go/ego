@@ -1,17 +1,17 @@
 package mysql
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func getConf() Conf {
 	return Conf{
-		Host: "127.0.0.1",
-		Port: 3306,
-		User: "root",
+		Host:     "127.0.0.1",
+		Port:     3306,
+		User:     "root",
 		Password: "123456",
-		LogMode:true,
+		LogMode:  true,
 	}
 }
 
@@ -22,4 +22,3 @@ func TestOpen(t *testing.T) {
 
 	defer conn.Close()
 }
-

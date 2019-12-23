@@ -10,7 +10,7 @@ func DefaultInt(v int, defaultV int) int {
 }
 
 // DefaultString if v is empty, return defaultV
-func DefaultString(v string, defaultV string) string  {
+func DefaultString(v string, defaultV string) string {
 	if v == "" {
 		return defaultV
 	}

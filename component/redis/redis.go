@@ -2,11 +2,11 @@
 package redis
 
 import (
+	"github.com/ebar-go/ego/helper"
 	"github.com/go-redis/redis"
-	"time"
 	"net"
 	"strconv"
-	"github.com/ebar-go/ego/helper"
+	"time"
 )
 
 const (

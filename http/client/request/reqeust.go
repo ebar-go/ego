@@ -1,3 +1,3 @@
 package request
 
-type IRequest interface {}
+type IRequest interface{}

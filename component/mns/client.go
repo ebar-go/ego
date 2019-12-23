@@ -62,12 +62,12 @@ func NewClient(conf Conf) IClient {
 
 // GenerateSign 生成签名
 func (cli *Client) GenerateSign(str string) string {
-	return  helper.GetMd5String(str + cli.conf.AccessKeySecret)
+	return helper.GetMd5String(str + cli.conf.AccessKeySecret)
 }
 
 // NewTopic 实例化主题
 func (cli *Client) AddTopic(name string) {
-	t := &topic{Name:name, instance:ali_mns.NewMNSTopic(name, cli.instance)}
+	t := &topic{Name: name, instance: ali_mns.NewMNSTopic(name, cli.instance)}
 	cli.topicItems[name] = t
 }
 
@@ -83,7 +83,7 @@ func (cli *Client) AddQueue(name string, handler QueueHandler, waitSecond int) {
 
 // GetTopic 获取主题
 func (cli *Client) GetTopic(name string) Topic {
-	if _ , ok := cli.topicItems[name]; !ok {
+	if _, ok := cli.topicItems[name]; !ok {
 		cli.AddTopic(name)
 	}
 
@@ -91,7 +91,7 @@ func (cli *Client) GetTopic(name string) Topic {
 }
 
 // GetQueue 获取队列
-func (cli *Client) GetQueue(name string) Queue{
+func (cli *Client) GetQueue(name string) Queue {
 	return cli.queueItems[name]
 }
 
@@ -107,7 +107,3 @@ func (cli *Client) ListenQueues() {
 		}
 	}
 }
-
-
-
-

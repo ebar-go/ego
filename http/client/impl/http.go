@@ -10,22 +10,22 @@ import (
 	"time"
 )
 
-const(
-	DefaultMaxIdleConns = 100
+const (
+	DefaultMaxIdleConns        = 100
 	DefaultMaxIdleConnsPerHost = 100
-	HttpSchema = "http://"
+	HttpSchema                 = "http://"
 )
 
 // HttpClient http客户端,支持长连接
 type HttpClient struct {
-	Timeout time.Duration
-	Transport *http.Transport
+	Timeout    time.Duration
+	Transport  *http.Transport
 	clientPool *http.Client
 }
 
 // NewHttpClient 默认http客户端
 func NewHttpClient() HttpClient {
-	return  HttpClient{
+	return HttpClient{
 		Timeout: time.Duration(3) * time.Second,
 		Transport: &http.Transport{ // 配置连接池
 			Proxy: http.ProxyFromEnvironment,
@@ -79,6 +79,5 @@ func (client HttpClient) Execute(request request.IRequest) (string, error) {
 		return "", err
 	}
 	return respStr, nil
-
 
 }

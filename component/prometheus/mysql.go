@@ -2,8 +2,8 @@ package prometheus
 
 // code from github.com/vearne/golib/metric
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/jinzhu/gorm"
+	"github.com/prometheus/client_golang/prometheus"
 	"sync"
 )
 
@@ -93,7 +93,6 @@ func (mc *MySQLCollector) register() {
 func (mc *MySQLCollector) stat(ch chan<- prometheus.Metric, desc *prometheus.Desc, typ prometheus.ValueType) {
 	for role, client := range mc.Clients {
 		st := client.DB().Stats()
-
 
 		ch <- prometheus.MustNewConstMetric(
 			desc,

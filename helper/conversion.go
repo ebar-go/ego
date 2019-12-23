@@ -2,12 +2,12 @@ package helper
 
 import (
 	"errors"
-	"reflect"
-	json "github.com/pquerna/ffjson/ffjson"
 	"fmt"
-	"strconv"
-	"net/http"
+	json "github.com/pquerna/ffjson/ffjson"
 	"io/ioutil"
+	"net/http"
+	"reflect"
+	"strconv"
 )
 
 // Struct2Map 支持结构体转化为map，在嵌套结构中不支持interface{}传值的结构体

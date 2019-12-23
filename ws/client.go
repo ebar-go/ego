@@ -2,8 +2,8 @@ package ws
 
 import (
 	"github.com/gorilla/websocket"
-	"net/http"
 	"github.com/satori/go.uuid"
+	"net/http"
 )
 
 type IClient interface {
@@ -17,13 +17,13 @@ type IClient interface {
 // Client is a websocket client
 type Client struct {
 	// 唯一标示
-	ID     string
+	ID string
 
 	// 句柄
 	Socket *websocket.Conn
 
 	// 发送字符内容
-	Send   chan []byte
+	Send chan []byte
 
 	// 处理方法
 	Handler IHandler
@@ -33,15 +33,15 @@ type Client struct {
 
 	// 关闭时的回调
 	CloseHandler func()
-	Extends map[string]interface{}
+	Extends      map[string]interface{}
 }
 
 var u = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }} // use default options
 
 // GetUpgradeConnection get web socket connection
 func GetUpgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
-	respHeader := http.Header{"Sec-WebSocket-Protocol" :[]string{r.Header.Get("Sec-WebSocket-Protocol")} }
-	return  u.Upgrade(w, r, respHeader)
+	respHeader := http.Header{"Sec-WebSocket-Protocol": []string{r.Header.Get("Sec-WebSocket-Protocol")}}
+	return u.Upgrade(w, r, respHeader)
 }
 
 // DefaultClient
@@ -49,7 +49,7 @@ func DefaultClient(conn *websocket.Conn, handler IHandler) *Client {
 	if handler == nil {
 		handler = DefaultHandler
 	}
-	return &Client{ID: uuid.NewV4().String(), Socket: conn, Send: make(chan []byte), Handler:handler, Extends: map[string]interface{}{}}
+	return &Client{ID: uuid.NewV4().String(), Socket: conn, Send: make(chan []byte), Handler: handler, Extends: map[string]interface{}{}}
 }
 
 // Send
@@ -70,7 +70,6 @@ func (c *Client) OnClose() {
 		c.CloseHandler()
 	}
 }
-
 
 // Read 读取数据
 func (c *Client) Read() {
@@ -117,7 +116,3 @@ func (c *Client) Write() {
 		}
 	}
 }
-
-
-
-

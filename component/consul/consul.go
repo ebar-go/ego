@@ -1,15 +1,15 @@
 /**
 集成consul组件，包含实例化consul客户端,服务发现,服务注册,服务注销,负载均衡等方法
- */
+*/
 package consul
 
 import (
-	consulapi "github.com/hashicorp/consul/api"
 	"fmt"
+	consulapi "github.com/hashicorp/consul/api"
 	"math/rand"
-	"time"
 	"net"
 	"strconv"
+	"time"
 )
 
 // Service 服务
@@ -32,9 +32,9 @@ type Service struct {
 
 // Client 客户端
 type Client struct {
-	Config *consulapi.Config // 配置
+	Config       *consulapi.Config // 配置
 	consulClient *consulapi.Client // consul客户端
-	initialize bool
+	initialize   bool
 }
 
 // DefaultConfig 默认配置
@@ -51,7 +51,6 @@ func NewServiceRegistration() *consulapi.AgentServiceRegistration {
 func NewServiceCheck() *consulapi.AgentServiceCheck {
 	return new(consulapi.AgentServiceCheck)
 }
-
 
 // NewClient 获取客户端
 func (client *Client) Init() (err error) {
@@ -98,12 +97,11 @@ func (client *Client) Discover(name string) ([]Service, error) {
 	var serviceItems []Service
 	for _, service := range services {
 		serviceItem := Service{
-			ID: service.Service.ID,
-			Name: service.Service.Service,
+			ID:      service.Service.ID,
+			Name:    service.Service.Service,
 			Address: service.Service.Address,
-			Port : service.Service.Port,
-			Tags: service.Service.Tags,
-
+			Port:    service.Service.Port,
+			Tags:    service.Service.Tags,
 		}
 		serviceItems = append(serviceItems, serviceItem)
 	}

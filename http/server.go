@@ -1,9 +1,10 @@
 package http
 
 import (
+	"github.com/ebar-go/ego/config"
+	"github.com/ebar-go/ego/event"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
-	"github.com/ebar-go/ego/event"
 	"github.com/gin-gonic/gin"
 	"net"
 	"strconv"
@@ -33,11 +34,15 @@ func NewServer() *Server {
 		NotFoundHandler: handler.NotFoundHandler,
 	}
 }
+
 // Start 启动服务
 // port http server port
 func (server *Server) Start(port int) error {
 	// 防重复操作
 	server.mu.Lock()
+
+	// 设置端口
+	config.Instance.ServicePort = port
 
 	// 准备容器
 	event.PrepareContainer()

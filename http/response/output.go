@@ -55,7 +55,7 @@ func Paginate(ctx *gin.Context, data interface{}, paginate *pagination.Paginator
 	v := reflect.ValueOf(data)
 	if formatMap && v.IsNil() {
 		resp.SetData([]interface{}{})
-	}else {
+	} else {
 		resp.SetData(data)
 	}
 

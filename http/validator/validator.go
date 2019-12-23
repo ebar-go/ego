@@ -4,12 +4,12 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/go-playground/locales/zh"
-	"github.com/go-playground/universal-translator"
-	zh_translations "github.com/go-playground/validator/v10/translations/zh"
 	"errors"
 	"github.com/ebar-go/ego/helper"
+	"github.com/go-playground/locales/zh"
+	"github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	zh_translations "github.com/go-playground/validator/v10/translations/zh"
 )
 
 // trans use single pattern
@@ -68,6 +68,3 @@ func (v *Validator) lazyInit() {
 		_ = zh_translations.RegisterDefaultTranslations(v.validate, trans)
 	})
 }
-
-
-

@@ -7,7 +7,6 @@ type IWebSocketManager interface {
 	UnregisterClient(client *Client)
 	Broadcast(message string)
 	Send(message []byte, ignore *Client)
-
 }
 
 // ClientManager is a websocket manager

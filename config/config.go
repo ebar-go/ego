@@ -1,17 +1,16 @@
 package config
 
 import (
-	"gopkg.in/gcfg.v1"
-	"io/ioutil"
-	"gopkg.in/yaml.v2"
 	"github.com/ebar-go/ego/helper"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"os"
 )
 
-
 // Load 加载ini配置
 func LoadIni(conf interface{}, filePath string) error {
-	return  gcfg.ReadFileInto(conf, filePath)
+	return gcfg.ReadFileInto(conf, filePath)
 }
 
 // Load 加载yaml配置

@@ -53,7 +53,7 @@ func RequestLog(c *gin.Context) {
 	// 获取响应内容
 	responseBody := blw.body.String()
 	// 截断响应内容
-	maxResponseSize := helper.Min(helper.Max(0, blw.body.Len() - 1), config.Instance.MaxResponseLogSize)
+	maxResponseSize := helper.Min(helper.Max(0, blw.body.Len()-1), config.Instance.MaxResponseLogSize)
 
 	// 日志格式
 	logContext["trace_id"] = traceId
@@ -103,4 +103,3 @@ func getRequestBody(c *gin.Context) interface{} {
 
 	return nil
 }
-

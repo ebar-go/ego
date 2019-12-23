@@ -9,14 +9,14 @@ import (
 )
 
 // Recover
-func Recover(ctx *gin.Context)  {
+func Recover(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
-			response.Error(ctx, 500,  "系统错误")
+			response.Error(ctx, 500, "系统错误")
 			fmt.Println(helper.Trace())
 
 			log.System().Error("system_error", log.Context{
-				"error" : r,
+				"error": r,
 			})
 		}
 	}()

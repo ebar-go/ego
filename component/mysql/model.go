@@ -6,4 +6,3 @@ type Model struct {
 	CreatedAt Timestamp `gorm:"column:createtime" json:"created_at"`
 	UpdatedAt Timestamp `gorm:"column:updatetime" json:"updated_at"`
 }
-

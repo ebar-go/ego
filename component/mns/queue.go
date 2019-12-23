@@ -1,10 +1,10 @@
 package mns
 
 import (
-	"github.com/aliyun/aliyun-mns-go-sdk"
-	"github.com/ebar-go/ego/log"
-	"github.com/ebar-go/ego/helper"
 	"encoding/json"
+	"github.com/aliyun/aliyun-mns-go-sdk"
+	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/log"
 )
 
 // Queue 队列接口
@@ -16,7 +16,7 @@ type Queue interface {
 	ReceiveMessage()
 
 	// 删除消息
-	DeleteMessage(receiptHandler string ) error
+	DeleteMessage(receiptHandler string) error
 
 	// 是否设置处理方法
 	HasHandler() bool
@@ -24,9 +24,9 @@ type Queue interface {
 
 // Queue 队列
 type queue struct {
-	Name string // 队列名称
-	instance ali_mns.AliMNSQueue // 队列实例
-	handler QueueHandler // 处理方式
+	Name       string              // 队列名称
+	instance   ali_mns.AliMNSQueue // 队列实例
+	handler    QueueHandler        // 处理方式
 	WaitSecond int
 }
 
@@ -64,45 +64,45 @@ func (q *queue) ReceiveMessage() {
 			{
 				var params Params
 				log.System().Info("mqParams", log.Context{
-					"receiveTime" : helper.GetTimeStr(),
-					"queue_name" : q.Name,
-					"resp" : resp,
-					"message_id" : resp.MessageId,
-					"body" : resp.MessageBody,
+					"receiveTime": helper.GetTimeStr(),
+					"queue_name":  q.Name,
+					"resp":        resp,
+					"message_id":  resp.MessageId,
+					"body":        resp.MessageBody,
 				})
 
 				// 解析消息
 				if err := json.Unmarshal([]byte(helper.DecodeBase64Str(resp.MessageBody)), &params); err != nil {
 					log.System().Error("invalidMessageBody", log.Context{
-						"err" : err.Error(),
-						"trace" : helper.Trace(),
+						"err":   err.Error(),
+						"trace": helper.Trace(),
 					})
-				}else {
+				} else {
 
 					log.Mq().Info("receiveMessage", log.Context{
-						"receiveTime" : helper.GetTimeStr(),
-						"queue_name" : q.Name,
-						"messageBody" : params.Content,
-						"tag" : params.Tag,
-						"trace_id" : params.TraceId,
+						"receiveTime": helper.GetTimeStr(),
+						"queue_name":  q.Name,
+						"messageBody": params.Content,
+						"tag":         params.Tag,
+						"trace_id":    params.TraceId,
 					})
 
 					if err := q.handler(params); err != nil {
 						log.System().Warn("processMessageFailed", log.Context{
-							"err" : err.Error(),
-							"trace" : helper.Trace(),
+							"err":   err.Error(),
+							"trace": helper.Trace(),
 						})
 
-					}else {
+					} else {
 						// 处理成功，删除消息
 						err := q.DeleteMessage(resp.ReceiptHandle)
 						log.Mq().Info("deleteMessage", log.Context{
-							"receiveTime" : helper.GetTimeStr(),
-							"queue_name" : q.Name,
-							"messageBody" : params.Content,
-							"tag" : params.Tag,
-							"trace_id" : params.TraceId,
-							"err" : err,
+							"receiveTime": helper.GetTimeStr(),
+							"queue_name":  q.Name,
+							"messageBody": params.Content,
+							"tag":         params.Tag,
+							"trace_id":    params.TraceId,
+							"err":         err,
 						})
 
 						endChan <- 1
@@ -113,8 +113,8 @@ func (q *queue) ReceiveMessage() {
 		case err := <-errChan:
 			{
 				log.System().Info("receiveMessageFailed", log.Context{
-					"err" : err.Error(),
-					"trace" : helper.Trace(),
+					"err":   err.Error(),
+					"trace": helper.Trace(),
 				})
 				endChan <- 1
 			}
@@ -127,6 +127,6 @@ func (q *queue) ReceiveMessage() {
 }
 
 // DeleteMessage 删除消息
-func (q *queue) DeleteMessage(receiptHandler string ) error{
+func (q *queue) DeleteMessage(receiptHandler string) error {
 	return q.instance.DeleteMessage(receiptHandler)
 }
