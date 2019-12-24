@@ -25,9 +25,6 @@ type RedisConfig struct {
 	// 最大尝试次数,默认3次
 	MaxRetries int
 
-	// 是否为默认连接
-	Default bool
-
 	// 超时, 默认10s
 	IdleTimeout time.Duration
 }
@@ -52,8 +49,6 @@ func (conf *RedisConfig) complete() {
 
 // Options 转换为options
 func (conf *RedisConfig) Options() *redis.Options {
-	conf.complete()
-
 	address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
 
 	return &redis.Options{

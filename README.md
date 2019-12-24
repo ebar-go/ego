@@ -14,6 +14,7 @@
 - 集成参数验证器
 - 集成websocket
 - 集成配置文件,支持json,ini,yaml等格式
+- 集成di,统一管理全局变量
 
 ## 安装
 
@@ -42,12 +43,12 @@ func main() {
         fmt.Println("hello,world")
     })
     
-    helper.FatalError("StartServer", server.Start(8080))
+    helper.FatalError("StartServer", server.Start())
 }
 ```
 
 #### 中间件
-集成JWT,跨域等中间件
+集成JWT,请求日志,跨域等中间件
 - JWT
 ```go
 package main
@@ -60,7 +61,6 @@ import (
 	)
 func main() {
     server := http.NewServer()
-    server.SetJwtKey([]byte("jwt_key"))
     // 添加路由
     server.Router.GET("/test", func(context *gin.Context) {
         fmt.Println("hello,world")
@@ -75,7 +75,52 @@ func main() {
     	    fmt.Println(middleware.GetCurrentClaims(context))
     	})
     }
-    helper.CheckErr("StartServer", server.Start(), true)
+    helper.FatalError("StartServer", server.Start())
+}
+```
+
+- RequestLog 请求日志
+
+- Cors
+```go
+package main
+import (
+"github.com/ebar-go/ego/http"
+"github.com/ebar-go/ego/http/middleware"
+)
+func main() {
+    server := http.NewServer()
+    // 根据情况，中间件一般放在路由的前面,否则会在handler处理完成后生效
+    server.Router.Use(middleware.CORS) // 跨域
+    server.Router.Use(middleware.Recover) // 错误处理机制
+}
+```
+
+### DI 全局变量管理
+通过集成`https://github.com/uber-go/dig`,用依赖注入的方式管理全局变量
+```go
+package main
+import (
+
+"fmt"
+"github.com/ebar-go/ego/app"
+"github.com/ebar-go/ego/helper"
+)
+func main() {
+    // 系统容器,将配置、数据库、Redis连接、mns客户端等
+    fmt.Println(app.Config())
+    
+    // 自定义容器
+    container := app.NewContainer()
+    container.Provide(func() int{
+        globalV := 1
+        return globalV
+    })
+    err := container.Invoke(func(globalV int) {
+        fmt.Println(globalV)
+    })
+    helper.CheckError("GetGlobalV", err)
+
 }
 ```
 
@@ -101,16 +146,16 @@ func main() {
     	Ip: "192.168.0.19:8080",
     	Namespace: "application",
     }
-    helper.CheckErr("InitApollo", apollo.Init(conf), true)
+    helper.FatalError("InitApollo", apollo.Init(conf))
     
     // 获取配置
     logFilePath := apollo.GetStringValue("LOG_FILE","/var/tmp")
     fmt.Println(logFilePath)
-    // 另外，可以使用定时任务，监听配置变更
+
+    // 另外，可以使用定时任务，监听配置变更,更多请查看test
 }
 
 ```
-更多方法请查看测试用例
 
 ### consul
 微服务(SOA),集成consul组件
@@ -172,6 +217,9 @@ func main() {
     	panic(err)
     }
     service, err := client.LoadBalance(items)
+    if err != nil {
+        panic(err)
+    }   
     fmt.Println(service.GetHost())
 }
 ```
@@ -191,6 +239,8 @@ func main() {//
     // 获取当前时间
     fmt.Println("获取当前时间:" , helper.GetTimeStr())
     helper.Debug("打印调试")
+    
+    // 更多请查看使用示例
 }
 ```
 
@@ -201,13 +251,15 @@ func main() {//
 ```go
 package main
 import (
-       	"github.com/ebar-go/ego/component/log"
+       	"github.com/ebar-go/ego/app"
+        "github.com/ebar-go/ego/component/log"
        	"os"
        )
 func main() {
-    log.App().Info("test", log.Context{"a":1})
-    log.App().Debug("test", log.Context{"a":1})
-    log.App().Warn("test", log.Context{"a":1})
+    app.LogManager().App().Info("test", log.Context{"a":1})
+    app.LogManager().App().Debug("test", log.Context{"a":1})
+    app.LogManager().App().Warn("test", log.Context{"a":1})
+    app.LogManager().App().Error("test", log.Context{"a":1})
 }
 ```
 - 自定义
@@ -223,7 +275,6 @@ func main() {
     logger.Debug("test debug", log.Context{"name":"123"})
 }
 ```
-
 
 ### HTTP请求客户端
 提供官方的http包、fasthttp(推荐使用),kong网关的http客户端
@@ -262,26 +313,13 @@ func main() {
 ```go
 package main
 import (
-       	"github.com/ebar-go/ego/component/mysql"
-       	"github.com/ebar-go/ego/helper"
-       	"os"
+       	"github.com/ebar-go/ego/app"
        )
 func main() {
-    conf := mysql.Conf{
-    	Name: "test",
-    	Host: "127.0.0.1",
-    	Port: 3306,
-    	Default: true,
-    	LogMode:true,
-    }
+    conn := app.Mysql()
+    defer conn.Close()
     
-    helper.CheckErr("InitMysqlPool", mysql.InitPool(conf), true)
-    
-    conn := mysql.GetConnection()
     conn.DB().Ping()
-    defer func() {
-    	mysql.CloseConnectionGroup()
-    }()
     
 }
 ```
@@ -292,20 +330,13 @@ func main() {
 ```go
 package main
 import (
-       	"github.com/ebar-go/ego/component/redis"
+       	"github.com/ebar-go/ego/app"
        	"github.com/ebar-go/ego/helper"
        	"os"
        	"fmt"
        )
 func main() {
-    conf := redis.Conf{
-    	Host: "192.168.0.222",
-    	Port: 6379,
-    }
-    
-    helper.CheckErr("InitRedisPool", redis.InitPool(conf), true)
-    
-    conn := redis.GetConnection()
+    conn := app.Redis()
     if err := conn.Set("key", "value", 0).Err(); err != nil {
     	fmt.Println(err)
     }
@@ -319,29 +350,29 @@ func main() {
 ```go
 package main
 import (
-       	"github.com/ebar-go/ego/component/mns"
+       	"github.com/ebar-go/ego/app"
+"github.com/ebar-go/ego/component/mns"
        	"github.com/ebar-go/ego/helper"
        	"os"
        	"fmt"
        )
 func main()  {
-	conf := mns.Conf{
-    		Url:             "endpoint",
-    		AccessKeyId:     "id",
-    		AccessKeySecret: "secret",
-    	}
+	// 添加队列处理方法
+	app.Mns().AddQueue("queueName",  Process, 30)
     
-    	mnsClient := mns.InitClient(conf)
+    // 使用定时任务监听队列
+    _ = app.Task().AddFunc(fmt.Sprintf("*/%d * * * * *", 1), func() {
+    	app.Mns().ListenQueues()
+    })
     
-    	// 添加队列
-    	mnsClient.AddQueue(&mns.Queue{
-    		Name:       "queueName",
-    		Handler:    func(params mns.Params) error {
-    		    fmt.Println(params)
-    		    return nil
-    		},
-    		WaitSecond: 30,
-    	})
+    // 通过主体发送消息
+    resp, err := app.Mns().PublishMessage("topicName", mns.Params{}, "filterTag")
+    fmt.Println(resp, err)
+}
+
+func Process(params mns.Params) error {
+    fmt.Println(params)
+    return nil
 }
 ```
 
@@ -351,7 +382,8 @@ func main()  {
 ```go
 package main
 import (
-       	"github.com/ebar-go/ego/component/mysql"
+       	"github.com/ebar-go/ego/app"
+"github.com/ebar-go/ego/component/mysql"
        	"github.com/ebar-go/ego/component/prometheus"
        	"github.com/ebar-go/ego/helper"
        	"github.com/ebar-go/ego/http"
@@ -359,14 +391,14 @@ import (
        )
 func main() {
     
-    conn := mysql.GetConnection()
+    conn := app.Mysql()
     prometheus.ListenMysql(conn, "server")
     
     server := http.NewServer()
     
     server.Router.GET("/metrics", prometheus.Handler)
     
-    helper.CheckErr("StartServer", server.Start(), true)
+    helper.FatalError("StartServer", server.Start())
     
 }
 ```
@@ -412,12 +444,26 @@ func main() {
        })
     })
     
-    helper.CheckErr("StartServer", server.Start(), true)
+    helper.FatalError("StartServer", server.Start())
     
 }
 ```
 
 ### test 单元测试
+```go
+package test
+import (
+
+"github.com/magiconair/properties/assert"
+"testing"
+)
+
+func TestName(t *testing.T) {
+    expect := 1
+    got := 1
+    assert.Equal(t, expect, got)
+}
+```
 
 ### 支持websocket
 基于`github.com/gorilla/websocket`实现websocket
@@ -425,7 +471,8 @@ func main() {
 ```go
 package main
 import (
-	"github.com/ebar-go/ego/http"
+	"github.com/ebar-go/ego/app"
+"github.com/ebar-go/ego/http"
 	"github.com/ebar-go/ego/ws"
 	"github.com/gin-gonic/gin"
 	"fmt"
@@ -435,7 +482,7 @@ import (
 
 func main() {
 	// 使用协程启动
-	go ws.GetManager().Start()
+	go app.WebSocket().Start()
 	
     server := http.NewServer()
     // 添加路由
@@ -453,7 +500,7 @@ func main() {
         
         // TODO 根据tag扩展handler
         
-        client := ws.DefaultClient(conn, func(ctx *ws.Context) string {
+        client := ws.NewClient(conn, func(ctx *ws.Context) string {
         	// do something
             return ctx.GetMessage()
         })
@@ -463,13 +510,12 @@ func main() {
          Name string
         }{Name: "test"}
         
-        ws.GetManager().RegisterClient(client)
+        app.WebSocket().RegisterClient(client)
         
-        go client.Read()
-        go client.Write()
+        go client.Listen()
     })
     
-    helper.CheckErr("StartServer", server.Start(), true)
+    helper.FatalError("StartServer", server.Start())
 }
 ```
 ## TODO

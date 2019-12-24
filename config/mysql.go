@@ -41,7 +41,7 @@ type MysqlConfig struct {
 }
 
 // complete 补全配置
-func (conf *MysqlConfig) Complete() {
+func (conf *MysqlConfig) complete() {
 	conf.MaxIdleConnections = helper.DefaultInt(conf.MaxIdleConnections, mysqlDefaultIdleConnections)
 	conf.MaxOpenConnections = helper.DefaultInt(conf.MaxOpenConnections, mysqlDefaultOpenConnections)
 	conf.Port = helper.DefaultInt(conf.Port, mysqlDefaultPort)
@@ -49,6 +49,7 @@ func (conf *MysqlConfig) Complete() {
 
 // Dsn 获取dsn
 func (conf MysqlConfig) Dsn() string {
+
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		conf.User,
 		conf.Password,

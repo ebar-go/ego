@@ -1,9 +1,5 @@
 package ws
 
-import (
-	"fmt"
-)
-
 // Manager ws管理器接口
 type Manager interface {
 	// register client
@@ -57,12 +53,10 @@ func (manager *manager) Start() {
 
 			// emm..如果不这么做，没有想到更好的办法在defer时删除manager的client
 			client.manager = manager
-			manager.Broadcast(fmt.Sprintf("%s is registered", client.ID))
 		case client := <-manager.Unregister:
 			if _, ok := manager.clients[client.ID]; ok {
 				delete(manager.clients, client.ID)
 			}
-			manager.Broadcast(fmt.Sprintf("%s is unregistered", client.ID))
 		}
 	}
 }

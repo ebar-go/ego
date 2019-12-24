@@ -5,6 +5,7 @@ package apollo
 
 import (
 	"github.com/zouyx/agollo"
+	"os"
 )
 
 // Apollo apollo配置项
@@ -37,7 +38,24 @@ func Init(conf Conf) error {
 		}, nil
 	})
 
-	return agollo.Start()
+	if err := agollo.Start(); err != nil {
+		return err
+	}
+
+	loadEnv()
+	return nil
+}
+
+// load to env
+func loadEnv()  {
+	cache := agollo.GetApolloConfigCache().NewIterator()
+	for  {
+		item := cache.Next()
+		if item == nil {
+			break
+		}
+		os.Setenv(string(item.Key), string(item.Value))
+	}
 }
 
 // ListenApolloChangeEvent 监听配置变动

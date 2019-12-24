@@ -3,12 +3,13 @@ package app
 import (
 	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/log"
-	"github.com/ebar-go/ego/component/mysql"
+	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/helper"
 	"github.com/ebar-go/ego/ws"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/robfig/cron"
 	"go.uber.org/dig"
 )
@@ -104,7 +105,7 @@ func Redis() (connection *redis.Client) {
 	if err := app.Invoke(func(conn *redis.Client) {
 		connection = conn
 	}); err != nil {
-		connection = redis.NewClient(Config().RedisConfig.Options())
+		connection = redis.NewClient(Config().Redis().Options())
 		_, err = connection.Ping().Result()
 		helper.FatalError("InitRedis", err)
 		_ = app.Provide(func() *redis.Client {
@@ -120,10 +121,9 @@ func Mysql() (connection *gorm.DB) {
 	if err := app.Invoke(func(conn *gorm.DB) {
 		connection = conn
 	}); err != nil {
-		conf := Config().MysqlConfig
-		conf.Complete()
+		conf := Config().Mysql()
 
-		connection, err = mysql.Open(Config().MysqlConfig.Dsn())
+		connection, err = gorm.Open("mysql", conf.Dsn())
 		helper.FatalError("InitMysql", err)
 
 		// 设置是否打印日志
@@ -140,18 +140,25 @@ func Mysql() (connection *gorm.DB) {
 	return connection
 }
 
-// TODO 因为mns组件需要调用Config和LogManager,暂时没有好的办法解决循环调用
-//// Mns 阿里云mns
-//func Mns() (client mns.Client) {
-//	if err := app.Invoke(func(cli mns.Client) {
-//		client = cli
-//	}); err != nil {
-//		client = mns.NewClient(Config().MnsConfig)
-//		helper.CheckError("InitMns", err)
-//		_ = app.Provide(func() mns.Client {
-//			return client
-//		})
-//	}
-//
-//	return client
-//}
+func AutoConnectMysql()  {
+	_ = Mysql()
+}
+
+func AutoConnectRedis()  {
+	_ = Redis()
+}
+
+// Mns 阿里云mns
+func Mns() (client mns.Client) {
+	if err := app.Invoke(func(cli mns.Client) {
+		client = cli
+	}); err != nil {
+		conf := Config().Mns()
+		client = mns.NewClient(conf.Url, conf.AccessKeyId, conf.AccessKeySecret, LogManager())
+		_ = app.Provide(func() mns.Client {
+			return client
+		})
+	}
+
+	return client
+}
