@@ -1,10 +1,10 @@
 package consul
 
 import (
-	"testing"
 	"fmt"
 	"github.com/ebar-go/ego/helper"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func getClient() *Client {
@@ -12,7 +12,7 @@ func getClient() *Client {
 	config.Address = "192.168.0.222:8500"
 
 	return &Client{
-		Config:config,
+		Config: config,
 	}
 }
 
@@ -72,7 +72,6 @@ func TestClient_DeRegister(t *testing.T) {
 	t.SkipNow()
 
 	client := getClient()
-
 
 	err := client.DeRegister("epet-go-demo-2")
 	assert.Nil(t, err)

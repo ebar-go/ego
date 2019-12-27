@@ -2,30 +2,30 @@ package http
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego/http/middleware"
+	"github.com/ebar-go/ego/app"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestNewServer(t *testing.T) {
-	app := NewServer()
-	assert.Nil(t, app.Start())
+	server := NewServer()
+	assert.NotNil(t, server)
 }
 
-
-func TestServer_Init(t *testing.T) {
-	app := NewServer()
-	app.SetName("test")
-	app.SetJwtKey([]byte("jwt_key"))
-	app.SetLogPath("/tmp/log")
-	assert.Nil(t, app.Start())
+func TestServer_Start(t *testing.T) {
+	server := NewServer()
 
 	// 添加路由
-	app.Router.Use(middleware.JWT)
-	app.Router.GET("/test", func(context *gin.Context) {
+	server.Router.GET("/test", func(context *gin.Context) {
 		fmt.Println("hello,world")
 	})
 
-	assert.Nil(t, app.Start())
+	err := server.Start(app.Config().ServicePort)
+	assert.Nil(t, err)
+}
+
+func TestMain(m *testing.M) {
+
+	m.Run()
 }

@@ -1,17 +1,18 @@
 package helper
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
-const(
+const (
 	defaultTimeFormat = "2006-01-02 15:04:05"
 	defaultDateFormat = "2006-01-02"
 )
 
+// GetTime 获取本地化后的时间
 func GetTime() time.Time {
-	var cstZone = time.FixedZone("CST", 8*3600)       // 东八
+	var cstZone = time.FixedZone("CST", 8*3600) // 东八
 	return time.Now().In(cstZone)
 }
 
@@ -41,5 +42,5 @@ func GetLastMonthTimeStr() string {
 }
 
 func GetTimeStampFloatStr() string {
-	return fmt.Sprintf("%.6f", float64(GetTime().UnixNano()) / 1e9)
+	return fmt.Sprintf("%.6f", float64(GetTime().UnixNano())/1e9)
 }

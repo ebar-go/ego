@@ -1,9 +1,9 @@
 package helper
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
-	"fmt"
 )
 
 // ArrayUniqueInt 排重
@@ -19,6 +19,7 @@ func ArrayUniqueInt(items []int) []int {
 	return result
 }
 
+// SliceIntToString 切片int转字符串
 func SliceIntToString(items []int) []string {
 	result := make([]string, 0, len(items))
 	for _, item := range items {
@@ -37,7 +38,7 @@ func GetStringItemOfArray(items map[int]string, index int, defaultValue string) 
 }
 
 // Implode 连接slice为字符串
-func Implode(separator string ,items []interface{}) string {
+func Implode(separator string, items []interface{}) string {
 	return strings.Replace(strings.Trim(fmt.Sprint(items), "[]"), " ", separator, -1)
 }
 
@@ -55,10 +56,9 @@ func ExplodeInt(str, separator string) (result []int) {
 }
 
 // Explode 分割字符串为int
-func ExplodeString(str, separator string) ([]string) {
+func ExplodeString(str, separator string) []string {
 	return strings.Split(str, separator)
 }
-
 
 // IntSliceToInterface int类型的切片转interface
 func IntSliceToInterface(items []int) []interface{} {

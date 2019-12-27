@@ -1,34 +1,47 @@
 package apollo
 
 import (
-	"testing"
-	"fmt"
-	"github.com/robfig/cron"
 	"encoding/json"
+	"fmt"
+	config2 "github.com/ebar-go/ego/config"
+	"github.com/robfig/cron"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
-func getConf() Conf {
+// prepareConf
+func prepareConf() Conf {
+	var conf = struct {
+		Apollo struct {
+			AppId            string `yaml:"appId"`
+			Cluster          string
+			Namespace        string
+			Ip               string
+			BackupConfigPath string `yaml:"backConfigPath"`
+		}
+	}{}
+
+	if err := config2.LoadYaml(&conf, "/tmp/app.yaml"); err != nil {
+		panic(err)
+	}
+
 	return Conf{
-		AppId: "open-api",
-		Cluster: "local",
-		Ip: "192.168.0.19:8080",
-		Namespace: "application",
+		AppId:            conf.Apollo.AppId,
+		Cluster:          conf.Apollo.Cluster,
+		Ip:               conf.Apollo.Ip,
+		Namespace:        conf.Apollo.Namespace,
+		BackupConfigPath: conf.Apollo.BackupConfigPath,
 	}
 }
 
-// TestInitApolloConfig 测试初始化
-func TestApollo_Init(t *testing.T) {
-	err := Init(getConf())
+// TestInit 测试初始化
+func TestInit(t *testing.T) {
+	err := Init(prepareConf())
 	assert.Nil(t, err)
-
-
 }
 
-// TestApollo_ListenChangeEvent 测试监听配置变更
-func TestApollo_ListenChangeEvent(t *testing.T) {
-	err := Init(getConf())
-	assert.Nil(t, err)
+// TestListenChangeEvent 测试监听配置变更
+func TestListenChangeEvent(t *testing.T) {
 	c := cron.New()
 	spec := "*/5 * * * * ?"
 	c.AddFunc(spec, func() {
@@ -40,13 +53,31 @@ func TestApollo_ListenChangeEvent(t *testing.T) {
 		fmt.Println("event:", string(bytes))
 	})
 	c.Start()
-
 }
 
-// TestApollo_GetStringValue 测试获取配置
-func TestApollo_GetStringValue(t *testing.T) {
-	err := Init(getConf())
-	assert.Nil(t, err)
+// TestGetStringValue 测试获取配置
+func TestGetStringValue(t *testing.T) {
 
-	fmt.Println(GetStringValue("LOG_FILE",""))
+	fmt.Println(GetStringValue("LOG_FILE", ""))
+}
+
+// TestGetIntValue
+func TestGetIntValue(t *testing.T) {
+	fmt.Println(GetIntValue("HTTP_PORT", 8080))
+}
+
+// TestGetBoolValue
+func TestGetBoolValue(t *testing.T) {
+	fmt.Println(GetBoolValue("APP_DEBUG", false))
+}
+
+// TestGetFloatValue
+func TestGetFloatValue(t *testing.T) {
+	fmt.Println(GetFloatValue("FLOAT_TEST", 10.22))
+}
+
+// TestMain main
+func TestMain(m *testing.M) {
+	_ = Init(prepareConf())
+	m.Run()
 }

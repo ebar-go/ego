@@ -1,18 +1,17 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"bytes"
 	"fmt"
-	"time"
-	"github.com/ebar-go/ego/log"
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
+	"github.com/ebar-go/ego/app"
+	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/http/constant"
-	"strings"
 	"github.com/ebar-go/ego/helper"
+	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
 )
 
 // bodyLogWriter 读取响应Writer
@@ -37,13 +36,12 @@ func RequestLog(c *gin.Context) {
 	requestBody := getRequestBody(c)
 
 	// 从头部信息获取
-	traceId := c.GetHeader(constant.GatewayTrace)
+	traceId := c.GetHeader("gateway-trace")
 	if strings.TrimSpace(traceId) == "" {
 		traceId = helper.NewTraceId()
 	}
 	trace.SetTraceId(traceId)
 	defer trace.DeleteTraceId()
-	helper.Debug(traceId)
 
 	c.Next()
 
@@ -52,9 +50,11 @@ func RequestLog(c *gin.Context) {
 
 	logContext := log.Context{}
 
-
+	// 获取响应内容
 	responseBody := blw.body.String()
-	maxRequestCount := helper.Min(blw.body.Len() - 1, constant.DefaultMaxResponseSize)
+	// 截断响应内容
+	maxResponseSize := helper.Min(helper.Max(0, blw.body.Len()-1), app.Config().MaxResponseLogSize)
+
 	// 日志格式
 	logContext["trace_id"] = traceId
 	logContext["request_uri"] = c.Request.RequestURI
@@ -64,12 +64,11 @@ func RequestLog(c *gin.Context) {
 	logContext["request_body"] = requestBody
 	logContext["request_time"] = requestTime
 	logContext["response_time"] = helper.GetTimeStampFloatStr()
-	logContext["response_body"] = responseBody[0:maxRequestCount]
+	logContext["response_body"] = responseBody[0:maxResponseSize]
 	logContext["time_used"] = fmt.Sprintf("%v", latency)
 	logContext["header"] = c.Request.Header
 
-	go log.Request().Info("REQUEST LOG", logContext)
-
+	go app.LogManager().Request().Info("REQUEST LOG", logContext)
 }
 
 // GetRequestBody 获取请求参数
@@ -89,17 +88,17 @@ func getRequestBody(c *gin.Context) interface{} {
 		bodyBytes, err := ioutil.ReadAll(c.Request.Body)
 		if err != nil {
 			fmt.Println(err)
+			return nil
 		}
 
 		// 新建缓冲区并替换原有Request.body
 		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 		var params interface{}
-		json.Unmarshal(bodyBytes, &params)
+		_ = helper.JsonDecode(bodyBytes, params)
 		return params
 
 	}
 
 	return nil
 }
-

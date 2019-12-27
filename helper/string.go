@@ -1,14 +1,13 @@
 package helper
 
 import (
-	"encoding/hex"
 	"crypto/md5"
 	"crypto/sha1"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/satori/go.uuid"
-	"github.com/ebar-go/ego/http/constant"
 	"hash/crc32"
-	"encoding/base64"
 )
 
 //生成32位md5字串
@@ -33,14 +32,15 @@ func UniqueId() string {
 
 // NewTraceId 生成全局ID
 func NewTraceId() string {
-	return constant.TraceIdPrefix + UniqueId()
+	return "TraceId" + UniqueId()
 }
 
 // NewRequestId 生成请求ID
 func NewRequestId() string {
-	return constant.RequestIdPrefix + UniqueId()
+	return "RequestId" + UniqueId()
 }
 
+// HashCode
 func HashCode(s string) int {
 	v := int(crc32.ChecksumIEEE([]byte(s)))
 	if v >= 0 {
@@ -53,6 +53,7 @@ func HashCode(s string) int {
 	return 0
 }
 
+// DecodeBase64Str 解析base64
 func DecodeBase64Str(encoded string) string {
 	decoded, err := base64.StdEncoding.DecodeString(encoded)
 	if err != nil {

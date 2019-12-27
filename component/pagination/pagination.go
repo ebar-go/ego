@@ -1,32 +1,39 @@
 package pagination
 
 import (
-	"math"
 	"github.com/ebar-go/ego/helper"
+	"math"
 )
 
 // Paginator 分页器
 type Paginator struct {
-	TotalCount int `json:"total"` // 总条数
-	CurrentCount int `json:"count"` // 当前页的数据项数量
-	Limit int `json:"per_page"` // 每页行数
+	// 总条数
+	TotalCount int `json:"total"`
+
+	// 当前页的数据项数量
+	CurrentCount int `json:"count"`
+
+	// 每页行数
+	Limit int `json:"per_page"`
+
+	// 当前页数
 	CurrentPage int `json:"current_page"`
+
+	// 总页数
 	TotalPages int `json:"total_pages"`
-	Link interface{} `json:"link"`
-	Items interface{} `json:"-"`
 }
 
 const (
-	defaultLimit = 10
+	defaultLimit       = 10
 	defaultCurrentPage = 1
 )
 
-// Paginate 获取分页实例
+// Paginate 根据总条数、当前页数、每页行数分页
 func Paginate(totalCount, currentPage, limit int) Paginator {
 	pagination := Paginator{
-		TotalCount: totalCount,
+		TotalCount:  totalCount,
 		CurrentPage: currentPage,
-		Limit: limit,
+		Limit:       limit,
 	}
 
 	if pagination.Limit <= 0 {
@@ -40,9 +47,9 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
 	pagination.TotalPages = helper.Div(totalCount, limit) //page总数
 	if pagination.CurrentPage < pagination.TotalPages {
 		pagination.CurrentCount = pagination.Limit
-	}else if pagination.CurrentPage > pagination.TotalPages {
+	} else if pagination.CurrentPage > pagination.TotalPages {
 		pagination.CurrentCount = 0
-	}else {
+	} else {
 		pagination.CurrentCount = pagination.TotalCount - pagination.GetOffset()
 	}
 
@@ -50,37 +57,32 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
 }
 
 // PaginateSlice 根据切片分页
-func PaginateSlice(items []interface{}, currentPage, limit int) Paginator {
-	pagination := Paginator{
-		TotalCount: len(items),
-		CurrentPage: currentPage,
-		Limit: limit,
+func PaginateSlice(items []interface{}, currentPage, limit int) (paginate Paginator, result []interface{}) {
+	paginate.CurrentPage = currentPage
+	paginate.Limit = limit
+	paginate.TotalCount = len(items)
+
+	if paginate.Limit <= 0 {
+		paginate.Limit = defaultLimit
 	}
 
-	if pagination.Limit <= 0 {
-		pagination.Limit = defaultLimit
+	if paginate.CurrentPage <= 0 {
+		paginate.CurrentPage = defaultCurrentPage
 	}
 
-	if pagination.CurrentPage <= 0 {
-		pagination.CurrentPage = defaultCurrentPage
-	}
+	paginate.TotalPages = int(math.Ceil(float64(paginate.TotalCount) / float64(paginate.Limit))) //page总数
 
-	pagination.TotalPages = int(math.Ceil(float64(pagination.TotalCount) / float64(pagination.Limit))) //page总数
-
-	low := pagination.GetOffset()
-	high := helper.Min(pagination.TotalCount, low + pagination.Limit)
+	low := paginate.GetOffset()
+	high := helper.Min(paginate.TotalCount, low+paginate.Limit)
 
 	if low < high {
-		pagination.Items = items[low:high]
-		pagination.CurrentCount= high - low
-	}else {
-		pagination.Items = []interface{}{}
-		pagination.CurrentCount = 0
-
+		paginate.CurrentCount = high - low
+		result = items[low:high]
+	} else {
+		paginate.CurrentCount = 0
 	}
 
-
-	return pagination
+	return
 }
 
 // GetOffset 获取偏移量

@@ -4,7 +4,7 @@ import json "github.com/pquerna/ffjson/ffjson"
 
 // JsonEncode json序列号
 func JsonEncode(v interface{}) (string, error) {
-	buf , err := json.Marshal(v)
+	buf, err := json.Marshal(v)
 	if err != nil {
 		return "", err
 	}
@@ -13,7 +13,6 @@ func JsonEncode(v interface{}) (string, error) {
 }
 
 // JsonDecode json decode
-func JsonDecode(buf []byte , obj interface{}) error {
+func JsonDecode(buf []byte, obj interface{}) error {
 	return json.Unmarshal(buf, obj)
 }
-
