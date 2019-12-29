@@ -27,6 +27,18 @@ func New(key, message string, code int) error {
 	}
 }
 
+// Parse tries to parse a JSON string into an error. If that
+// fails, it will set the given string as the error detail.
+func Parse(errStr string) *Error {
+	e := new(Error)
+	err := helper.JsonDecode([]byte(errStr), e)
+	if err != nil {
+		e.Code = 500
+		e.Message = err.Error()
+	}
+	return e
+}
+
 // Unauthorized generates a 401 error.
 func Unauthorized(key, format string, v ...interface{}) error {
 	return New(key, fmt.Sprintf(format, v...), 401)
