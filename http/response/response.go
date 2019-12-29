@@ -2,9 +2,9 @@ package response
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego/component/pagination"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/http/pagination"
 	"reflect"
 	"strconv"
 )
