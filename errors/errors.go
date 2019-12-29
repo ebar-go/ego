@@ -7,8 +7,8 @@ import (
 
 // Error
 type Error struct {
-	Code int `json:"code"`
-	Key string `json:"key"`
+	Code    int    `json:"code"`
+	Key     string `json:"key"`
 	Message string `json:"message"`
 }
 

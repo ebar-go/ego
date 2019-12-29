@@ -9,5 +9,3 @@ type Topic struct {
 	Name     string
 	Instance ali_mns.AliMNSTopic
 }
-
-

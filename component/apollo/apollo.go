@@ -47,9 +47,9 @@ func Init(conf Conf) error {
 }
 
 // load to env
-func loadEnv()  {
+func loadEnv() {
 	cache := agollo.GetApolloConfigCache().NewIterator()
-	for  {
+	for {
 		item := cache.Next()
 		if item == nil {
 			break

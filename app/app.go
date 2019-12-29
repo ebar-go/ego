@@ -5,6 +5,7 @@ import (
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
+	"github.com/ebar-go/ego/event"
 	"github.com/ebar-go/ego/helper"
 	"github.com/ebar-go/ego/ws"
 	"github.com/go-redis/redis"
@@ -140,11 +141,11 @@ func Mysql() (connection *gorm.DB) {
 	return connection
 }
 
-func AutoConnectMysql()  {
+func AutoConnectMysql() {
 	_ = Mysql()
 }
 
-func AutoConnectRedis()  {
+func AutoConnectRedis() {
 	_ = Redis()
 }
 
@@ -161,4 +162,17 @@ func Mns() (client mns.Client) {
 	}
 
 	return client
+}
+
+// EventDispatcher get event dispatcher instance
+func EventDispatcher() (dispatcher event.Dispatcher) {
+	if err := app.Invoke(func(d event.Dispatcher) {
+		dispatcher = d
+	}); err != nil {
+		dispatcher = event.NewDispatcher()
+		helper.CheckError("InitEventDispatcher", app.Provide(func() event.Dispatcher {
+			return dispatcher
+		}))
+	}
+	return
 }

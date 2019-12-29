@@ -43,7 +43,7 @@ func (server *Server) Start(args ...int) error {
 	if len(args) == 1 {
 		port = args[0]
 		app.Config().ServicePort = port
-	}else if len(args) > 1 {
+	} else if len(args) > 1 {
 
 		return errors.New("length of args must less than 1")
 	}
