@@ -1,6 +1,7 @@
 package trace
 
 import (
+	"github.com/ebar-go/ego/utils/strings"
 	"github.com/petermattis/goid"
 	"sync"
 )
@@ -9,6 +10,10 @@ var (
 	traceIds = map[int64]string{}
 	rwm      sync.RWMutex
 )
+
+func NewId() string {
+	return "TraceId" + strings.UUID()
+}
 
 // SetTraceId
 func SetTraceId(id string) {

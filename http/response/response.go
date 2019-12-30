@@ -5,6 +5,7 @@ import (
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/helper"
 	"github.com/ebar-go/ego/http/pagination"
+	"github.com/ebar-go/ego/utils/strings"
 	"reflect"
 	"strconv"
 )
@@ -17,7 +18,7 @@ func newInstance() *Response {
 		Data:       nil,
 		Meta: Meta{
 			Trace: Trace{
-				RequestId: helper.NewRequestId(),
+				RequestId: "RequestId" + strings.UUID(),
 				TraceId:   trace.GetTraceId(),
 			},
 		},
