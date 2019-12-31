@@ -3,6 +3,7 @@ package http
 import (
 	"errors"
 	"github.com/ebar-go/ego/app"
+	"github.com/ebar-go/ego/event"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,10 @@ type Server struct {
 
 	// not found handler
 	NotFoundHandler func(ctx *gin.Context)
+}
+
+func init()  {
+	registerEvents()
 }
 
 // NewServer 实例化server
@@ -51,6 +56,8 @@ func (server *Server) Start(args ...int) error {
 	// 防重复操作
 	server.mu.Lock()
 
+	beforeStart()
+
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)
 	server.Router.NoMethod(server.NotFoundHandler)
@@ -58,4 +65,26 @@ func (server *Server) Start(args ...int) error {
 	completeHost := net.JoinHostPort("", strconv.Itoa(port))
 
 	return server.Router.Run(completeHost)
+}
+
+const (
+	connectMysqlEvent = "CONNECT_MYSQL"
+	connectRedisEvent = "CONNECT_REDIS"
+)
+
+// beforeStart
+func beforeStart()  {
+	app.EventDispatcher().DispatchEvent(event.New(connectMysqlEvent, nil))
+	app.EventDispatcher().DispatchEvent(event.New(connectRedisEvent, nil))
+}
+
+// registerEvents
+func registerEvents()  {
+	app.EventDispatcher().AddListener(connectMysqlEvent, event.NewListener(func(event event.Event) {
+		app.Mysql()
+	}))
+
+	app.EventDispatcher().AddListener(connectRedisEvent, event.NewListener(func(event event.Event) {
+		app.Redis()
+	}))
 }
