@@ -1,7 +1,9 @@
 package config
 
 import (
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils/json"
+	"gopkg.in/gcfg.v1"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 )
@@ -30,7 +32,7 @@ func LoadJson(conf interface{}, filePath string) error {
 		return err
 	}
 
-	return helper.JsonDecode(jsonBytes, conf)
+	return json.Decode(jsonBytes, conf)
 }
 
 // Getenv 获取环境变量

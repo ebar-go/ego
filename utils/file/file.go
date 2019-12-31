@@ -16,8 +16,8 @@ func GetCurrentDir() string {
 	return filepath.Dir(GetCurrentPath())
 }
 
-//FileExist check the given path exists
-func FileExist(path string) bool {
+//Exist check the given path exists
+func Exist(path string) bool {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			return false

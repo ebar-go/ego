@@ -5,6 +5,7 @@ import (
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/helper"
 	"github.com/ebar-go/ego/http/pagination"
+	"github.com/ebar-go/ego/utils/json"
 	"github.com/ebar-go/ego/utils/strings"
 	"reflect"
 	"strconv"
@@ -78,7 +79,7 @@ type Meta struct {
 
 // String 序列化
 func (response *Response) String() string {
-	resp, _ := helper.JsonEncode(response)
+	resp, _ := json.Encode(response)
 	return resp
 }
 

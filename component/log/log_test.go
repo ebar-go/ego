@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils/strings"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -24,25 +24,25 @@ func prepareLogger() Logger {
 
 // TestLogger_Info 测试Info
 func TestLogger_Info(t *testing.T) {
-	traceId := helper.UniqueId()
+	traceId := strings.UUID()
 	prepareLogger().Info("A group of walrus emerges from the ocean", Context{"trace_id": traceId, "hello": "world"})
 }
 
 // TestLogger_Info 测试Info
 func TestLogger_Debug(t *testing.T) {
-	traceId := helper.UniqueId()
+	traceId := strings.UUID()
 	prepareLogger().Debug("A group of walrus emerges from the ocean", Context{"trace_id": traceId, "hello": "world"})
 }
 
 // TestLogger_Info 测试Info
 func TestLogger_Warn(t *testing.T) {
-	traceId := helper.UniqueId()
+	traceId := strings.UUID()
 	prepareLogger().Warn("A group of walrus emerges from the ocean", Context{"trace_id": traceId, "hello": "world"})
 }
 
 // TestLogger_Info 测试Info
 func TestLogger_Error(t *testing.T) {
-	traceId := helper.UniqueId()
+	traceId := strings.UUID()
 	prepareLogger().Error("A group of walrus emerges from the ocean", Context{"trace_id": traceId, "hello": "world"})
 }
 

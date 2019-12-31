@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils/number"
 	"github.com/go-redis/redis"
 	"net"
 	"strconv"
@@ -36,18 +36,18 @@ const (
 	redisDefaultIdleTimeout = 10 * time.Second
 )
 
-// complete 自动补全
+// complete set default config
 func (conf *RedisConfig) complete() {
-	conf.Port = helper.DefaultInt(conf.Port, redisDefaultPort)
-	conf.PoolSize = helper.DefaultInt(conf.PoolSize, redisDefaultPoolSize)
-	conf.MaxRetries = helper.DefaultInt(conf.MaxRetries, redisDefaultMaxRetries)
+	conf.Port = number.DefaultInt(conf.Port, redisDefaultPort)
+	conf.PoolSize = number.DefaultInt(conf.PoolSize, redisDefaultPoolSize)
+	conf.MaxRetries = number.DefaultInt(conf.MaxRetries, redisDefaultMaxRetries)
 
 	if conf.IdleTimeout == 0 {
 		conf.IdleTimeout = redisDefaultIdleTimeout
 	}
 }
 
-// Options 转换为options
+// Options get redis options
 func (conf *RedisConfig) Options() *redis.Options {
 	address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
 

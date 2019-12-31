@@ -2,7 +2,7 @@ package errors
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils/json"
 )
 
 // Error
@@ -14,7 +14,7 @@ type Error struct {
 
 // Error string
 func (e *Error) Error() string {
-	s, _ := helper.JsonEncode(e)
+	s, _ := json.Encode(e)
 	return s
 }
 
@@ -31,8 +31,8 @@ func New(key, message string, code int) error {
 // fails, it will set the given string as the error detail.
 func Parse(errStr string) *Error {
 	e := new(Error)
-	err := helper.JsonDecode([]byte(errStr), e)
-	if err != nil {
+
+	if err := json.Decode([]byte(errStr), e); err != nil {
 		e.Code = 500
 		e.Message = err.Error()
 	}

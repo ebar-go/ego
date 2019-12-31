@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils/number"
 	"net"
 	"strconv"
 )
@@ -40,16 +40,15 @@ type MysqlConfig struct {
 	MaxOpenConnections int
 }
 
-// complete 补全配置
+// complete set default config
 func (conf *MysqlConfig) complete() {
-	conf.MaxIdleConnections = helper.DefaultInt(conf.MaxIdleConnections, mysqlDefaultIdleConnections)
-	conf.MaxOpenConnections = helper.DefaultInt(conf.MaxOpenConnections, mysqlDefaultOpenConnections)
-	conf.Port = helper.DefaultInt(conf.Port, mysqlDefaultPort)
+	conf.MaxIdleConnections = number.DefaultInt(conf.MaxIdleConnections, mysqlDefaultIdleConnections)
+	conf.MaxOpenConnections = number.DefaultInt(conf.MaxOpenConnections, mysqlDefaultOpenConnections)
+	conf.Port = number.DefaultInt(conf.Port, mysqlDefaultPort)
 }
 
-// Dsn 获取dsn
+// Dsn return mysql dsn
 func (conf MysqlConfig) Dsn() string {
-
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		conf.User,
 		conf.Password,

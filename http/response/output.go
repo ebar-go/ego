@@ -3,8 +3,8 @@
 package response
 
 import (
-	"github.com/ebar-go/ego/helper"
 	"github.com/ebar-go/ego/http/pagination"
+	"github.com/ebar-go/ego/utils/json"
 	"github.com/gin-gonic/gin"
 	"reflect"
 )
@@ -86,8 +86,8 @@ func Error(ctx *gin.Context, statusCode int, message string) {
 // Decode 解析json数据Response
 func Decode(result string) IResponse {
 	resp := Default()
-	err := helper.JsonDecode([]byte(result), resp)
-	if err != nil {
+
+	if err := json.Decode([]byte(result), resp);err != nil {
 		return nil
 	}
 

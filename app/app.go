@@ -6,7 +6,7 @@ import (
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/event"
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils"
 	"github.com/ebar-go/ego/ws"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
@@ -30,7 +30,7 @@ func Config() (conf *config.Config) {
 		conf = c
 	}); err != nil {
 		conf = config.NewInstance()
-		helper.CheckError("InitConfig", app.Provide(func() *config.Config {
+		utils.LogError("InitConfig", app.Provide(func() *config.Config {
 			return conf
 		}))
 	}
@@ -50,7 +50,7 @@ func LogManager() (manager log.Manager) {
 			LogPath:    conf.LogPath,
 		})
 
-		helper.CheckError("InitLogManager", app.Provide(func() log.Manager {
+		utils.LogError("InitLogManager", app.Provide(func() log.Manager {
 			return manager
 		}))
 	}
@@ -65,7 +65,7 @@ func Task() (manager *cron.Cron) {
 	}); err != nil {
 		manager = cron.New()
 
-		helper.CheckError("InitTaskManager", app.Provide(func() *cron.Cron {
+		utils.LogError("InitTaskManager", app.Provide(func() *cron.Cron {
 			return manager
 		}))
 	}
@@ -79,7 +79,7 @@ func Jwt() (jwt auth.Jwt) {
 		jwt = j
 	}); err != nil {
 		jwt = auth.NewJwt(Config().JwtSignKey)
-		helper.CheckError("InitJwt", app.Provide(func() auth.Jwt {
+		utils.LogError("InitJwt", app.Provide(func() auth.Jwt {
 			return jwt
 		}))
 	}
@@ -93,7 +93,7 @@ func WebSocket() (manager ws.Manager) {
 		manager = m
 	}); err != nil {
 		manager = ws.NewManager()
-		helper.CheckError("InitWebSocketManager", app.Provide(func() ws.Manager {
+		utils.LogError("InitWebSocketManager", app.Provide(func() ws.Manager {
 			return manager
 		}))
 	}
@@ -108,7 +108,7 @@ func Redis() (connection *redis.Client) {
 	}); err != nil {
 		connection = redis.NewClient(Config().Redis().Options())
 		_, err = connection.Ping().Result()
-		helper.FatalError("InitRedis", err)
+		utils.FatalError("InitRedis", err)
 		_ = app.Provide(func() *redis.Client {
 			return connection
 		})
@@ -125,7 +125,7 @@ func Mysql() (connection *gorm.DB) {
 		conf := Config().Mysql()
 
 		connection, err = gorm.Open("mysql", conf.Dsn())
-		helper.FatalError("InitMysql", err)
+		utils.FatalError("InitMysql", err)
 
 		// 设置是否打印日志
 		connection.LogMode(conf.LogMode)
@@ -139,14 +139,6 @@ func Mysql() (connection *gorm.DB) {
 	}
 
 	return connection
-}
-
-func AutoConnectMysql() {
-	_ = Mysql()
-}
-
-func AutoConnectRedis() {
-	_ = Redis()
 }
 
 // Mns 阿里云mns
@@ -170,7 +162,7 @@ func EventDispatcher() (dispatcher event.Dispatcher) {
 		dispatcher = d
 	}); err != nil {
 		dispatcher = event.NewDispatcher()
-		helper.CheckError("InitEventDispatcher", app.Provide(func() event.Dispatcher {
+		utils.LogError("InitEventDispatcher", app.Provide(func() event.Dispatcher {
 			return dispatcher
 		}))
 	}

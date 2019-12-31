@@ -1,12 +1,14 @@
 package mns
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
+	ali_mns "github.com/aliyun/aliyun-mns-go-sdk"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils"
+	"github.com/ebar-go/ego/utils/date"
+	"github.com/ebar-go/ego/utils/json"
+	"github.com/ebar-go/ego/utils/strings"
 )
 
 // Client mns客户端接口
@@ -58,7 +60,7 @@ func NewClient(url, accessKeyId, accessKeySecret string, manager log.Manager) Cl
 
 // GenerateSign 生成签名
 func (cli *client) GenerateSign(str string) string {
-	return helper.GetMd5String(str + cli.accessKeySecret)
+	return strings.Md5(str + cli.accessKeySecret)
 }
 
 // AddQueue 实例化队列
@@ -114,15 +116,15 @@ func (cli *client) ReceiveMessage(queueName string) {
 				var params Params
 
 				// 解析消息
-				if err := json.Unmarshal([]byte(helper.DecodeBase64Str(resp.MessageBody)), &params); err != nil {
+				if err := json.Decode([]byte(strings.DecodeBase64(resp.MessageBody)), &params); err != nil {
 					cli.logManager.System().Error("invalidMessageBody", log.Context{
 						"err":   err.Error(),
-						"trace": helper.Trace(),
+						"trace": utils.Trace(),
 					})
 				} else {
 
 					cli.logManager.Mq().Info("receiveMessage", log.Context{
-						"receiveTime": helper.GetTimeStr(),
+						"receiveTime": date.GetTimeStr(),
 						"queue_name":  q.Name,
 						"messageBody": params.Content,
 						"tag":         params.Tag,
@@ -132,7 +134,7 @@ func (cli *client) ReceiveMessage(queueName string) {
 					if err := q.handler(params); err != nil {
 						cli.logManager.System().Warn("processMessageFailed", log.Context{
 							"err":   err.Error(),
-							"trace": helper.Trace(),
+							"trace": utils.Trace(),
 						})
 
 					} else {
@@ -140,7 +142,7 @@ func (cli *client) ReceiveMessage(queueName string) {
 						err := q.DeleteMessage(resp.ReceiptHandle)
 						fmt.Println(err)
 						cli.logManager.Mq().Info("deleteMessage", log.Context{
-							"receiveTime": helper.GetTimeStr(),
+							"receiveTime": date.GetTimeStr(),
 							"queue_name":  q.Name,
 							"messageBody": params.Content,
 							"tag":         params.Tag,
@@ -157,7 +159,7 @@ func (cli *client) ReceiveMessage(queueName string) {
 			{
 				cli.logManager.System().Info("receiveMessageFailed", log.Context{
 					"err":   err.Error(),
-					"trace": helper.Trace(),
+					"trace": utils.Trace(),
 				})
 				fmt.Println(err)
 				endChan <- 1
@@ -172,16 +174,16 @@ func (cli *client) ReceiveMessage(queueName string) {
 
 // PublishMessage 发布消息
 func (cli *client) PublishMessage(topicName string, params Params, filterTag string) (*ali_mns.MessageSendResponse, error) {
-	params.TraceId = helper.DefaultString(params.TraceId, trace.GetTraceId())
-	params.Sign = helper.DefaultString(params.Sign, cli.GenerateSign(params.TraceId))
-	bytes, err := helper.JsonEncode(params)
+	params.TraceId = strings.Default(params.TraceId, trace.GetTraceId())
+	params.Sign = strings.Default(params.Sign, cli.GenerateSign(params.TraceId))
+	bytes, err := json.Encode(params)
 	if err != nil {
 		return nil, err
 	}
 
 	topic := cli.getTopic(topicName)
 	request := ali_mns.MessagePublishRequest{
-		MessageBody: base64.StdEncoding.EncodeToString([]byte(bytes)),
+		MessageBody: strings.EncodeBase64([]byte(bytes)),
 		MessageTag:  filterTag,
 	}
 	resp, err := topic.Instance.PublishMessage(request)
@@ -191,13 +193,13 @@ func (cli *client) PublishMessage(topicName string, params Params, filterTag str
 
 	cli.logManager.Mq().Info("publishMessage", log.Context{
 		"action":          "publishMessage",
-		"publish_time":    helper.GetTimeStr(),
-		"msectime":        helper.GetTimeStampFloatStr(),
+		"publish_time":    date.GetTimeStr(),
+		"msectime":        date.GetMicroTimeStampStr(),
 		"message_id":      resp.MessageId,
 		"status_code":     resp.Code,
 		"topic_name":      topic.Name,
 		"message_tag":     params.Tag,
-		"global_trace_id": helper.NewTraceId(),
+		"global_trace_id": strings.UUID(),
 		"trace_id":        params.TraceId,
 		"filter_tag":      filterTag,
 		"sign":            params.Sign,

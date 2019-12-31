@@ -1,16 +1,15 @@
 package utils
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"net"
-	"errors"
-	"reflect"
 	"runtime"
-	"fmt"
 )
 
-// CheckError
-func CheckError(msg string, err error) {
+// LogError
+func LogError(msg string, err error) {
 	if err != nil {
 		log.Printf("%s Error: %v\n", msg, err)
 	}
@@ -23,7 +22,7 @@ func FatalError(msg string, err error) {
 	}
 }
 
-// MergeMaps 合并
+// MergeMaps merge items
 func MergeMaps(items ...map[string]interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
 
@@ -46,7 +45,7 @@ func GetLocalIp() (string, error) {
 
 	for _, address := range addressItems {
 
-		// 检查ip地址判断是否回环地址
+		// Check the IP address to determine whether it is a loopback address
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
 				return ipnet.IP.String(), nil
@@ -79,13 +78,3 @@ func Trace() []string {
 	return trace
 }
 
-// GetKindOf return the kind of data
-func GetKindOf(data interface{}) reflect.Kind {
-	value := reflect.ValueOf(data)
-	valueType := value.Kind()
-
-	if valueType == reflect.Ptr {
-		valueType = value.Elem().Kind()
-	}
-	return valueType
-}

@@ -4,7 +4,9 @@ package log
 import (
 	"fmt"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils"
+	"github.com/ebar-go/ego/utils/date"
+	"github.com/ebar-go/ego/utils/file"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
@@ -40,7 +42,7 @@ func NewFileLogger(filePath string) Logger {
 	logger := &logger{}
 	logger.instance = defaultInstance()
 
-	if !helper.IsPathExist(filePath) {
+	if !file.Exist(filePath) {
 		err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
 		if err != nil {
 			fmt.Printf("Failed to init logger:%s,%s\n", filePath, err.Error())
@@ -48,9 +50,9 @@ func NewFileLogger(filePath string) Logger {
 		}
 	}
 
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
+	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
 	if err == nil {
-		logger.instance.Out = file
+		logger.instance.Out = f
 		fmt.Printf("Init Logger Success:%s\n", filePath)
 	} else {
 		fmt.Printf("Failed to init logger:%s,%s\n", filePath, err.Error())
@@ -71,7 +73,7 @@ func defaultInstance() *logrus.Logger {
 			logrus.FieldKeyMsg:   "message",
 			logrus.FieldKeyFunc:  "caller",
 		},
-		TimestampFormat: helper.GetDefaultTimeFormat(),
+		TimestampFormat: date.TimeFormat,
 	})
 	instance.Level = logrus.DebugLevel
 
@@ -89,7 +91,7 @@ func (l *logger) withFields(context Context) *logrus.Entry {
 	}
 
 	return l.instance.WithFields(logrus.Fields{
-		"context": helper.MergeMaps(l.extends, context),
+		"context": utils.MergeMaps(l.extends, context),
 	})
 }
 

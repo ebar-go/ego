@@ -1,9 +1,9 @@
 package impl
 
 import (
-	"github.com/ebar-go/ego/helper"
 	"github.com/ebar-go/ego/http/client/request"
 	"github.com/pkg/errors"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
@@ -74,10 +74,33 @@ func (client HttpClient) Execute(request request.IRequest) (string, error) {
 		return "", err
 	}
 
-	respStr, err := helper.StringifyResponse(resp)
+	respStr, err := stringifyResponse(resp)
 	if err != nil {
 		return "", err
 	}
 	return respStr, nil
 
+}
+
+// stringifyResponse 将response序列化
+func stringifyResponse(response *http.Response) (string, error) {
+	if response == nil {
+		return "", errors.New("没有响应数据")
+	}
+
+	if response.StatusCode != 200 {
+		return "", errors.New("非200的上游返回")
+	}
+
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+
+	// 关闭响应
+	defer func() {
+		_ = response.Body.Close()
+	}()
+
+	return string(data), nil
 }
