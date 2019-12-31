@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"github.com/satori/go.uuid"
 	"hash/crc32"
 )
 

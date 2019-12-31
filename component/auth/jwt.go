@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"github.com/dgrijalva/jwt-go"
 )
 
 // Jwt json web token

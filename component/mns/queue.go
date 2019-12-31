@@ -1,9 +1,5 @@
 package mns
 
-import (
-	"github.com/aliyun/aliyun-mns-go-sdk"
-)
-
 // Queue 队列
 type Queue struct {
 	Name       string              // 队列名称

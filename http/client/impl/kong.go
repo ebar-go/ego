@@ -2,7 +2,6 @@ package impl
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/http/client/request"
 	"time"

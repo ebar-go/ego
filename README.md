@@ -30,10 +30,11 @@ go get -u github.com/ebar-go/ego
 ```go
 package main
 import (
-	"github.com/ebar-go/ego/http"
-	"github.com/gin-gonic/gin"
-	"fmt"
-    "github.com/ebar-go/ego/helper"
+
+"fmt"
+"github.com/ebar-go/ego/helper"
+"github.com/ebar-go/ego/http"
+"github.com/gin-gonic/gin"
 	)
 
 func main() {

@@ -2,8 +2,6 @@ package config
 
 import (
 	"github.com/ebar-go/ego/helper"
-	"gopkg.in/gcfg.v1"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 )

@@ -7,8 +7,6 @@ import (
 	"errors"
 	"github.com/ebar-go/ego/helper"
 	"github.com/go-playground/locales/zh"
-	"github.com/go-playground/universal-translator"
-	"github.com/go-playground/validator/v10"
 	zh_translations "github.com/go-playground/validator/v10/translations/zh"
 )
 

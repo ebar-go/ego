@@ -30,7 +30,8 @@ func New(eventType string, params interface{}) Event {
 func (event *Event) Clone() *Event {
 	e := new(Event)
 	e.Type = event.Type
-	e.Dispatcher = e.Dispatcher
+	e.Dispatcher = event.Dispatcher
+	e.Params = event.Params
 	return e
 }
 

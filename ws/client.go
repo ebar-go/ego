@@ -3,7 +3,6 @@ package ws
 import (
 	"github.com/ebar-go/ego/helper"
 	"github.com/gorilla/websocket"
-	"github.com/satori/go.uuid"
 )
 
 // IClient
