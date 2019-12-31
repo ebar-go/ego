@@ -7,7 +7,7 @@ type Listener struct {
 }
 
 // 监听器函数
-type Handler func(event Event)
+type Handler func(ev Event)
 
 // NewListener
 func NewListener(h Handler) *Listener {

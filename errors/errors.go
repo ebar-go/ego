@@ -8,7 +8,6 @@ import (
 // Error
 type Error struct {
 	Code    int    `json:"code"`
-	Key     string `json:"key"`
 	Message string `json:"message"`
 }
 
@@ -19,10 +18,9 @@ func (e *Error) Error() string {
 }
 
 // New
-func New(key, message string, code int) error {
+func New( code int, message string) *Error {
 	return &Error{
 		Code:    code,
-		Key:     key,
 		Message: message,
 	}
 }
@@ -40,31 +38,31 @@ func Parse(errStr string) *Error {
 }
 
 // Unauthorized generates a 401 error.
-func Unauthorized(key, format string, v ...interface{}) error {
-	return New(key, fmt.Sprintf(format, v...), 401)
+func Unauthorized(format string, v ...interface{}) *Error {
+	return New(401, fmt.Sprintf(format, v...))
 }
 
 // Forbidden generates a 403 error.
-func Forbidden(key, format string, v ...interface{}) error {
-	return New(key, fmt.Sprintf(format, v...), 403)
+func Forbidden(format string, v ...interface{}) *Error {
+	return New(403, fmt.Sprintf(format, v...))
 }
 
 // NotFound generates a 404 error.
-func NotFound(key, format string, v ...interface{}) error {
-	return New(key, fmt.Sprintf(format, v...), 404)
+func NotFound(format string, v ...interface{}) *Error {
+	return New(404, fmt.Sprintf(format, v...))
 }
 
 // MethodNotAllowed generates a 405 error.
-func MethodNotAllowed(key, format string, v ...interface{}) error {
-	return New(key, fmt.Sprintf(format, v...), 405)
+func MethodNotAllowed(format string, v ...interface{}) *Error {
+	return New(405, fmt.Sprintf(format, v...))
 }
 
 // Timeout generates a 408 error.
-func Timeout(key, format string, v ...interface{}) error {
-	return New(key, fmt.Sprintf(format, v...), 408)
+func Timeout(format string, v ...interface{}) *Error {
+	return New(408, fmt.Sprintf(format, v...))
 }
 
 // InternalServerError generates a 500 error.
-func InternalServerError(key, format string, v ...interface{}) error {
-	return New(key, fmt.Sprintf(format, v...), 500)
+func InternalServerError(format string, v ...interface{}) *Error {
+	return New(500, fmt.Sprintf(format, v...))
 }

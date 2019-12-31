@@ -38,8 +38,8 @@ func RequestLog(c *gin.Context) {
 	requestBody := getRequestBody(c)
 
 	// 从头部信息获取
-	traceId := c.GetHeader("gateway-trace")
-	if strings.TrimSpace(traceId) == "" {
+	traceId := strings.TrimSpace(c.GetHeader(app.Config().TraceHeader))
+	if traceId == "" {
 		traceId = trace.NewId()
 	}
 	trace.SetTraceId(traceId)

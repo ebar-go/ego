@@ -12,6 +12,11 @@ import (
 	"sync"
 )
 
+
+const (
+	beforeHttpStartEvent = "BEFORE_HTTP_START"
+)
+
 // Server Web服务管理器
 type Server struct {
 	// 并发锁,可导出结构体采用私有变量，而不采用内嵌的方式
@@ -24,8 +29,17 @@ type Server struct {
 	NotFoundHandler func(ctx *gin.Context)
 }
 
-func init()  {
-	registerEvents()
+func init() {
+	// register before start events
+	app.EventDispatcher().AddListener(beforeHttpStartEvent,
+		event.NewListener(func(ev event.Event) {
+			app.Mysql()
+		}))
+
+	app.EventDispatcher().AddListener(beforeHttpStartEvent,
+		event.NewListener(func(ev event.Event) {
+			app.Redis()
+		}))
 }
 
 // NewServer 实例化server
@@ -41,22 +55,23 @@ func NewServer() *Server {
 	}
 }
 
-// Start 启动服务
-// port http server port
+// Start run http server
+// args must be less than one,
+// eg: Start()
+//	   Start(8080)
 func (server *Server) Start(args ...int) error {
 	port := app.Config().ServicePort
 	if len(args) == 1 {
 		port = args[0]
 		app.Config().ServicePort = port
 	} else if len(args) > 1 {
-
-		return errors.New("length of args must less than 1")
+		return errors.New("args must be less than one")
 	}
 
 	// 防重复操作
 	server.mu.Lock()
 
-	beforeStart()
+	app.EventDispatcher().DispatchEvent(event.New(beforeHttpStartEvent, nil))
 
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)
@@ -67,24 +82,3 @@ func (server *Server) Start(args ...int) error {
 	return server.Router.Run(completeHost)
 }
 
-const (
-	connectMysqlEvent = "CONNECT_MYSQL"
-	connectRedisEvent = "CONNECT_REDIS"
-)
-
-// beforeStart
-func beforeStart()  {
-	app.EventDispatcher().DispatchEvent(event.New(connectMysqlEvent, nil))
-	app.EventDispatcher().DispatchEvent(event.New(connectRedisEvent, nil))
-}
-
-// registerEvents
-func registerEvents()  {
-	app.EventDispatcher().AddListener(connectMysqlEvent, event.NewListener(func(event event.Event) {
-		app.Mysql()
-	}))
-
-	app.EventDispatcher().AddListener(connectRedisEvent, event.NewListener(func(event event.Event) {
-		app.Redis()
-	}))
-}

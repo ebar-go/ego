@@ -23,6 +23,9 @@ type Config struct {
 	// jwt的key
 	JwtSignKey []byte
 
+	// trace header key
+	TraceHeader string
+
 	// redis config
 	redisConfig *RedisConfig
 
@@ -58,6 +61,7 @@ func NewInstance() *Config {
 	instance.MaxResponseLogSize = number.DefaultInt(conv.String2Int(Getenv("MAX_RESPONSE_LOG_SIZE")), 1000)
 
 	instance.JwtSignKey = []byte(Getenv("JWT_KEY"))
+	instance.TraceHeader = strings.Default(Getenv("TRACE_HEADER"), "gateway-trace")
 
 	// init mysql config
 	instance.redisConfig = &RedisConfig{

@@ -3,22 +3,14 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"runtime"
 )
 
-// LogError
-func LogError(msg string, err error) {
+// Panic
+func Panic(msg string, err error) {
 	if err != nil {
-		log.Printf("%s Error: %v\n", msg, err)
-	}
-}
-
-// FatalError program will exit when err not nil
-func FatalError(msg string, err error) {
-	if err != nil {
-		log.Fatalf("%s Error: %v\n", msg, err)
+		panic(errors.New(fmt.Sprintf("%s Error: %v\n", msg, err)))
 	}
 }
 

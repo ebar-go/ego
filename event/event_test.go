@@ -9,9 +9,9 @@ import (
 func TestNew(t *testing.T) {
 	eventType := "HELLO"
 	eventParams := "world"
-	event := New(eventType, eventParams)
-	assert.Equal(t, eventType, event.Type)
-	assert.Equal(t, eventParams, event.Params)
+	ev := New(eventType, eventParams)
+	assert.Equal(t, eventType, ev.Type)
+	assert.Equal(t, eventParams, ev.Params)
 }
 
 
@@ -21,8 +21,8 @@ func TestNewDispatcher(t *testing.T) {
 }
 
 func TestNewListener(t *testing.T) {
-	handler := func(event Event) {
-		fmt.Println(event.Type, event.Dispatcher, event.Params)
+	handler := func(ev Event) {
+		fmt.Println(ev.Type, ev.Dispatcher, ev.Params)
 	}
 	listener := NewListener(handler)
 	assert.NotNil(t, listener)
@@ -31,23 +31,23 @@ func TestNewListener(t *testing.T) {
 func TestEvent_Clone(t *testing.T) {
 	eventType := "HELLO"
 	eventParams := "world"
-	event := New(eventType, eventParams)
+	ev := New(eventType, eventParams)
 
-	eventClone := event.Clone()
+	eventClone := ev.Clone()
 	assert.NotNil(t, eventClone)
 	assert.Equal(t, eventType, eventClone.Type)
 	assert.Equal(t, eventParams, eventClone.Params)
 }
 
 func TestEvent_ToString(t *testing.T) {
-	event := New("HELLO", "world")
-	fmt.Println(event.ToString())
+	ev := New("HELLO", "world")
+	fmt.Println(ev.ToString())
 }
 
 func TestEventDispatcher_AddListener(t *testing.T) {
 	dispatcher := NewDispatcher()
-	listener := NewListener(func(event Event) {
-		fmt.Println(event.Type, event.Dispatcher, event.Params)
+	listener := NewListener(func(ev Event) {
+		fmt.Println(ev.Type, ev.Dispatcher, ev.Params)
 	})
 
 	dispatcher.AddListener("TEST", listener)
@@ -57,8 +57,8 @@ func TestEventDispatcher_AddListener(t *testing.T) {
 
 func TestEventDispatcher_RemoveListener(t *testing.T) {
 	dispatcher := NewDispatcher()
-	listener := NewListener(func(event Event) {
-		fmt.Println(event.Type, event.Dispatcher, event.Params)
+	listener := NewListener(func(ev Event) {
+		fmt.Println(ev.Type, ev.Dispatcher, ev.Params)
 	})
 
 	dispatcher.AddListener("TEST", listener)
@@ -70,8 +70,8 @@ func TestEventDispatcher_RemoveListener(t *testing.T) {
 
 func TestEventDispatcher_HasListener(t *testing.T) {
 	dispatcher := NewDispatcher()
-	listener := NewListener(func(event Event) {
-		fmt.Println(event.Type, event.Dispatcher, event.Params)
+	listener := NewListener(func(ev Event) {
+		fmt.Println(ev.Type, ev.Dispatcher, ev.Params)
 	})
 
 	dispatcher.AddListener("TEST", listener)
@@ -82,8 +82,8 @@ func TestEventDispatcher_HasListener(t *testing.T) {
 
 func TestEventDispatcher_DispatchEvent(t *testing.T) {
 	dispatcher := NewDispatcher()
-	listener := NewListener(func(event Event) {
-		fmt.Println(event.Type, event.Dispatcher, event.Params)
+	listener := NewListener(func(ev Event) {
+		fmt.Println(ev.Type, ev.Dispatcher, ev.Params)
 	})
 
 	dispatcher.AddListener("TEST", listener)

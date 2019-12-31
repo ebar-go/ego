@@ -49,7 +49,7 @@ func validateToken(ctx *gin.Context) error {
 func JWT(ctx *gin.Context) {
 	// 解析token
 	if err := validateToken(ctx); err != nil {
-		response.Error(ctx, 401, err.Error())
+		response.WrapperContext(ctx).Error(401, err.Error())
 
 		ctx.Abort()
 		return

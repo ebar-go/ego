@@ -11,7 +11,7 @@ import (
 func Recover(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
-			response.Error(ctx, 500, "系统错误")
+			response.WrapperContext(ctx).Error(500, "System Error")
 
 			app.LogManager().System().Error("system_error", log.Context{
 				"error": r,

@@ -7,18 +7,18 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	err := New("test", "something wrong", 200105001)
+	err := New(200105001, "something wrong" )
 	assert.Error(t, err)
 }
 
 func TestError_Error(t *testing.T) {
-	err := New("test", "something wrong", 200105001)
+	err := New(200105001, "something wrong" )
 	assert.Error(t, err)
 	fmt.Println(err.Error())
 }
 
 func TestParse(t *testing.T) {
-	err := New("test", "something wrong", 200105001)
+	err := New(200105001, "something wrong" )
 	assert.Error(t, err)
 
 	errParse := Parse(err.Error())
@@ -27,7 +27,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestInternalServerError(t *testing.T) {
-	err := InternalServerError("test", "aha")
+	err := InternalServerError("aha")
 	assert.Error(t, err)
 	pe := Parse(err.Error())
 	assert.Equal(t, pe.Code, 500)

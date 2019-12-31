@@ -1,16 +1,5 @@
 package response
 
-// IErrorItems 错误项接口
-type IErrorItems interface {
-	// 添加错误项
-	Push(key, msg string)
-
-	// 是否为空
-	IsEmpty() bool
-
-	GetItems() []ErrorItem
-}
-
 // ErrorItem 错误项
 type ErrorItem struct {
 	Key   string `json:"key"`

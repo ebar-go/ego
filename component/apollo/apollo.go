@@ -4,6 +4,8 @@ Apollo配置初始化、监听配置变动、获取配置
 package apollo
 
 import (
+	"github.com/ebar-go/ego/app"
+	"github.com/ebar-go/ego/event"
 	"github.com/zouyx/agollo"
 	"os"
 )
@@ -26,6 +28,24 @@ type Conf struct {
 	BackupConfigPath string `json:"backup_config_path"`
 }
 
+const (
+	loadEnvironmentEvent = "APOLLO_LOAD_ENV"
+)
+
+func init()  {
+	// prepare loadEnvironmentEvent
+	app.EventDispatcher().AddListener(loadEnvironmentEvent, event.NewListener(func(ev event.Event) {
+		cache := agollo.GetApolloConfigCache().NewIterator()
+		for {
+			item := cache.Next()
+			if item == nil {
+				break
+			}
+			_ = os.Setenv(string(item.Key), string(item.Value))
+		}
+	}))
+}
+
 // Init 初始化apollo配置
 func Init(conf Conf) error {
 	agollo.InitCustomConfig(func() (*agollo.AppConfig, error) {
@@ -42,20 +62,9 @@ func Init(conf Conf) error {
 		return err
 	}
 
-	loadEnv()
+	// trigger loadEnvironmentEvent
+	app.EventDispatcher().DispatchEvent(event.New(loadEnvironmentEvent, nil))
 	return nil
-}
-
-// load to env
-func loadEnv() {
-	cache := agollo.GetApolloConfigCache().NewIterator()
-	for {
-		item := cache.Next()
-		if item == nil {
-			break
-		}
-		os.Setenv(string(item.Key), string(item.Value))
-	}
 }
 
 // ListenApolloChangeEvent 监听配置变动

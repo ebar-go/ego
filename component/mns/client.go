@@ -1,7 +1,6 @@
 package mns
 
 import (
-	"fmt"
 	ali_mns "github.com/aliyun/aliyun-mns-go-sdk"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
@@ -140,7 +139,6 @@ func (cli *client) ReceiveMessage(queueName string) {
 					} else {
 						// 处理成功，删除消息
 						err := q.DeleteMessage(resp.ReceiptHandle)
-						fmt.Println(err)
 						cli.logManager.Mq().Info("deleteMessage", log.Context{
 							"receiveTime": date.GetTimeStr(),
 							"queue_name":  q.Name,
@@ -161,7 +159,6 @@ func (cli *client) ReceiveMessage(queueName string) {
 					"err":   err.Error(),
 					"trace": utils.Trace(),
 				})
-				fmt.Println(err)
 				endChan <- 1
 			}
 		}

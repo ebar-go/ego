@@ -19,18 +19,18 @@ var (
 	app = NewContainer()
 )
 
-// NewContainer 新容器
+// NewContainer return an empty container
 func NewContainer() *dig.Container {
 	return dig.New()
 }
 
-// Config 配置项
+// Config return Config instance
 func Config() (conf *config.Config) {
 	if err := app.Invoke(func(c *config.Config) {
 		conf = c
 	}); err != nil {
 		conf = config.NewInstance()
-		utils.LogError("InitConfig", app.Provide(func() *config.Config {
+		utils.Panic("InitConfig", app.Provide(func() *config.Config {
 			return conf
 		}))
 	}
@@ -38,7 +38,7 @@ func Config() (conf *config.Config) {
 	return
 }
 
-// LogManager 日志管理器
+// LogManager return log manager
 func LogManager() (manager log.Manager) {
 	if err := app.Invoke(func(m log.Manager) {
 		manager = m
@@ -50,7 +50,7 @@ func LogManager() (manager log.Manager) {
 			LogPath:    conf.LogPath,
 		})
 
-		utils.LogError("InitLogManager", app.Provide(func() log.Manager {
+		utils.Panic("InitLogManager", app.Provide(func() log.Manager {
 			return manager
 		}))
 	}
@@ -58,14 +58,14 @@ func LogManager() (manager log.Manager) {
 	return
 }
 
-// Task 任务管理器
+// Task return task manager
 func Task() (manager *cron.Cron) {
 	if err := app.Invoke(func(c *cron.Cron) {
 		manager = c
 	}); err != nil {
 		manager = cron.New()
 
-		utils.LogError("InitTaskManager", app.Provide(func() *cron.Cron {
+		utils.Panic("InitTaskManager", app.Provide(func() *cron.Cron {
 			return manager
 		}))
 	}
@@ -73,13 +73,13 @@ func Task() (manager *cron.Cron) {
 	return
 }
 
-// Jwt JsonWebToken
+// Jwt return a jwt instance
 func Jwt() (jwt auth.Jwt) {
 	if err := app.Invoke(func(j auth.Jwt) {
 		jwt = j
 	}); err != nil {
-		jwt = auth.NewJwt(Config().JwtSignKey)
-		utils.LogError("InitJwt", app.Provide(func() auth.Jwt {
+		jwt = auth.New(Config().JwtSignKey)
+		utils.Panic("InitJwt", app.Provide(func() auth.Jwt {
 			return jwt
 		}))
 	}
@@ -87,13 +87,13 @@ func Jwt() (jwt auth.Jwt) {
 	return
 }
 
-// WebSocket
+// WebSocket return ws manager
 func WebSocket() (manager ws.Manager) {
 	if err := app.Invoke(func(m ws.Manager) {
 		manager = m
 	}); err != nil {
 		manager = ws.NewManager()
-		utils.LogError("InitWebSocketManager", app.Provide(func() ws.Manager {
+		utils.Panic("InitWebSocketManager", app.Provide(func() ws.Manager {
 			return manager
 		}))
 	}
@@ -101,14 +101,14 @@ func WebSocket() (manager ws.Manager) {
 	return
 }
 
-// Redis 获取redis连接
+// Redis get redis connection
 func Redis() (connection *redis.Client) {
 	if err := app.Invoke(func(conn *redis.Client) {
 		connection = conn
 	}); err != nil {
 		connection = redis.NewClient(Config().Redis().Options())
 		_, err = connection.Ping().Result()
-		utils.FatalError("InitRedis", err)
+		utils.Panic("InitRedis", err)
 		_ = app.Provide(func() *redis.Client {
 			return connection
 		})
@@ -117,7 +117,7 @@ func Redis() (connection *redis.Client) {
 	return connection
 }
 
-// Mysql
+// Mysql return mysql connection
 func Mysql() (connection *gorm.DB) {
 	if err := app.Invoke(func(conn *gorm.DB) {
 		connection = conn
@@ -125,11 +125,11 @@ func Mysql() (connection *gorm.DB) {
 		conf := Config().Mysql()
 
 		connection, err = gorm.Open("mysql", conf.Dsn())
-		utils.FatalError("InitMysql", err)
+		utils.Panic("InitMysql", err)
 
-		// 设置是否打印日志
+		// set log mod
 		connection.LogMode(conf.LogMode)
-		// 设置连接池
+		// set pool config
 		connection.DB().SetMaxIdleConns(conf.MaxIdleConnections)
 		connection.DB().SetMaxOpenConns(conf.MaxOpenConnections)
 
@@ -141,16 +141,16 @@ func Mysql() (connection *gorm.DB) {
 	return connection
 }
 
-// Mns 阿里云mns
+// Mns return ali yun mns client
 func Mns() (client mns.Client) {
 	if err := app.Invoke(func(cli mns.Client) {
 		client = cli
 	}); err != nil {
 		conf := Config().Mns()
 		client = mns.NewClient(conf.Url, conf.AccessKeyId, conf.AccessKeySecret, LogManager())
-		_ = app.Provide(func() mns.Client {
+		utils.Panic("InitMns", app.Provide(func() mns.Client {
 			return client
-		})
+		}))
 	}
 
 	return client
@@ -162,7 +162,8 @@ func EventDispatcher() (dispatcher event.Dispatcher) {
 		dispatcher = d
 	}); err != nil {
 		dispatcher = event.NewDispatcher()
-		utils.LogError("InitEventDispatcher", app.Provide(func() event.Dispatcher {
+
+		utils.Panic("InitEventDispatcher", app.Provide(func() event.Dispatcher {
 			return dispatcher
 		}))
 	}

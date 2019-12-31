@@ -3,7 +3,6 @@ package response
 import (
 	"fmt"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/helper"
 	"github.com/ebar-go/ego/http/pagination"
 	"github.com/ebar-go/ego/utils/json"
 	"github.com/ebar-go/ego/utils/strings"
@@ -11,8 +10,8 @@ import (
 	"strconv"
 )
 
-// newInstance 实例化response
-func newInstance() *Response {
+// New return response instance
+func New() *Response {
 	return &Response{
 		StatusCode: 200,
 		Message:    "",
@@ -36,35 +35,6 @@ type Response struct {
 	Errors     []ErrorItem `json:"errors"`
 }
 
-// SetStatusCode
-func (response *Response) SetStatusCode(code int) {
-	response.StatusCode = code
-}
-
-func (response *Response) GetMessage() string {
-	return response.Message
-}
-
-// SetMessage
-func (response *Response) SetMessage(message string) {
-	response.Message = message
-}
-
-// SetErrors set errors
-func (response *Response) SetErrors(e []ErrorItem) {
-	response.Errors = e
-}
-
-// GetData
-func (response *Response) GetData() interface{} {
-	return response.Data
-}
-
-// GetErrors
-func (response *Response) GetErrors() []ErrorItem {
-	return response.Errors
-}
-
 // Trace 跟踪信息
 type Trace struct {
 	TraceId   string `json:"trace_id"`   // 全局唯一Code
@@ -77,18 +47,13 @@ type Meta struct {
 	Pagination *pagination.Paginator `json:"pagination"` // 分页信息
 }
 
-// String 序列化
+// String stringify response
 func (response *Response) String() string {
 	resp, _ := json.Encode(response)
 	return resp
 }
 
-// SetData 设置数据
-func (respone *Response) SetData(data interface{}) {
-	respone.Data = data
-}
-
-// IsSuccess 是否已成功
+// IsSuccess get response status
 func (response *Response) IsSuccess() bool {
 	return formatStatusCode(response.StatusCode) == strconv.Itoa(200)
 }

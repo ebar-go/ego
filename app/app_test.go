@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/log"
+	"github.com/ebar-go/ego/event"
 	"github.com/robfig/cron"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -30,4 +31,24 @@ func TestTask(t *testing.T) {
 
 func TestJwt(t *testing.T) {
 	assert.IsType(t, Jwt(), &auth.JwtAuth{})
+}
+
+func TestEventDispatcher(t *testing.T) {
+	assert.IsType(t, EventDispatcher(), event.NewDispatcher())
+}
+
+func TestMns(t *testing.T) {
+	assert.NotNil(t, Mns())
+}
+
+func TestMysql(t *testing.T) {
+	assert.NotNil(t, Mysql())
+}
+
+func TestRedis(t *testing.T) {
+	assert.NotNil(t, Redis())
+}
+
+func TestWebSocket(t *testing.T) {
+	assert.NotNil(t, WebSocket())
 }

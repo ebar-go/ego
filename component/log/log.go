@@ -84,7 +84,7 @@ func (l *logger) SetExtends(extends Context) {
 	l.extends = extends
 }
 
-// withFields 携带字段
+// withFields merge extends
 func (l *logger) withFields(context Context) *logrus.Entry {
 	if _, ok := context["trace_id"]; !ok {
 		context["trace_id"] = trace.GetTraceId()
@@ -95,27 +95,27 @@ func (l *logger) withFields(context Context) *logrus.Entry {
 	})
 }
 
-// Debug 调试等级
+// Debug
 func (l *logger) Debug(message string, context Context) {
 	l.withFields(context).Debug(message)
 }
 
-// Info 信息等级
+// Info
 func (l *logger) Info(message string, context Context) {
 	l.withFields(context).Info(message)
 }
 
-// Warn 警告等级
+// Warn
 func (l *logger) Warn(message string, context Context) {
 	l.withFields(context).Warn(message)
 }
 
-// Error 错误等级
+// Error
 func (l *logger) Error(message string, context Context) {
 	l.withFields(context).Error(message)
 }
 
-// Fatal 中断等级
+// Fatal
 func (l *logger) Fatal(message string, context Context) {
 	l.withFields(context).Fatal(message)
 }
