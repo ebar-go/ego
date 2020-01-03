@@ -3,6 +3,7 @@ package file
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 // GetCurrentPath return compiled executable file absolute path
@@ -14,6 +15,12 @@ func GetCurrentPath() string {
 // GetCurrentDir return compiled executable file directory
 func GetCurrentDir() string {
 	return filepath.Dir(GetCurrentPath())
+}
+
+// GetExecuteDir return current executable file directory,different with GetCurrentDir
+func GetExecuteDir() string {
+	_, fileStr, _, _ := runtime.Caller(0)
+	return filepath.Dir(fileStr)
 }
 
 //Exist check the given path exists

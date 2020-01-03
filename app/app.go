@@ -24,13 +24,17 @@ func NewContainer() *dig.Container {
 	return dig.New()
 }
 
+
 // Config return Config instance
 func Config() (conf *config.Config) {
 	if err := app.Invoke(func(c *config.Config) {
 		conf = c
 	}); err != nil {
+		// use sync.once is better ?
 		conf = config.NewInstance()
-		utils.Panic("InitConfig", app.Provide(func() *config.Config {
+
+		// if get err , panic
+		utils.PanicErr("InitConfig", app.Provide(func() *config.Config {
 			return conf
 		}))
 	}
@@ -50,7 +54,7 @@ func LogManager() (manager log.Manager) {
 			LogPath:    conf.LogPath,
 		})
 
-		utils.Panic("InitLogManager", app.Provide(func() log.Manager {
+		utils.PanicErr("InitLogManager", app.Provide(func() log.Manager {
 			return manager
 		}))
 	}
@@ -65,7 +69,7 @@ func Task() (manager *cron.Cron) {
 	}); err != nil {
 		manager = cron.New()
 
-		utils.Panic("InitTaskManager", app.Provide(func() *cron.Cron {
+		utils.PanicErr("InitTaskManager", app.Provide(func() *cron.Cron {
 			return manager
 		}))
 	}
@@ -79,9 +83,9 @@ func Jwt() (jwt auth.Jwt) {
 		jwt = j
 	}); err != nil {
 		jwt = auth.New(Config().JwtSignKey)
-		utils.Panic("InitJwt", app.Provide(func() auth.Jwt {
+		_ = app.Provide(func() auth.Jwt {
 			return jwt
-		}))
+		})
 	}
 
 	return
@@ -93,7 +97,7 @@ func WebSocket() (manager ws.Manager) {
 		manager = m
 	}); err != nil {
 		manager = ws.NewManager()
-		utils.Panic("InitWebSocketManager", app.Provide(func() ws.Manager {
+		utils.PanicErr("InitWebSocketManager", app.Provide(func() ws.Manager {
 			return manager
 		}))
 	}
@@ -108,7 +112,7 @@ func Redis() (connection *redis.Client) {
 	}); err != nil {
 		connection = redis.NewClient(Config().Redis().Options())
 		_, err = connection.Ping().Result()
-		utils.Panic("InitRedis", err)
+		utils.PanicErr("InitRedis", err)
 		_ = app.Provide(func() *redis.Client {
 			return connection
 		})
@@ -125,7 +129,7 @@ func Mysql() (connection *gorm.DB) {
 		conf := Config().Mysql()
 
 		connection, err = gorm.Open("mysql", conf.Dsn())
-		utils.Panic("InitMysql", err)
+		utils.PanicErr("InitMysql", err)
 
 		// set log mod
 		connection.LogMode(conf.LogMode)
@@ -148,7 +152,7 @@ func Mns() (client mns.Client) {
 	}); err != nil {
 		conf := Config().Mns()
 		client = mns.NewClient(conf.Url, conf.AccessKeyId, conf.AccessKeySecret, LogManager())
-		utils.Panic("InitMns", app.Provide(func() mns.Client {
+		utils.PanicErr("InitMns", app.Provide(func() mns.Client {
 			return client
 		}))
 	}
@@ -163,7 +167,7 @@ func EventDispatcher() (dispatcher event.Dispatcher) {
 	}); err != nil {
 		dispatcher = event.NewDispatcher()
 
-		utils.Panic("InitEventDispatcher", app.Provide(func() event.Dispatcher {
+		utils.PanicErr("InitEventDispatcher", app.Provide(func() event.Dispatcher {
 			return dispatcher
 		}))
 	}

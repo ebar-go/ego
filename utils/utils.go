@@ -7,8 +7,8 @@ import (
 	"runtime"
 )
 
-// Panic
-func Panic(msg string, err error) {
+// PanicErr
+func PanicErr(msg string, err error) {
 	if err != nil {
 		panic(errors.New(fmt.Sprintf("%s Error: %v\n", msg, err)))
 	}
