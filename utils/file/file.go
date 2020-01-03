@@ -25,3 +25,19 @@ func Exist(path string) bool {
 	}
 	return true
 }
+
+// Mkdir Create the DIRECTORY(ies), if they do not already exist
+// parents no error if existing, make parent directories as needed
+func Mkdir(dir string, parents bool) error {
+	if Exist(dir) {
+		return nil
+	}
+
+	if parents {
+		return os.MkdirAll(dir, os.ModePerm)
+	}
+
+	return os.Mkdir(dir, os.ModePerm)
+
+
+}
