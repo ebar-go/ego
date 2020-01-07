@@ -86,12 +86,53 @@ JsonWebToken鉴权
 
 - Recover
 处理panic的中间件
+```go
+package main
+import (
+    "fmt"
+    "github.com/ebar-go/ego/http"
+    "github.com/ebar-go/ego/http/middleware"
+    "github.com/ebar-go/ego/utils"
+    "github.com/gin-gonic/gin"
+)
+
+func main() {
+    server := http.NewServer()
+    // middleware must used before init router 
+    // Recover middleware
+    server.Router.Use(middleware.Recover)
+    // JWT middleware
+    server.Router.Use(middleware.JWT)
+    // CORS middleware
+    server.Router.Use(middleware.CORS)
+    // RequestLog middleware,not necessary, system auto load
+    server.Router.Use(middleware.RequestLog)
+
+    // Add router
+    server.Router.GET("/test", func(context *gin.Context) {
+        fmt.Println("hello,world")
+    })
+    
+    utils.Panic("StartServer", server.Start())
+}
+```
+
 
 #### 分页组件
 对数据进行分页
 
 #### 响应
 固定格式的json输出
+```go
+package handler
+import (
+    "github.com/ebar-go/ego/http/response"
+    "github.com/gin-gonic/gin"
+)
+func IndexHandler(ctx *gin.Context) {
+    response.WrapContext(ctx).Success(response.Data{"hello":"world"})
+}
+```
 
 #### validator
 集成`github.com/go-playground/validator`
