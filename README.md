@@ -105,7 +105,7 @@ func main() {
     server.Router.Use(middleware.JWT)
     // CORS middleware
     server.Router.Use(middleware.CORS)
-    // RequestLog middleware,not necessary, system auto load
+    // RequestLog middleware
     server.Router.Use(middleware.RequestLog)
 
     // Add router
