@@ -5,7 +5,6 @@ import (
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/event"
-	"github.com/ebar-go/ego/utils"
 	"github.com/ebar-go/ego/ws"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
@@ -51,15 +50,9 @@ func Task() (manager *cron.Cron) {
 
 // WebSocket return ws manager
 func WebSocket() (manager ws.Manager) {
-	if err := app.Invoke(func(m ws.Manager) {
+	_ = app.Invoke(func(m ws.Manager) {
 		manager = m
-	}); err != nil {
-		manager = ws.NewManager()
-		utils.FatalError("InitWebSocketManager", app.Provide(func() ws.Manager {
-			return manager
-		}))
-	}
-
+	})
 	return
 }
 
