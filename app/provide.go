@@ -35,8 +35,6 @@ const (
 	// task manager init event
 	TaskManagerInitEvent = "TASK_INIT_EVENT"
 
-	// jwt init event
-	JwtInitEvent = "JWT_INIT_EVENT"
 )
 
 func init() {

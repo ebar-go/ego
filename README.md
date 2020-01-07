@@ -44,7 +44,7 @@ func main() {
         fmt.Println("hello,world")
     })
     
-    utils.Panic("StartServer", server.Start())
+    utils.FatalError("StartServer", server.Start())
 }
 ```
 
@@ -101,7 +101,7 @@ func main() {
     // middleware must used before init router 
     // Recover middleware
     server.Router.Use(middleware.Recover)
-    // JWT middleware
+    // JWT middleware,make sure Config.JwtKey is not empty
     server.Router.Use(middleware.JWT)
     // CORS middleware
     server.Router.Use(middleware.CORS)
@@ -113,7 +113,7 @@ func main() {
         fmt.Println("hello,world")
     })
     
-    utils.Panic("StartServer", server.Start())
+    utils.FatalError("StartServer", server.Start())
 }
 ```
 
@@ -131,6 +131,7 @@ import (
 )
 func IndexHandler(ctx *gin.Context) {
     response.WrapContext(ctx).Success(response.Data{"hello":"world"})
+    // response.WrapContext(ctx).Error(500, "system error")
 }
 ```
 
@@ -148,15 +149,44 @@ func IndexHandler(ctx *gin.Context) {
 #### 日志
 #### mns
 阿里云mns客户端
+```go
+// trigger mns init event
+// make sure config is not empty 
+app.EventDispather.Trigger(app.MNSClientInitEvent, nil)
+mns := app.Mns()
+```
 
 #### mysql
-自定义model
+- connect database
+```go
+// trigger mysql connect event
+// make sure config is not empty 
+app.EventDispather.Trigger(app.MysqlConnectEvent, nil)
+db := app.Mysql() 
+// .. curd
+```
+- 自定义model
 
 #### prometheus
 集成prometheus
 
 #### trace
 全局ID
+```go
+package main
+import (
+ "fmt"
+ "github.com/ebar-go/ego/component/trace"
+)
+func main() {
+    // set global trace id first
+    trace.SetTraceId(trace.NewId())
+    // use defer execute recycle
+    defer trace.DeleteTraceId()
+    // get id in other location
+    fmt.Println(trace.GetTraceId())
+}
+```
 
 ### 配置项
 读取配置项
@@ -174,3 +204,20 @@ func IndexHandler(ctx *gin.Context) {
 ### log
 日志管理器
 - 系统日志
+```go
+package main
+import (
+ "fmt"
+ "github.com/ebar-go/ego/app"
+"github.com/ebar-go/ego/component/log"
+)
+func main() {
+    // if not run http server,please trigger log manager init event
+    app.EventDispatcher().Trigger(app.LogManagerInitEvent, nil)
+    app.LogManager().App().Info("test", log.Context{"hello":"world"})
+    app.LogManager().App().Debug("debug", log.Context{"hello":"world"})
+    app.LogManager().App().Warn("warn", log.Context{"hello":"world"})
+    app.LogManager().App().Error("error", log.Context{"hello":"world"})
+}
+
+```
