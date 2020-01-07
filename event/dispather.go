@@ -10,6 +10,9 @@ type Dispatcher interface {
 	HasListener(eventType string) bool
 	//dispatch event
 	DispatchEvent(event Event) bool
+
+	// trigger event, simple than DispatchEvent
+	Trigger(eventType string, params interface{}) bool
 }
 
 // eventDispatcher implement of Dispatcher
@@ -72,4 +75,10 @@ func (dispatcher *eventDispatcher) DispatchEvent(event Event) bool {
 		}
 	}
 	return false
+}
+
+// DispatchEvent dispatch the given event
+func (dispatcher *eventDispatcher) Trigger(eventType string, params interface{}) bool {
+	event := New(eventType, params)
+	return dispatcher.DispatchEvent(event)
 }

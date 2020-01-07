@@ -10,6 +10,10 @@ import (
 	"strconv"
 )
 
+type IResponse interface {
+
+}
+
 // New return response instance
 func New() *Response {
 	return &Response{

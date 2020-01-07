@@ -14,8 +14,8 @@ type Wrapper struct {
 	ctx *gin.Context
 }
 
-// WrapperContext
-func WrapperContext(ctx *gin.Context) *Wrapper {
+// WrapContext
+func WrapContext(ctx *gin.Context) *Wrapper {
 	return &Wrapper{ctx:ctx}
 }
 
@@ -38,8 +38,8 @@ func (wrapper *Wrapper) Paginate( data interface{}, paginate *pagination.Paginat
 	wrapper.Json(resp)
 }
 
-// Json 输出json
-func (wrapper *Wrapper) Json(response *Response) {
+// Json 输出json,支持自定义response结构体
+func (wrapper *Wrapper) Json(response IResponse) {
 	wrapper.ctx.JSON(200, response)
 }
 

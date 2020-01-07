@@ -63,7 +63,7 @@ func Init(conf Conf) error {
 	}
 
 	// trigger loadEnvironmentEvent
-	app.EventDispatcher().DispatchEvent(event.New(loadEnvironmentEvent, nil))
+	app.EventDispatcher().Trigger(loadEnvironmentEvent, nil)
 	return nil
 }
 

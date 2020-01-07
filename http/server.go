@@ -14,7 +14,11 @@ import (
 
 
 const (
-	beforeHttpStartEvent = "BEFORE_HTTP_START"
+	// mysql connect event
+	MySqlConnectEvent = "MYSQL_CONNECT_EVENT"
+
+	// redis connect event
+	RedisConnectEvent = "REDIS_CONNECT_EVENT"
 )
 
 // Server Web服务管理器
@@ -31,12 +35,12 @@ type Server struct {
 
 func init() {
 	// register before start events
-	app.EventDispatcher().AddListener(beforeHttpStartEvent,
+	app.EventDispatcher().AddListener(MySqlConnectEvent,
 		event.NewListener(func(ev event.Event) {
 			app.Mysql()
 		}))
 
-	app.EventDispatcher().AddListener(beforeHttpStartEvent,
+	app.EventDispatcher().AddListener(RedisConnectEvent,
 		event.NewListener(func(ev event.Event) {
 			app.Redis()
 		}))
@@ -70,8 +74,6 @@ func (server *Server) Start(args ...int) error {
 
 	// 防重复操作
 	server.mu.Lock()
-
-	app.EventDispatcher().DispatchEvent(event.New(beforeHttpStartEvent, nil))
 
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)

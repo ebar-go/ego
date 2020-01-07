@@ -3,6 +3,7 @@ package errors
 import (
 	"fmt"
 	"github.com/ebar-go/ego/utils/json"
+	"net/http"
 )
 
 // Error
@@ -10,6 +11,11 @@ type Error struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }
+
+const(
+	MysqlConnectFailedCode = 1001
+	RedisConnectFailedCode = 1002
+)
 
 // Error string
 func (e *Error) Error() string {
@@ -31,7 +37,7 @@ func Parse(errStr string) *Error {
 	e := new(Error)
 
 	if err := json.Decode([]byte(errStr), e); err != nil {
-		e.Code = 500
+		e.Code = http.StatusInternalServerError
 		e.Message = err.Error()
 	}
 	return e
@@ -39,30 +45,41 @@ func Parse(errStr string) *Error {
 
 // Unauthorized generates a 401 error.
 func Unauthorized(format string, v ...interface{}) *Error {
-	return New(401, fmt.Sprintf(format, v...))
+	return New(http.StatusUnauthorized, fmt.Sprintf(format, v...))
 }
 
 // Forbidden generates a 403 error.
 func Forbidden(format string, v ...interface{}) *Error {
-	return New(403, fmt.Sprintf(format, v...))
+	return New(http.StatusForbidden, fmt.Sprintf(format, v...))
 }
 
 // NotFound generates a 404 error.
 func NotFound(format string, v ...interface{}) *Error {
-	return New(404, fmt.Sprintf(format, v...))
+	return New(http.StatusNotFound, fmt.Sprintf(format, v...))
 }
 
 // MethodNotAllowed generates a 405 error.
 func MethodNotAllowed(format string, v ...interface{}) *Error {
-	return New(405, fmt.Sprintf(format, v...))
+	return New(http.StatusMethodNotAllowed, fmt.Sprintf(format, v...))
 }
 
 // Timeout generates a 408 error.
 func Timeout(format string, v ...interface{}) *Error {
-	return New(408, fmt.Sprintf(format, v...))
+	return New(http.StatusRequestTimeout, fmt.Sprintf(format, v...))
 }
 
 // InternalServerError generates a 500 error.
-func InternalServerError(format string, v ...interface{}) *Error {
-	return New(500, fmt.Sprintf(format, v...))
+func InternalServer(format string, v ...interface{}) *Error {
+	return New(http.StatusInternalServerError, fmt.Sprintf(format, v...))
 }
+
+// MysqlConnectFailed
+func MysqlConnectFailed(format string, v ...interface{}) *Error {
+	return New(MysqlConnectFailedCode, fmt.Sprintf(format, v...))
+}
+
+// RedisConnectFailed
+func RedisConnectFailed(format string, v ...interface{}) *Error {
+	return New(RedisConnectFailedCode, fmt.Sprintf(format, v...))
+}
+

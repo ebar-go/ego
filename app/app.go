@@ -13,6 +13,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/robfig/cron"
 	"go.uber.org/dig"
+	"github.com/ebar-go/ego/errors"
 )
 
 var (
@@ -112,7 +113,9 @@ func Redis() (connection *redis.Client) {
 	}); err != nil {
 		connection = redis.NewClient(Config().Redis().Options())
 		_, err = connection.Ping().Result()
-		utils.PanicErr("InitRedis", err)
+		if err != nil {
+			panic(errors.RedisConnectFailed("%s", err.Error()))
+		}
 		_ = app.Provide(func() *redis.Client {
 			return connection
 		})
@@ -129,7 +132,9 @@ func Mysql() (connection *gorm.DB) {
 		conf := Config().Mysql()
 
 		connection, err = gorm.Open("mysql", conf.Dsn())
-		utils.PanicErr("InitMysql", err)
+		if err != nil {
+			panic(errors.MysqlConnectFailed("%s", err.Error()))
+		}
 
 		// set log mod
 		connection.LogMode(conf.LogMode)
