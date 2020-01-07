@@ -1,7 +1,7 @@
 package ws
 
 import (
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils"
 	"github.com/gorilla/websocket"
 	"github.com/satori/go.uuid"
 )
@@ -86,7 +86,7 @@ func (c *Client) Listen() {
 	for {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
-			helper.Debug(err)
+			utils.Debug(err)
 			break
 		}
 

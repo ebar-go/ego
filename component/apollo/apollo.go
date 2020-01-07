@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-// Apollo apollo配置项
+// Conf apollo config
 type Conf struct {
 	// application id
 	AppId string `json:"appId"`
@@ -26,7 +26,7 @@ type Conf struct {
 	BackupConfigPath string `json:"backup_config_path"`
 }
 
-// Init 初始化apollo配置
+// Init
 func Init(conf Conf) error {
 	agollo.InitCustomConfig(func() (*agollo.AppConfig, error) {
 		return &agollo.AppConfig{
@@ -42,43 +42,43 @@ func Init(conf Conf) error {
 		return err
 	}
 
-	loadEnv()
+	loadEnvironment()
 	return nil
 }
 
-// load to env
-func loadEnv()  {
+// loadEnvironment
+func loadEnvironment()  {
 	cache := agollo.GetApolloConfigCache().NewIterator()
-	for  {
+	for {
 		item := cache.Next()
 		if item == nil {
 			break
 		}
-		os.Setenv(string(item.Key), string(item.Value))
+		_ = os.Setenv(string(item.Key), string(item.Value))
 	}
 }
 
-// ListenApolloChangeEvent 监听配置变动
+// ListenApolloChangeEvent listen apollo config change event
 func ListenChangeEvent() <-chan *agollo.ChangeEvent {
 	return agollo.ListenChangeEvent()
 }
 
-// GetStringValue 获取字符串配置
+// GetStringValue get config as string
 func GetStringValue(key, defaultValue string) string {
 	return agollo.GetStringValue(key, defaultValue)
 }
 
-// GetIntValue 获取整型配置
+// GetIntValue get config as int
 func GetIntValue(key string, defaultValue int) int {
 	return agollo.GetIntValue(key, defaultValue)
 }
 
-// GetBoolValue 获取bool配置
+// GetBoolValue get config as bool
 func GetBoolValue(key string, defaultValue bool) bool {
 	return agollo.GetBoolValue(key, defaultValue)
 }
 
-// GetFloatValue 获取浮点型配置
+// GetFloatValue get config as float
 func GetFloatValue(key string, defaultV float64) float64 {
 	return agollo.GetFloatValue(key, defaultV)
 }

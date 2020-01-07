@@ -4,7 +4,9 @@ package log
 import (
 	"fmt"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils"
+	"github.com/ebar-go/ego/utils/date"
+	"github.com/ebar-go/ego/utils/file"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
@@ -40,7 +42,7 @@ func NewFileLogger(filePath string) Logger {
 	logger := &logger{}
 	logger.instance = defaultInstance()
 
-	if !helper.IsPathExist(filePath) {
+	if !file.Exist(filePath) {
 		err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
 		if err != nil {
 			fmt.Printf("Failed to init logger:%s,%s\n", filePath, err.Error())
@@ -48,9 +50,9 @@ func NewFileLogger(filePath string) Logger {
 		}
 	}
 
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
+	f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
 	if err == nil {
-		logger.instance.Out = file
+		logger.instance.Out = f
 		fmt.Printf("Init Logger Success:%s\n", filePath)
 	} else {
 		fmt.Printf("Failed to init logger:%s,%s\n", filePath, err.Error())
@@ -71,7 +73,7 @@ func defaultInstance() *logrus.Logger {
 			logrus.FieldKeyMsg:   "message",
 			logrus.FieldKeyFunc:  "caller",
 		},
-		TimestampFormat: helper.GetDefaultTimeFormat(),
+		TimestampFormat: date.TimeFormat,
 	})
 	instance.Level = logrus.DebugLevel
 
@@ -82,38 +84,38 @@ func (l *logger) SetExtends(extends Context) {
 	l.extends = extends
 }
 
-// withFields 携带字段
+// withFields merge extends
 func (l *logger) withFields(context Context) *logrus.Entry {
 	if _, ok := context["trace_id"]; !ok {
 		context["trace_id"] = trace.GetTraceId()
 	}
 
 	return l.instance.WithFields(logrus.Fields{
-		"context": helper.MergeMaps(l.extends, context),
+		"context": utils.MergeMaps(l.extends, context),
 	})
 }
 
-// Debug 调试等级
+// Debug
 func (l *logger) Debug(message string, context Context) {
 	l.withFields(context).Debug(message)
 }
 
-// Info 信息等级
+// Info
 func (l *logger) Info(message string, context Context) {
 	l.withFields(context).Info(message)
 }
 
-// Warn 警告等级
+// Warn
 func (l *logger) Warn(message string, context Context) {
 	l.withFields(context).Warn(message)
 }
 
-// Error 错误等级
+// Error
 func (l *logger) Error(message string, context Context) {
 	l.withFields(context).Error(message)
 }
 
-// Fatal 中断等级
+// Fatal
 func (l *logger) Fatal(message string, context Context) {
 	l.withFields(context).Fatal(message)
 }

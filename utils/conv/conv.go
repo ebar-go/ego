@@ -1,16 +1,13 @@
-package helper
+package conv
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
-	json "github.com/pquerna/ffjson/ffjson"
-	"io/ioutil"
-	"net/http"
 	"reflect"
 	"strconv"
 )
 
-// Struct2Map 支持结构体转化为map，在嵌套结构中不支持interface{}传值的结构体
+// Struct2Map return map
 func Struct2Map(obj interface{}) map[string]interface{} {
 	var node map[string]interface{}
 	objT := reflect.TypeOf(obj)
@@ -41,7 +38,7 @@ func Struct2Map(obj interface{}) map[string]interface{} {
 	return data
 }
 
-// Map2Struct 数组转结构体
+// Map2Struct return interface
 func Map2Struct(mapInstance map[string]interface{}, obj interface{}) error {
 	buf, err := json.Marshal(mapInstance)
 	if err != nil {
@@ -55,60 +52,17 @@ func Map2Struct(mapInstance map[string]interface{}, obj interface{}) error {
 	return nil
 }
 
-// FormatInterface 格式化interface
-func FormatInterface(source interface{}, target interface{}) error {
-	jsonStr, err := JsonEncode(source)
+// TransformInterface transform the source interface to target,target should be a pointer
+func TransformInterface(source interface{}, target interface{}) error {
+	buf, err := json.Marshal(source)
 	if err != nil {
 		return err
 	}
 
-	return JsonDecode([]byte(jsonStr), target)
+	return json.Unmarshal(buf, target)
 }
 
-// Float2String float转string
-func Float2String(a float64) string {
-	return fmt.Sprintf("%.f", a)
-}
-
-// Interface2Int interface转int
-func Interface2Int(i interface{}) int {
-	f, ok := i.(float64)
-	if !ok {
-		return 0
-	}
-
-	str := fmt.Sprintf("%.f", f)
-	if result, err := strconv.Atoi(str); err == nil {
-		return result
-	}
-
-	return 0
-}
-
-// StringifyResponse 将response序列化
-func StringifyResponse(response *http.Response) (string, error) {
-	if response == nil {
-		return "", errors.New("没有响应数据")
-	}
-
-	if response.StatusCode != 200 {
-		return "", errors.New("非200的上游返回")
-	}
-
-	data, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return "", err
-	}
-
-	// 关闭响应
-	defer func() {
-		_ = response.Body.Close()
-	}()
-
-	return string(data), nil
-}
-
-// String2Int string转int
+// String2Int return int of number string
 func String2Int(s string) int {
 	i, err := strconv.Atoi(s)
 	if err != nil {

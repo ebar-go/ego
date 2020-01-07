@@ -1,31 +1,34 @@
 package config
 
 import (
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils/number"
 	"github.com/go-redis/redis"
 	"net"
 	"strconv"
 	"time"
 )
 
-// RedisConfig redis配置
-type RedisConfig struct {
-	// 地址
+// RedisOptions redis配置
+type RedisOptions struct {
+	// AutoConnect
+	AutoConnect bool
+
+	// host
 	Host string
 
-	// 端口号
+	// port, default 6379
 	Port int
 
-	// 密码
+	// auth
 	Auth string
 
-	// 连接池大小,默认100个连接
+	// pool size, default 100
 	PoolSize int
 
-	// 最大尝试次数,默认3次
+	// max retries, default 3
 	MaxRetries int
 
-	// 超时, 默认10s
+	// timeout, default 10 seconds
 	IdleTimeout time.Duration
 }
 
@@ -36,19 +39,19 @@ const (
 	redisDefaultIdleTimeout = 10 * time.Second
 )
 
-// complete 自动补全
-func (conf *RedisConfig) complete() {
-	conf.Port = helper.DefaultInt(conf.Port, redisDefaultPort)
-	conf.PoolSize = helper.DefaultInt(conf.PoolSize, redisDefaultPoolSize)
-	conf.MaxRetries = helper.DefaultInt(conf.MaxRetries, redisDefaultMaxRetries)
+// complete set default config
+func (conf *RedisOptions) complete() {
+	conf.Port = number.DefaultInt(conf.Port, redisDefaultPort)
+	conf.PoolSize = number.DefaultInt(conf.PoolSize, redisDefaultPoolSize)
+	conf.MaxRetries = number.DefaultInt(conf.MaxRetries, redisDefaultMaxRetries)
 
 	if conf.IdleTimeout == 0 {
 		conf.IdleTimeout = redisDefaultIdleTimeout
 	}
 }
 
-// Options 转换为options
-func (conf *RedisConfig) Options() *redis.Options {
+// Options get redis options
+func (conf *RedisOptions) Options() *redis.Options {
 	address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
 
 	return &redis.Options{

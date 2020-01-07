@@ -1,8 +1,6 @@
 package mns
 
-import (
-	"github.com/aliyun/aliyun-mns-go-sdk"
-)
+import ali_mns "github.com/aliyun/aliyun-mns-go-sdk"
 
 
 // Queue 队列

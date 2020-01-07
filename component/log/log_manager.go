@@ -1,7 +1,8 @@
 package log
 
 import (
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils/date"
+	"github.com/ebar-go/ego/utils/strings"
 	"path"
 	"sync"
 )
@@ -31,7 +32,7 @@ type Manager interface {
 
 // InitManager 初始化管理器
 func NewManager(conf ManagerConf) Manager {
-	conf.LogPath = helper.DefaultString(conf.LogPath, DefaultLogPath)
+	conf.LogPath = strings.Default(conf.LogPath, DefaultLogPath)
 	instance := &manager{conf: conf}
 	instance.rotate()
 
@@ -93,7 +94,7 @@ type ManagerConf struct {
 
 // rotate 分割日志文件
 func (manager *manager) rotate() *manager {
-	currentDateStr := helper.GetDateStr()
+	currentDateStr := date.GetDateStr()
 	if currentDateStr != manager.rotateDate {
 		manager.Lock()
 		defer manager.Unlock()

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/http/handler"
-	"github.com/ebar-go/ego/http/middleware"
 	"github.com/gin-gonic/gin"
 	"net"
 	"strconv"
@@ -27,29 +26,29 @@ type Server struct {
 func NewServer() *Server {
 	router := gin.Default()
 
-	// 默认引入请求日志中间件
-	router.Use(middleware.RequestLog)
-
 	return &Server{
 		Router:          router,
 		NotFoundHandler: handler.NotFoundHandler,
 	}
 }
 
-// Start 启动服务
-// port http server port
+// Start run http server
+// args must be less than one,
+// eg: Start()
+//	   Start(8080)
 func (server *Server) Start(args ...int) error {
+	// use lock
+	server.mu.Lock()
+
+	server.beforeStart()
+
 	port := app.Config().ServicePort
 	if len(args) == 1 {
 		port = args[0]
 		app.Config().ServicePort = port
-	}else if len(args) > 1 {
-
-		return errors.New("length of args must less than 1")
+	} else if len(args) > 1 {
+		return errors.New("args must be less than one")
 	}
-
-	// 防重复操作
-	server.mu.Lock()
 
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)
@@ -59,3 +58,22 @@ func (server *Server) Start(args ...int) error {
 
 	return server.Router.Run(completeHost)
 }
+
+// beforeStart
+func (server *Server) beforeStart() {
+	// before start
+	eventDispatcher := app.EventDispatcher()
+	eventDispatcher.Trigger(app.ConfigInitEvent, nil)
+	eventDispatcher.Trigger(app.LogManagerInitEvent, nil)
+
+	// mysql auto connect
+	if app.Config().Mysql().AutoConnect {
+		eventDispatcher.Trigger(app.MySqlConnectEvent, nil)
+	}
+
+	// redis auto connect
+	if app.Config().Redis().AutoConnect {
+		eventDispatcher.Trigger(app.RedisConnectEvent, nil)
+	}
+}
+

@@ -6,7 +6,9 @@ import (
 	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/helper"
+	"github.com/ebar-go/ego/utils/date"
+	"github.com/ebar-go/ego/utils/json"
+	"github.com/ebar-go/ego/utils/number"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -29,16 +31,16 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 // RequestLog gin的请求日志中间件
 func RequestLog(c *gin.Context) {
 	t := time.Now()
-	requestTime := helper.GetTimeStampFloatStr()
+	requestTime := date.GetMicroTimeStampStr()
 	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 	c.Writer = blw
 
 	requestBody := getRequestBody(c)
 
 	// 从头部信息获取
-	traceId := c.GetHeader("gateway-trace")
-	if strings.TrimSpace(traceId) == "" {
-		traceId = helper.NewTraceId()
+	traceId := strings.TrimSpace(c.GetHeader(app.Config().TraceHeader))
+	if traceId == "" {
+		traceId = trace.NewId()
 	}
 	trace.SetTraceId(traceId)
 	defer trace.DeleteTraceId()
@@ -53,7 +55,7 @@ func RequestLog(c *gin.Context) {
 	// 获取响应内容
 	responseBody := blw.body.String()
 	// 截断响应内容
-	maxResponseSize := helper.Min(helper.Max(0, blw.body.Len()-1), app.Config().MaxResponseLogSize)
+	maxResponseSize := number.Min(number.Max(0, blw.body.Len()-1), app.Config().MaxResponseLogSize)
 
 	// 日志格式
 	logContext["trace_id"] = traceId
@@ -63,7 +65,7 @@ func RequestLog(c *gin.Context) {
 	logContext["refer_request_host"] = c.ClientIP()
 	logContext["request_body"] = requestBody
 	logContext["request_time"] = requestTime
-	logContext["response_time"] = helper.GetTimeStampFloatStr()
+	logContext["response_time"] = date.GetMicroTimeStampStr()
 	logContext["response_body"] = responseBody[0:maxResponseSize]
 	logContext["time_used"] = fmt.Sprintf("%v", latency)
 	logContext["header"] = c.Request.Header
@@ -95,7 +97,7 @@ func getRequestBody(c *gin.Context) interface{} {
 		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 		var params interface{}
-		_ = helper.JsonDecode(bodyBytes, params)
+		_ = json.Decode(bodyBytes, params)
 		return params
 
 	}

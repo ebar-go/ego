@@ -8,7 +8,7 @@ import (
 func CORS(c *gin.Context) {
 	method := c.Request.Method
 
-	// 核心处理方式
+	// set response header
 	c.Header("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
 	c.Header("Access-Control-Allow-Credentials", "true")
 	c.Header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
@@ -16,7 +16,6 @@ func CORS(c *gin.Context) {
 
 	if method == "OPTIONS" || method == "HEAD" {
 		c.AbortWithStatus(204)
-
 		return
 	}
 

@@ -3,9 +3,9 @@ package test
 import (
 	"fmt"
 	"github.com/ebar-go/ego/app"
-	"github.com/ebar-go/ego/helper"
 	"github.com/ebar-go/ego/http"
 	"github.com/ebar-go/ego/http/response"
+	"github.com/ebar-go/ego/utils/date"
 	"github.com/ebar-go/ego/ws"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +29,7 @@ func TestClient_Listen(t *testing.T) {
 		fmt.Println(1)
 
 		client := ws.NewClient(conn, func(ctx *ws.Context) string {
-			return helper.GetTimeStr() + ":" + ctx.GetMessage()
+			return date.GetTimeStr() + ":" + ctx.GetMessage()
 		})
 
 		client.CloseHandler = func() {

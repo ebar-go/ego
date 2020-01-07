@@ -1,14 +1,12 @@
 package validator
 
 import (
+	ut "github.com/go-playground/universal-translator"
 	"reflect"
 	"sync"
-
-	"errors"
-	"github.com/ebar-go/ego/helper"
-	"github.com/go-playground/locales/zh"
-	"github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	"errors"
+	"github.com/go-playground/locales/zh"
 	zh_translations "github.com/go-playground/validator/v10/translations/zh"
 )
 
@@ -29,10 +27,21 @@ type Validator struct {
 	validate *validator.Validate
 }
 
+// getKindOf return the kind of data
+func getKindOf(data interface{}) reflect.Kind {
+	value := reflect.ValueOf(data)
+	valueType := value.Kind()
+
+	if valueType == reflect.Ptr {
+		valueType = value.Elem().Kind()
+	}
+	return valueType
+}
+
 // ValidateStruct 验证
 func (v *Validator) ValidateStruct(obj interface{}) error {
 
-	if helper.GetKindOf(obj) == reflect.Struct {
+	if getKindOf(obj) == reflect.Struct {
 		v.lazyInit()
 
 		if err := v.validate.Struct(obj); err != nil {

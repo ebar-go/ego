@@ -24,17 +24,18 @@ go get -u github.com/ebar-go/ego
 
 ## 模块
 ### http
+#### 服务初始化
 基于gin框架的http服务器模块
 - 启动web服务
 
 ```go
 package main
 import (
-	"github.com/ebar-go/ego/http"
-	"github.com/gin-gonic/gin"
-	"fmt"
-    "github.com/ebar-go/ego/helper"
-	)
+    "fmt"
+    "github.com/ebar-go/ego/http"
+    "github.com/ebar-go/ego/utils"
+    "github.com/gin-gonic/gin"
+)
 
 func main() {
     server := http.NewServer()
@@ -43,480 +44,213 @@ func main() {
         fmt.Println("hello,world")
     })
     
-    helper.FatalError("StartServer", server.Start())
+    utils.FatalError("StartServer", server.Start())
+}
+```
+
+#### http请求客户端
+支持原生http、fasthttp、kong网关等
+```go
+package main
+import (
+    "fmt"
+    "github.com/ebar-go/ego/http/client"
+    "github.com/ebar-go/ego/http/client/request"
+)
+
+func main() {
+    cli := client.NewFastHttpClient()
+    // cli := client.NewHttpClient()
+    // cli := client.NewKongClient()
+    req := cli.NewRequest(request.Param{
+        Method:"GET",
+        Url:"http://localhost:8080/index",
+        Headers:nil,
+        Body:nil,
+    })
+    resp, err := cli.Execute(req)
+    fmt.Println(resp, err)
+
 }
 ```
 
 #### 中间件
-集成JWT,请求日志,跨域等中间件
+- CORS
+跨域中间件
+
 - JWT
+JsonWebToken鉴权
+
+- RequestLog
+请求日志记录
+
+- Recover
+处理panic的中间件
 ```go
 package main
 import (
-	"github.com/ebar-go/ego/http"
-	"github.com/gin-gonic/gin"
-	"fmt"
-	"github.com/ebar-go/ego/http/middleware"
-	"github.com/ebar-go/ego/helper"
-	)
+    "fmt"
+    "github.com/ebar-go/ego/http"
+    "github.com/ebar-go/ego/http/middleware"
+    "github.com/ebar-go/ego/utils"
+    "github.com/gin-gonic/gin"
+)
+
 func main() {
     server := http.NewServer()
-    // 添加路由
+    // middleware must used before init router 
+    // Recover middleware
+    server.Router.Use(middleware.Recover)
+    // JWT middleware,make sure Config.JwtKey is not empty
+    server.Router.Use(middleware.JWT)
+    // CORS middleware
+    server.Router.Use(middleware.CORS)
+    // RequestLog middleware
+    server.Router.Use(middleware.RequestLog)
+
+    // Add router
     server.Router.GET("/test", func(context *gin.Context) {
         fmt.Println("hello,world")
     })
     
-    api := server.Router.Group("/api")
-    api.Use(middleware.JWT)
-    {
-    	api.GET("/user", func(context *gin.Context) {
-    		
-    	    fmt.Println("获取用户信息")
-    	    fmt.Println(middleware.GetCurrentClaims(context))
-    	})
-    }
-    helper.FatalError("StartServer", server.Start())
+    utils.FatalError("StartServer", server.Start())
 }
 ```
 
-- RequestLog 请求日志
 
-- Cors
+#### 分页组件
+对数据进行分页
+
+#### 响应
+固定格式的json输出
 ```go
-package main
+package handler
 import (
-"github.com/ebar-go/ego/http"
-"github.com/ebar-go/ego/http/middleware"
+    "github.com/ebar-go/ego/http/response"
+    "github.com/gin-gonic/gin"
 )
-func main() {
-    server := http.NewServer()
-    // 根据情况，中间件一般放在路由的前面,否则会在handler处理完成后生效
-    server.Router.Use(middleware.CORS) // 跨域
-    server.Router.Use(middleware.Recover) // 错误处理机制
+func IndexHandler(ctx *gin.Context) {
+    response.WrapContext(ctx).Success(response.Data{"hello":"world"})
+    // response.WrapContext(ctx).Error(500, "system error")
 }
 ```
 
-### DI 全局变量管理
-通过集成`https://github.com/uber-go/dig`,用依赖注入的方式管理全局变量
+#### validator
+集成`github.com/go-playground/validator`
+
+### 组件包
+#### apollo
 ```go
-package main
-import (
-
-"fmt"
-"github.com/ebar-go/ego/app"
-"github.com/ebar-go/ego/helper"
-)
-func main() {
-    // 系统容器,将配置、数据库、Redis连接、mns客户端等
-    fmt.Println(app.Config())
-    
-    // 自定义容器
-    container := app.NewContainer()
-    container.Provide(func() int{
-        globalV := 1
-        return globalV
-    })
-    err := container.Invoke(func(globalV int) {
-        fmt.Println(globalV)
-    })
-    helper.CheckError("GetGlobalV", err)
-
-}
+err := apollo.Init(apollo.Conf{
+    AppId:            "",
+    Cluster:          "",
+    Namespace:        "",
+    Ip:               "",
+    BackupConfigPath: "",
+})
 ```
-
-### cache
-推荐使用 go-cache
-
-### config
-配置项,集成Apollo配置
-- Apollo
-
-```go
-package main
-import (
-	"github.com/ebar-go/ego/component/apollo"
-    "os"
-	"fmt"
-	"github.com/ebar-go/ego/helper"
-)
-func main() {
-    conf := apollo.Conf{
-    	AppId: "open-api",
-    	Cluster: "local",
-    	Ip: "192.168.0.19:8080",
-    	Namespace: "application",
-    }
-    helper.FatalError("InitApollo", apollo.Init(conf))
-    
-    // 获取配置
-    logFilePath := apollo.GetStringValue("LOG_FILE","/var/tmp")
-    fmt.Println(logFilePath)
-
-    // 另外，可以使用定时任务，监听配置变更,更多请查看test
-}
-
-```
-
-### consul
+#### auth
+#### consul
 微服务(SOA),集成consul组件
 - 服务注册
-
-```go
-package main
-import (
-	"github.com/ebar-go/ego/component/consul"
-	"fmt"
-	"github.com/ebar-go/ego/helper"
-)
-func main() {
-    config := consul.DefaultConfig()
-    // 指定consul地址
-    config.Address = "192.168.0.222:8500"
-    client := &consul.Client{
-        Config:config,
-    }
-    // 获取本机IP
-    ip, err := helper.GetLocalIp()  
-    if err != nil {
-    	panic(err)
-    }
-    registration := consul.NewServiceRegistration()
-    registration.ID = "go-demo-2"
-    registration.Name = "project-demo"
-    registration.Port = 8088
-    registration.Tags = []string{"project-demo"}
-    registration.Address = ip
-    check := consul.NewServiceCheck()
-    // 指定服务检查url
-    check.HTTP = fmt.Sprintf("http://%s:%d%s", registration.Address, registration.Port, "/check")
-    check.Timeout = "3s"
-    check.Interval = "3s"
-    check.DeregisterCriticalServiceAfter = "30s" //check失败后30秒删除本服务
-    registration.Check = check
-    err = client.Register(registration)
-}
-```
 - 服务发现
 
+#### 日志
+#### mns
+阿里云mns客户端
+```go
+// trigger mns init event
+// make sure config is not empty 
+app.EventDispather().Trigger(app.MNSClientInitEvent, nil)
+mns := app.Mns()
+```
+
+#### mysql
+- connect database
+```go
+// trigger mysql connect event
+// make sure config is not empty 
+app.EventDispather().Trigger(app.MysqlConnectEvent, nil)
+db := app.Mysql() 
+// .. curd
+```
+- 自定义model
+
+#### prometheus
+集成prometheus
+
+#### trace
+全局ID
 ```go
 package main
 import (
-	"github.com/ebar-go/ego/component/consul"
-	"fmt"
-	"github.com/ebar-go/ego/helper"
+ "fmt"
+ "github.com/ebar-go/ego/component/trace"
 )
 func main() {
-    config := consul.DefaultConfig()
-    // 指定consul地址
-    config.Address = "192.168.0.222:8500"
-    client := &consul.Client{
-        Config:config,
-    }
-    items, err := client.Discover("project-demo")
-    if err != nil {
-    	panic(err)
-    }
-    service, err := client.LoadBalance(items)
-    if err != nil {
-        panic(err)
-    }   
-    fmt.Println(service.GetHost())
+    // set global trace id first
+    trace.SetTraceId(trace.NewId())
+    // use defer execute recycle
+    defer trace.DeleteTraceId()
+    // get id in other location
+    fmt.Println(trace.GetTraceId())
 }
 ```
 
-更多方法请查看测试用例
+### 配置项
+读取配置项
 
-### helper
-公共库
-
+### utils
+常用工具库
 ```go
-package main
-import (
-    "github.com/ebar-go/ego/helper"
-    "fmt"
-)
-func main() {//
-    // 获取当前时间
-    fmt.Println("获取当前时间:" , helper.GetTimeStr())
-    helper.Debug("打印调试")
-    
-    // 更多请查看使用示例
-}
+utils.FatalError("Failt error", func () error{
+    return errors.New("test")
+})
+utils.LogError("Log error", nil)
+```
+- 数组
+- 转换
+- 日期
+- 文件
+- json
+
+提供json操作
+```go
+json.Encode(someValue)
+json.Decode(jsonStr, &someValue)
+```
+- 数字
+
+提供数字型相关常用方法
+```go
+// default int 
+httpPort = number.DefaultInt(httpPort, 8080)
+```
+- 字符串
+
+提供字符串相关常用方法
+```go
+// default string
+host = strings.Default(host, "127.0.0.1")
 ```
 
 ### log
 日志管理器
 - 系统日志
-
 ```go
 package main
 import (
-       	"github.com/ebar-go/ego/app"
-        "github.com/ebar-go/ego/component/log"
-       	"os"
-       )
-func main() {
-    app.LogManager().App().Info("test", log.Context{"a":1})
-    app.LogManager().App().Debug("test", log.Context{"a":1})
-    app.LogManager().App().Warn("test", log.Context{"a":1})
-    app.LogManager().App().Error("test", log.Context{"a":1})
-}
-```
-- 自定义
-
-```go
-package main
-import (
-       	"github.com/ebar-go/ego/component/log"
-       	"os"
-       )
-func main() {
-    logger := log.New()
-    logger.Debug("test debug", log.Context{"name":"123"})
-}
-```
-
-### HTTP请求客户端
-提供官方的http包、fasthttp(推荐使用),kong网关的http客户端
-```go
-package main
-import (
-       	"github.com/ebar-go/ego/component/mysql"
-       	"github.com/ebar-go/ego/http/client"
-       	"github.com/ebar-go/ego/http/client/request"
-       	"os"
-       	"fmt"
-       )
-func main() {
-	// 官方http,支持长连接
-	httpClient := client.NewHttpClient()
-	
-	// fasthttp
-	// httpClient := client.NewFastHttpClient()
-	
-	// kong
-	// httpClient := client.NewKongClient()
-	// 设置其他参数...
-	req := httpClient.NewRequest(request.Param{
-		Url: "http://localhost:8080/test",
-		Method: request.Get,
-	})
-	
-	resp, err := httpClient.Execute(req)
-	fmt.Println(resp, err)
-}
-```
-
-### mysql
-集成的Gorm,使用连接池
-
-```go
-package main
-import (
-       	"github.com/ebar-go/ego/app"
-       )
-func main() {
-    conn := app.Mysql()
-    defer conn.Close()
-    
-    conn.DB().Ping()
-    
-}
-```
-
-### redis
-集成的go-redis,使用连接池
-
-```go
-package main
-import (
-       	"github.com/ebar-go/ego/app"
-       	"github.com/ebar-go/ego/helper"
-       	"os"
-       	"fmt"
-       )
-func main() {
-    conn := app.Redis()
-    if err := conn.Set("key", "value", 0).Err(); err != nil {
-    	fmt.Println(err)
-    }
-    
-    val, err := conn.Get("key").Result()
-    fmt.Println("key", val, err)
-}
-```
-
-### 对接阿里云MNS
-```go
-package main
-import (
-       	"github.com/ebar-go/ego/app"
-"github.com/ebar-go/ego/component/mns"
-       	"github.com/ebar-go/ego/helper"
-       	"os"
-       	"fmt"
-       )
-func main()  {
-	// 添加队列处理方法
-	app.Mns().AddQueue("queueName",  Process, 30)
-    
-    // 使用定时任务监听队列
-    _ = app.Task().AddFunc(fmt.Sprintf("*/%d * * * * *", 1), func() {
-    	app.Mns().ListenQueues()
-    })
-    
-    // 通过主体发送消息
-    resp, err := app.Mns().PublishMessage("topicName", mns.Params{}, "filterTag")
-    fmt.Println(resp, err)
-}
-
-func Process(params mns.Params) error {
-    fmt.Println(params)
-    return nil
-}
-```
-
-### 对接prometheus监控
-监控Mysql
-
-```go
-package main
-import (
-       	"github.com/ebar-go/ego/app"
-"github.com/ebar-go/ego/component/mysql"
-       	"github.com/ebar-go/ego/component/prometheus"
-       	"github.com/ebar-go/ego/helper"
-       	"github.com/ebar-go/ego/http"
-       	"os"
-       )
-func main() {
-    
-    conn := app.Mysql()
-    prometheus.ListenMysql(conn, "server")
-    
-    server := http.NewServer()
-    
-    server.Router.GET("/metrics", prometheus.Handler)
-    
-    helper.FatalError("StartServer", server.Start())
-    
-}
-```
-
-### 参数验证器
-更多验证规则请查阅: [https://github.com/go-playground/validator](https://github.com/go-playground/validator)，经过社区验证的高可用、高性能验证器
-```go
-package main
-import (
-       	"github.com/ebar-go/ego/helper"
-       	"github.com/ebar-go/ego/http"
-       	"github.com/ebar-go/ego/http/response"
-       	"os"
-       	"github.com/gin-gonic/gin"
-       	"github.com/gin-gonic/gin/binding"
-       	"github.com/ebar-go/ego/http/validator"
-       )
-
-type Login struct {
-	User     string `form:"user" json:"user" xml:"user"  binding:"required"`
-	Password string `form:"password" json:"password" xml:"password" binding:"required"`
-}
-
-func main() {
-	// 使用自定义验证器代替gin的validator
-	binding.Validator = new(validator.Validator)
-	
-    server := http.NewServer()
-    
-    server.Router.GET("/login", func(c *gin.Context) {
-        var json Login
-        if err := c.ShouldBindJSON(&json); err != nil {
-        	// 参数错误的业务码自定义
-        	invalidParamCode := 1001
-        	response.Error(c, invalidParamCode, err.Error())
-        	return
-        }
-        		
-       // .. 其他代码
-        		
-       response.Success(c, response.Data{
-       	"token":"1234567abcd",
-       })
-    })
-    
-    helper.FatalError("StartServer", server.Start())
-    
-}
-```
-
-### test 单元测试
-```go
-package test
-import (
-
-"github.com/magiconair/properties/assert"
-"testing"
+ "fmt"
+ "github.com/ebar-go/ego/app"
+"github.com/ebar-go/ego/component/log"
 )
-
-func TestName(t *testing.T) {
-    expect := 1
-    got := 1
-    assert.Equal(t, expect, got)
-}
-```
-
-### 支持websocket
-基于`github.com/gorilla/websocket`实现websocket
-
-```go
-package main
-import (
-	"github.com/ebar-go/ego/app"
-"github.com/ebar-go/ego/http"
-	"github.com/ebar-go/ego/ws"
-	"github.com/gin-gonic/gin"
-	"fmt"
-    "github.com/ebar-go/ego/helper"
-	nethttp "net/http"
-	)
-
 func main() {
-	// 使用协程启动
-	go app.WebSocket().Start()
-	
-    server := http.NewServer()
-    // 添加路由
-    server.Router.GET("/test", func(context *gin.Context) {
-        fmt.Println("hello,world")
-    })
-    server.Router.GET("/ws", func(context *gin.Context) {
-        conn, err := ws.GetUpgradeConnection(context.Writer, context.Request)
-        
-        if err != nil {
-        	nethttp.NotFound(context.Writer, context.Request)
-        	return
-        }
-        
-        
-        // TODO 根据tag扩展handler
-        
-        client := ws.NewClient(conn, func(ctx *ws.Context) string {
-        	// do something
-            return ctx.GetMessage()
-        })
-        
-        // 将用户信息放入扩展里
-        client.Extends["user"] = struct {
-         Name string
-        }{Name: "test"}
-        
-        app.WebSocket().RegisterClient(client)
-        
-        go client.Listen()
-    })
-    
-    helper.FatalError("StartServer", server.Start())
+    // if not run http server,please trigger log manager init event
+    app.EventDispatcher().Trigger(app.LogManagerInitEvent, nil)
+    app.LogManager().App().Info("test", log.Context{"hello":"world"})
+    app.LogManager().App().Debug("debug", log.Context{"hello":"world"})
+    app.LogManager().App().Warn("warn", log.Context{"hello":"world"})
+    app.LogManager().App().Error("error", log.Context{"hello":"world"})
 }
+
 ```
-## TODO
-- 支持RPC

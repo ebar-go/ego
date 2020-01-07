@@ -7,6 +7,6 @@ import (
 )
 
 // NotFoundHandler 404
-func NotFoundHandler(context *gin.Context) {
-	response.Error(context, 404, fmt.Sprintf("404 Not Found: %s", context.Request.RequestURI))
+func NotFoundHandler(ctx *gin.Context) {
+	response.WrapContext(ctx).Error(404, fmt.Sprintf("404 Not Found: %s", ctx.Request.RequestURI))
 }
