@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
@@ -45,15 +44,6 @@ func LogManager() (manager log.Manager) {
 func Task() (manager *cron.Cron) {
 	_ = app.Invoke(func(c *cron.Cron) {
 		manager = c
-	})
-
-	return
-}
-
-// Jwt return a jwt instance
-func Jwt() (jwt auth.Jwt) {
-	_ = app.Invoke(func(j auth.Jwt) {
-		jwt = j
 	})
 
 	return

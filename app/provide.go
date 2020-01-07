@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
@@ -80,9 +79,6 @@ func init() {
 		utils.LogError("InitTaskManager", initTaskManager())
 	})
 
-	eventDispatcher.Register(JwtInitEvent, func(ev event.Event) {
-		utils.LogError("InitJwt", initJwt())
-	})
 }
 
 // initConfig
@@ -104,13 +100,6 @@ func initLogManager() error {
 // initTaskManager
 func initTaskManager() error {
 	return app.Provide(cron.New)
-}
-
-// initJwt
-func initJwt() error {
-	return app.Provide(func(conf *config.Config) auth.Jwt {
-		return auth.New(conf.JwtSignKey)
-	})
 }
 
 // initWebSocketManager

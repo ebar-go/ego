@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
@@ -58,26 +57,6 @@ func TestEventDispatcher(t *testing.T) {
 	}
 }
 
-func TestJwt(t *testing.T) {
-	tests := []struct {
-		name    string
-		wantJwt auth.Jwt
-	}{
-		{
-			name:    "key",
-			wantJwt: &auth.JwtAuth{SignKey:[]byte("key")},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			Config().JwtSignKey = []byte(tt.name)
-			EventDispatcher().Trigger(JwtInitEvent, nil)
-			if gotJwt := Jwt(); !reflect.DeepEqual(gotJwt, tt.wantJwt) {
-				t.Errorf("Jwt() = %v, want %v", gotJwt, tt.wantJwt)
-			}
-		})
-	}
-}
 
 func TestLogManager(t *testing.T) {
 	tests := []struct {
@@ -250,22 +229,6 @@ func Test_initEventDispatcher(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := initEventDispatcher(); (err != nil) != tt.wantErr {
 				t.Errorf("initEventDispatcher() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func Test_initJwt(t *testing.T) {
-	tests := []struct {
-		name    string
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := initJwt(); (err != nil) != tt.wantErr {
-				t.Errorf("initJwt() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
