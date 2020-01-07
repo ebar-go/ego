@@ -44,6 +44,16 @@ func init() {
 		event.NewListener(func(ev event.Event) {
 			app.Redis()
 		}))
+
+	// mysql auto connect
+	if app.Config().Mysql().AutoConnect {
+		app.EventDispatcher().Trigger(MySqlConnectEvent, nil)
+	}
+
+	// redis auto connect
+	if app.Config().Redis().AutoConnect {
+		app.EventDispatcher().Trigger(RedisConnectEvent, nil)
+	}
 }
 
 // NewServer 实例化server

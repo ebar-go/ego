@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/ebar-go/ego/utils/number"
+	"github.com/ebar-go/ego/utils/strings"
 	"net"
 	"strconv"
 )
@@ -11,47 +12,52 @@ const (
 	mysqlDefaultIdleConnections = 10
 	mysqlDefaultOpenConnections = 40
 	mysqlDefaultPort            = 3306
+	mysqlDefaultUser = "root"
 )
 
-// MysqlConfig mysql配置项
-type MysqlConfig struct {
-	// 数据库名称
+// MysqlOptions
+type MysqlOptions struct {
+	// auto connect
+	AutoConnect bool
+
+	// database name
 	Name string
 
-	// 地址
+	// host
 	Host string
 
-	// 端口号,默认是3306
+	// port, default 3306
 	Port int
 
-	// 用户名
+	// user, default root
 	User string
 
-	// 密码
+	// password
 	Password string
 
-	// 是否日志模式，默认不开
+	// log mode
 	LogMode bool
 
-	// 最大操作连接数
+	// MaxIdleConnections, default 10
 	MaxIdleConnections int
 
-	// 最大打开连接数
+	// MaxOpenConnections, default 40
 	MaxOpenConnections int
 }
 
-// complete set default config
-func (conf *MysqlConfig) complete() {
-	conf.MaxIdleConnections = number.DefaultInt(conf.MaxIdleConnections, mysqlDefaultIdleConnections)
-	conf.MaxOpenConnections = number.DefaultInt(conf.MaxOpenConnections, mysqlDefaultOpenConnections)
-	conf.Port = number.DefaultInt(conf.Port, mysqlDefaultPort)
+// complete set default options
+func (options *MysqlOptions) complete() {
+	options.MaxIdleConnections = number.DefaultInt(options.MaxIdleConnections, mysqlDefaultIdleConnections)
+	options.MaxOpenConnections = number.DefaultInt(options.MaxOpenConnections, mysqlDefaultOpenConnections)
+	options.Port = number.DefaultInt(options.Port, mysqlDefaultPort)
+	options.User = strings.Default(options.User, mysqlDefaultUser)
 }
 
 // Dsn return mysql dsn
-func (conf MysqlConfig) Dsn() string {
+func (options MysqlOptions) Dsn() string {
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		conf.User,
-		conf.Password,
-		net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port)),
-		conf.Name)
+		options.User,
+		options.Password,
+		net.JoinHostPort(options.Host, strconv.Itoa(options.Port)),
+		options.Name)
 }

@@ -27,23 +27,23 @@ type Config struct {
 	TraceHeader string
 
 	// redis config
-	redisConfig *RedisConfig
+	redisConfig *RedisOptions
 
 	// mysql config
-	mysqlConfig *MysqlConfig
+	mysqlOptions *MysqlOptions
 
 	// mns config
 	mnsConfig *MnsConfig
 }
 
 // Redis config
-func (config *Config) Redis() *RedisConfig {
+func (config *Config) Redis() *RedisOptions {
 	return config.redisConfig
 }
 
 // Mysql config
-func (config *Config) Mysql() *MysqlConfig {
-	return config.mysqlConfig
+func (config *Config) Mysql() *MysqlOptions {
+	return config.mysqlOptions
 }
 
 // Mns config
@@ -64,7 +64,8 @@ func NewInstance() *Config {
 	instance.TraceHeader = strings.Default(Getenv("TRACE_HEADER"), "gateway-trace")
 
 	// init mysql config
-	instance.redisConfig = &RedisConfig{
+	instance.redisConfig = &RedisOptions{
+		AutoConnect:strings.ToBool(Getenv("REDIS_AUTO_CONNECT")),
 		Host: strings.Default(Getenv("REDIS_HOST"), "127.0.0.1"),
 		Port: number.DefaultInt(conv.String2Int(Getenv("REDIS_PORT")), 6379),
 		Auth: Getenv("REDIS_AUTH"),
@@ -72,14 +73,15 @@ func NewInstance() *Config {
 	instance.redisConfig.complete()
 
 	// init redis config
-	instance.mysqlConfig = &MysqlConfig{
+	instance.mysqlOptions = &MysqlOptions{
+		AutoConnect: strings.ToBool(Getenv("MYSQL_AUTO_CONNECT")),
 		Name:     Getenv("MYSQL_DATABASE"),
 		Host:     strings.Default(Getenv("MYSQL_MASTER_HOST"), "127.0.0.1"),
 		Port:     number.DefaultInt(conv.String2Int(Getenv("MYSQL_MASTER_PORT")), 3306),
 		User:     Getenv("MYSQL_MASTER_USER"),
 		Password: Getenv("MYSQL_MASTER_PASS"),
 	}
-	instance.mysqlConfig.complete()
+	instance.mysqlOptions.complete()
 
 	// mns config
 	instance.mnsConfig = &MnsConfig{

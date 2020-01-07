@@ -65,3 +65,11 @@ func Default(v, defaultV string) string {
 
 	return v
 }
+
+func ToBool(b string) bool {
+	if b == "1" || "true" == strings.ToLower(b) {
+		return true
+	}
+
+	return false
+}

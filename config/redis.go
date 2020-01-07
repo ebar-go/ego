@@ -8,24 +8,27 @@ import (
 	"time"
 )
 
-// RedisConfig redis配置
-type RedisConfig struct {
-	// 地址
+// RedisOptions redis配置
+type RedisOptions struct {
+	// AutoConnect
+	AutoConnect bool
+
+	// host
 	Host string
 
-	// 端口号
+	// port, default 6379
 	Port int
 
-	// 密码
+	// auth
 	Auth string
 
-	// 连接池大小,默认100个连接
+	// pool size, default 100
 	PoolSize int
 
-	// 最大尝试次数,默认3次
+	// max retries, default 3
 	MaxRetries int
 
-	// 超时, 默认10s
+	// timeout, default 10 seconds
 	IdleTimeout time.Duration
 }
 
@@ -37,7 +40,7 @@ const (
 )
 
 // complete set default config
-func (conf *RedisConfig) complete() {
+func (conf *RedisOptions) complete() {
 	conf.Port = number.DefaultInt(conf.Port, redisDefaultPort)
 	conf.PoolSize = number.DefaultInt(conf.PoolSize, redisDefaultPoolSize)
 	conf.MaxRetries = number.DefaultInt(conf.MaxRetries, redisDefaultMaxRetries)
@@ -48,7 +51,7 @@ func (conf *RedisConfig) complete() {
 }
 
 // Options get redis options
-func (conf *RedisConfig) Options() *redis.Options {
+func (conf *RedisOptions) Options() *redis.Options {
 	address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
 
 	return &redis.Options{
