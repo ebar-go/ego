@@ -14,6 +14,13 @@ func PanicErr(msg string, err error) {
 	}
 }
 
+// SecurePanic only panic when err not nil
+func SecurePanic(err error)  {
+	if err != nil {
+		panic(err)
+	}
+}
+
 // MergeMaps merge items
 func MergeMaps(items ...map[string]interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
