@@ -44,16 +44,6 @@ func init() {
 		event.NewListener(func(ev event.Event) {
 			app.Redis()
 		}))
-
-	// mysql auto connect
-	if app.Config().Mysql().AutoConnect {
-		app.EventDispatcher().Trigger(MySqlConnectEvent, nil)
-	}
-
-	// redis auto connect
-	if app.Config().Redis().AutoConnect {
-		app.EventDispatcher().Trigger(RedisConnectEvent, nil)
-	}
 }
 
 // NewServer 实例化server
@@ -90,6 +80,16 @@ func (server *Server) Start(args ...int) error {
 	server.Router.NoMethod(server.NotFoundHandler)
 
 	completeHost := net.JoinHostPort("", strconv.Itoa(port))
+
+	// mysql auto connect
+	if app.Config().Mysql().AutoConnect {
+		app.EventDispatcher().Trigger(MySqlConnectEvent, nil)
+	}
+
+	// redis auto connect
+	if app.Config().Redis().AutoConnect {
+		app.EventDispatcher().Trigger(RedisConnectEvent, nil)
+	}
 
 	return server.Router.Run(completeHost)
 }
