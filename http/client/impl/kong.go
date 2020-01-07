@@ -5,6 +5,7 @@ import (
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/http/client/request"
 	"time"
+	"github.com/dgrijalva/jwt-go"
 )
 
 // Kong kong客户端

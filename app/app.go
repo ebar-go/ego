@@ -5,6 +5,7 @@ import (
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
+	"github.com/ebar-go/ego/errors"
 	"github.com/ebar-go/ego/event"
 	"github.com/ebar-go/ego/utils"
 	"github.com/ebar-go/ego/ws"
@@ -13,11 +14,12 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/robfig/cron"
 	"go.uber.org/dig"
-	"github.com/ebar-go/ego/errors"
+	"sync"
 )
 
 var (
 	app = NewContainer()
+	httpClientInit sync.Once
 )
 
 // NewContainer return an empty container

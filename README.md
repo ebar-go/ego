@@ -50,6 +50,29 @@ func main() {
 
 #### http请求客户端
 支持原生http、fasthttp、kong网关等
+```go
+package main
+import (
+    "fmt"
+    "github.com/ebar-go/ego/http/client"
+    "github.com/ebar-go/ego/http/client/request"
+)
+
+func main() {
+    cli := client.NewFastHttpClient()
+    // cli := client.NewHttpClient()
+    // cli := client.NewKongClient()
+    req := cli.NewRequest(request.Param{
+        Method:"GET",
+        Url:"http://localhost:8080/index",
+        Headers:nil,
+        Body:nil,
+    })
+    resp, err := cli.Execute(req)
+    fmt.Println(resp, err)
+
+}
+```
 
 #### 中间件
 - CORS
