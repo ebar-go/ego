@@ -24,7 +24,7 @@ func prepareConf() Conf {
 	if err := config2.LoadYaml(&conf, "/tmp/app.yaml"); err != nil {
 		panic(err)
 	}
-
+	
 	return Conf{
 		AppId:            conf.Apollo.AppId,
 		Cluster:          conf.Apollo.Cluster,

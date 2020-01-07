@@ -140,6 +140,15 @@ func IndexHandler(ctx *gin.Context) {
 
 ### 组件包
 #### apollo
+```go
+err := apollo.Init(apollo.Conf{
+    AppId:            "",
+    Cluster:          "",
+    Namespace:        "",
+    Ip:               "",
+    BackupConfigPath: "",
+})
+```
 #### auth
 #### consul
 微服务(SOA),集成consul组件
@@ -152,7 +161,7 @@ func IndexHandler(ctx *gin.Context) {
 ```go
 // trigger mns init event
 // make sure config is not empty 
-app.EventDispather.Trigger(app.MNSClientInitEvent, nil)
+app.EventDispather().Trigger(app.MNSClientInitEvent, nil)
 mns := app.Mns()
 ```
 
@@ -161,7 +170,7 @@ mns := app.Mns()
 ```go
 // trigger mysql connect event
 // make sure config is not empty 
-app.EventDispather.Trigger(app.MysqlConnectEvent, nil)
+app.EventDispather().Trigger(app.MysqlConnectEvent, nil)
 db := app.Mysql() 
 // .. curd
 ```
@@ -192,14 +201,38 @@ func main() {
 读取配置项
 
 ### utils
-工具库
+常用工具库
+```go
+utils.FatalError("Failt error", func () error{
+    return errors.New("test")
+})
+utils.LogError("Log error", nil)
+```
 - 数组
 - 转换
 - 日期
 - 文件
 - json
+
+提供json操作
+```go
+json.Encode(someValue)
+json.Decode(jsonStr, &someValue)
+```
 - 数字
+
+提供数字型相关常用方法
+```go
+// default int 
+httpPort = number.DefaultInt(httpPort, 8080)
+```
 - 字符串
+
+提供字符串相关常用方法
+```go
+// default string
+host = strings.Default(host, "127.0.0.1")
+```
 
 ### log
 日志管理器
