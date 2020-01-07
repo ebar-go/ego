@@ -2,12 +2,18 @@ package event
 
 // Dispatcher
 type Dispatcher interface {
+	// register event quickly
+	Register(eventType string, handler Handler)
+
 	//add event listener
 	AddListener(eventType string, listener *Listener)
+
 	//remove event listener
 	RemoveListener(eventType string, listener *Listener) bool
+
 	//check listener is or not exist
 	HasListener(eventType string) bool
+
 	//dispatch event
 	DispatchEvent(event Event) bool
 
@@ -23,6 +29,11 @@ type eventDispatcher struct {
 // NewDispatcher new event dispatcher
 func NewDispatcher() Dispatcher {
 	return new(eventDispatcher)
+}
+
+// Register quickly register event with handler
+func (dispathcer *eventDispatcher) Register(eventType string, handler Handler) {
+	dispathcer.AddListener(eventType, NewListener(handler))
 }
 
 // AddListener add event listener

@@ -3,14 +3,27 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"runtime"
 )
 
-// PanicErr
-func PanicErr(msg string, err error) {
+// FatalError
+func FatalError(msg string, err error) {
 	if err != nil {
+
 		panic(errors.New(fmt.Sprintf("%s Error: %v\n", msg, err)))
+	}
+
+	log.Printf("%s Success\n", msg)
+}
+
+// LogError
+func LogError(msg string, err error)  {
+	if err == nil {
+		log.Printf("%s Success\n", msg)
+	}else {
+		log.Printf("%s Error: %v\n", msg, err)
 	}
 }
 

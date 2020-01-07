@@ -3,22 +3,11 @@ package http
 import (
 	"errors"
 	"github.com/ebar-go/ego/app"
-	"github.com/ebar-go/ego/event"
 	"github.com/ebar-go/ego/http/handler"
-	"github.com/ebar-go/ego/http/middleware"
 	"github.com/gin-gonic/gin"
 	"net"
 	"strconv"
 	"sync"
-)
-
-
-const (
-	// mysql connect event
-	MySqlConnectEvent = "MYSQL_CONNECT_EVENT"
-
-	// redis connect event
-	RedisConnectEvent = "REDIS_CONNECT_EVENT"
 )
 
 // Server Web服务管理器
@@ -33,25 +22,9 @@ type Server struct {
 	NotFoundHandler func(ctx *gin.Context)
 }
 
-func init() {
-	// register before start events
-	app.EventDispatcher().AddListener(MySqlConnectEvent,
-		event.NewListener(func(ev event.Event) {
-			app.Mysql()
-		}))
-
-	app.EventDispatcher().AddListener(RedisConnectEvent,
-		event.NewListener(func(ev event.Event) {
-			app.Redis()
-		}))
-}
-
 // NewServer 实例化server
 func NewServer() *Server {
 	router := gin.Default()
-
-	// 默认引入请求日志中间件
-	router.Use(middleware.RequestLog)
 
 	return &Server{
 		Router:          router,
@@ -64,6 +37,11 @@ func NewServer() *Server {
 // eg: Start()
 //	   Start(8080)
 func (server *Server) Start(args ...int) error {
+	// use lock
+	server.mu.Lock()
+
+	server.beforeStart()
+
 	port := app.Config().ServicePort
 	if len(args) == 1 {
 		port = args[0]
@@ -72,25 +50,30 @@ func (server *Server) Start(args ...int) error {
 		return errors.New("args must be less than one")
 	}
 
-	// 防重复操作
-	server.mu.Lock()
-
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)
 	server.Router.NoMethod(server.NotFoundHandler)
 
 	completeHost := net.JoinHostPort("", strconv.Itoa(port))
 
+	return server.Router.Run(completeHost)
+}
+
+// beforeStart
+func (server *Server) beforeStart() {
+	// before start
+	eventDispatcher := app.EventDispatcher()
+	eventDispatcher.Trigger(app.ConfigInitEvent, nil)
+	eventDispatcher.Trigger(app.LogManagerInitEvent, nil)
+
 	// mysql auto connect
 	if app.Config().Mysql().AutoConnect {
-		app.EventDispatcher().Trigger(MySqlConnectEvent, nil)
+		eventDispatcher.Trigger(app.MySqlConnectEvent, nil)
 	}
 
 	// redis auto connect
 	if app.Config().Redis().AutoConnect {
-		app.EventDispatcher().Trigger(RedisConnectEvent, nil)
+		eventDispatcher.Trigger(app.RedisConnectEvent, nil)
 	}
-
-	return server.Router.Run(completeHost)
 }
 
