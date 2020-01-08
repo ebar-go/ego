@@ -56,11 +56,6 @@ func init() {
 		utils.FatalError("ConnectDatabase", connectDatabase())
 	})
 
-
-	eventDispatcher.Register(MySqlConnectEvent, func(ev event.Event) {
-		utils.FatalError("ConnectDatabase", connectDatabase())
-	})
-
 	eventDispatcher.Register(RedisConnectEvent, func(ev event.Event) {
 		utils.FatalError("ConnectRedis", connectRedis())
 	})
