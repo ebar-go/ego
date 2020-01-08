@@ -2,6 +2,7 @@ package number
 
 import (
 	"fmt"
+	"hash/crc32"
 	"math"
 	"strconv"
 )
@@ -67,4 +68,17 @@ func (f FloatValue) Int() int {
 // Round rounding-off method
 func (f FloatValue) Round() int {
 	return int(math.Floor(float64(f) + 0.5))
+}
+
+// HashCode
+func HashCode(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
 }
