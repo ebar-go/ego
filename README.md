@@ -120,6 +120,17 @@ func main() {
 
 #### 分页组件
 对数据进行分页
+```go
+package main
+import (
+ "github.com/ebar-go/ego/http/paginator"
+)
+
+func main() {
+    pagination := paginator.Paginate(20, 1, 10)
+    paginationSlice := paginator.PaginateSlice([]interface{}{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, 1, 10)
+}
+```
 
 #### 响应
 固定格式的json输出
