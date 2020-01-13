@@ -76,33 +76,33 @@ func init() {
 
 // initConfig
 func initConfig() error {
-	return app.Provide(config.NewInstance)
+	return DefaultContainer.Provide(config.LoadEnv)
 }
 
 // initLogManager
 func initLogManager() error {
-	return app.Provide(func(conf *config.Config) log.Manager {
+	return DefaultContainer.Provide(func(conf config.Config) log.Manager {
 		return log.NewManager(log.ManagerConf{
-			SystemName: conf.ServiceName,
-			SystemPort: conf.ServicePort,
-			LogPath:    conf.LogPath,
+			SystemName: conf.Server().Name,
+			SystemPort: conf.Server().Port,
+			LogPath:    conf.Server().LogPath,
 		})
 	})
 }
 
 // initTaskManager
 func initTaskManager() error {
-	return app.Provide(cron.New)
+	return DefaultContainer.Provide(cron.New)
 }
 
 // initWebSocketManager
 func initWebSocketManager() error {
-	return app.Provide(ws.NewManager)
+	return DefaultContainer.Provide(ws.NewManager)
 }
 
 // connectRedis
 func connectRedis() error {
-	return app.Provide(func(conf *config.Config) (*redis.Client, error) {
+	return DefaultContainer.Provide(func(conf config.Config) (*redis.Client, error) {
 		connection := redis.NewClient(conf.Redis().Options())
 		_, err := connection.Ping().Result()
 		if err != nil {
@@ -115,7 +115,7 @@ func connectRedis() error {
 
 // connectDatabase
 func connectDatabase() error {
-	return app.Provide(func(conf *config.Config) (*gorm.DB, error) {
+	return DefaultContainer.Provide(func(conf config.Config) (*gorm.DB, error) {
 		options := conf.Mysql()
 		connection, err := gorm.Open("mysql", options.Dsn())
 		if err != nil {
@@ -134,7 +134,7 @@ func connectDatabase() error {
 
 // initMnsClient
 func initMnsClient() error {
-	return app.Provide(func(conf *config.Config, logManager log.Manager) (mns.Client) {
+	return DefaultContainer.Provide(func(conf config.Config, logManager log.Manager) (mns.Client) {
 		mnsConfig := conf.Mns()
 		return mns.NewClient(
 			mnsConfig.Url,
@@ -146,5 +146,5 @@ func initMnsClient() error {
 
 // initEventDispatcher
 func initEventDispatcher() error {
-	return app.Provide(event.NewDispatcher)
+	return DefaultContainer.Provide(event.NewDispatcher)
 }

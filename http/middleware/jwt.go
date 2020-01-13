@@ -36,7 +36,7 @@ func validateToken(ctx *gin.Context) error {
 		return TokenNotExist
 	}
 
-	claims, err := auth.New(app.Config().JwtSignKey).ParseToken(kv[1])
+	claims, err := auth.New(app.Config().Server().JwtSignKey).ParseToken(kv[1])
 	if err != nil {
 		return err
 	}

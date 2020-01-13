@@ -6,25 +6,17 @@ import (
 	"github.com/ebar-go/ego/utils/strings"
 )
 
-// Config 系统配置项
-type Config struct {
-	// 服务名称
-	ServiceName string
+// Config接口
+type Config interface {
+	Server() *ServerOption
+	Redis() *RedisOptions
+	Mysql() *MysqlOptions
+	Mns() *MnsConfig
+}
 
-	// 服务端口号
-	ServicePort int
-
-	// 响应日志最大长度
-	MaxResponseLogSize int
-
-	// 日志路径
-	LogPath string
-
-	// jwt的key
-	JwtSignKey []byte
-
-	// trace header key
-	TraceHeader string
+// config 系统配置项
+type config struct {
+	serverOption *ServerOption
 
 	// redis config
 	redisConfig *RedisOptions
@@ -36,32 +28,43 @@ type Config struct {
 	mnsConfig *MnsConfig
 }
 
+
+
+func (conf *config) Server() *ServerOption {
+	return conf.serverOption
+}
+
 // Redis config
-func (config *Config) Redis() *RedisOptions {
+func (config *config) Redis() *RedisOptions {
 	return config.redisConfig
 }
 
 // Mysql config
-func (config *Config) Mysql() *MysqlOptions {
+func (config *config) Mysql() *MysqlOptions {
 	return config.mysqlOptions
 }
 
 // Mns config
-func (config *Config) Mns() *MnsConfig {
+func (config *config) Mns() *MnsConfig {
 	return config.mnsConfig
 }
 
-// init 通过读取环境变量初始化系统配置
-func NewInstance() *Config {
-	instance := &Config{}
-	instance.ServiceName = strings.Default(Getenv("SYSTEM_NAME"), "app")
-	instance.ServicePort = number.DefaultInt(conv.String2Int(Getenv("HTTP_PORT")), 8080)
+// LoadEnv 通过加载环境变量初始化系统配置
+func LoadEnv() Config {
+	instance := &config{
+		serverOption: new(ServerOption),
+		redisConfig:  new(RedisOptions),
+		mysqlOptions: new(MysqlOptions),
+		mnsConfig:    new(MnsConfig),
+	}
+	instance.serverOption.Name = strings.Default(Getenv("SYSTEM_NAME"), "app")
+	instance.serverOption.Port = number.DefaultInt(conv.String2Int(Getenv("HTTP_PORT")), 8080)
 
-	instance.LogPath = strings.Default(Getenv("LOG_PATH"), "/tmp")
-	instance.MaxResponseLogSize = number.DefaultInt(conv.String2Int(Getenv("MAX_RESPONSE_LOG_SIZE")), 1000)
+	instance.serverOption.LogPath = strings.Default(Getenv("LOG_PATH"), "/tmp")
+	instance.serverOption.MaxResponseLogSize = number.DefaultInt(conv.String2Int(Getenv("MAX_RESPONSE_LOG_SIZE")), 1000)
 
-	instance.JwtSignKey = []byte(Getenv("JWT_KEY"))
-	instance.TraceHeader = strings.Default(Getenv("TRACE_HEADER"), "gateway-trace")
+	instance.serverOption.JwtSignKey = []byte(Getenv("JWT_KEY"))
+	instance.serverOption.TraceHeader = strings.Default(Getenv("TRACE_HEADER"), "gateway-trace")
 
 	// init mysql config
 	instance.redisConfig = &RedisOptions{

@@ -20,6 +20,9 @@ type Server struct {
 
 	// not found handler
 	NotFoundHandler func(ctx *gin.Context)
+
+	// setup 是否初始化
+	setup bool
 }
 
 // NewServer 实例化server
@@ -40,12 +43,15 @@ func (server *Server) Start(args ...int) error {
 	// use lock
 	server.mu.Lock()
 
-	server.beforeStart()
+	// 初始化
+	if !server.setup {
+		server.Setup()
+	}
 
-	port := app.Config().ServicePort
+	port := app.Config().Server().Port
 	if len(args) == 1 {
 		port = args[0]
-		app.Config().ServicePort = port
+		app.Config().Server().Port = port
 	} else if len(args) > 1 {
 		return errors.New("args must be less than one")
 	}
@@ -59,8 +65,8 @@ func (server *Server) Start(args ...int) error {
 	return server.Router.Run(completeHost)
 }
 
-// beforeStart
-func (server *Server) beforeStart() {
+// Setup 初始化
+func (server *Server) Setup() {
 	// before start
 	eventDispatcher := app.EventDispatcher()
 	eventDispatcher.Trigger(app.ConfigInitEvent, nil)
@@ -75,5 +81,7 @@ func (server *Server) beforeStart() {
 	if app.Config().Redis().AutoConnect {
 		eventDispatcher.Trigger(app.RedisConnectEvent, nil)
 	}
+
+	server.setup = true
 }
 

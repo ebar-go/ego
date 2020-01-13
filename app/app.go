@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	app = NewContainer()
+	DefaultContainer = NewContainer()
 )
 
 // NewContainer return an empty container
@@ -23,8 +23,8 @@ func NewContainer() *dig.Container {
 }
 
 // Config return Config instance
-func Config() (conf *config.Config) {
-	_ = app.Invoke(func(c *config.Config) {
+func Config() (conf config.Config) {
+	_ = DefaultContainer.Invoke(func(c config.Config) {
 		conf = c
 	})
 	return
@@ -32,7 +32,7 @@ func Config() (conf *config.Config) {
 
 // LogManager return log manager
 func LogManager() (manager log.Manager) {
-	_ = app.Invoke(func(m log.Manager) {
+	_ = DefaultContainer.Invoke(func(m log.Manager) {
 		manager = m
 	})
 
@@ -41,7 +41,7 @@ func LogManager() (manager log.Manager) {
 
 // Task return task manager
 func Task() (manager *cron.Cron) {
-	_ = app.Invoke(func(c *cron.Cron) {
+	_ = DefaultContainer.Invoke(func(c *cron.Cron) {
 		manager = c
 	})
 
@@ -50,7 +50,7 @@ func Task() (manager *cron.Cron) {
 
 // WebSocket return ws manager
 func WebSocket() (manager ws.Manager) {
-	_ = app.Invoke(func(m ws.Manager) {
+	_ = DefaultContainer.Invoke(func(m ws.Manager) {
 		manager = m
 	})
 	return
@@ -58,7 +58,7 @@ func WebSocket() (manager ws.Manager) {
 
 // Redis get redis connection
 func Redis() (connection *redis.Client) {
-	_ = app.Invoke(func(conn *redis.Client) {
+	_ = DefaultContainer.Invoke(func(conn *redis.Client) {
 		connection = conn
 	})
 	return
@@ -66,7 +66,7 @@ func Redis() (connection *redis.Client) {
 
 // Mysql return mysql connection
 func Mysql() (connection *gorm.DB) {
-	_ = app.Invoke(func(conn *gorm.DB) {
+	_ = DefaultContainer.Invoke(func(conn *gorm.DB) {
 		connection = conn
 	})
 	return
@@ -74,7 +74,7 @@ func Mysql() (connection *gorm.DB) {
 
 // Mns return ali yun mns client
 func Mns() (client mns.Client) {
-	_ =  app.Invoke(func(cli mns.Client) {
+	_ =  DefaultContainer.Invoke(func(cli mns.Client) {
 		client = cli
 	})
 	return
@@ -82,7 +82,7 @@ func Mns() (client mns.Client) {
 
 // EventDispatcher get event dispatcher instance
 func EventDispatcher() (dispatcher event.Dispatcher) {
-	_ = app.Invoke(func(d event.Dispatcher) {
+	_ = DefaultContainer.Invoke(func(d event.Dispatcher) {
 		dispatcher = d
 	})
 	return

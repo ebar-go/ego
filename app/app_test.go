@@ -22,11 +22,11 @@ func TestMain(m *testing.M) {
 func TestConfig(t *testing.T) {
 	tests := []struct {
 		name     string
-		wantConf *config.Config
+		wantConf config.Config
 	}{
 		{
 			name:     "get",
-			wantConf: config.NewInstance(),
+			wantConf: config.LoadEnv(),
 		},
 	}
 	for _, tt := range tests {
