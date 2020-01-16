@@ -7,9 +7,9 @@ import (
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/utils/date"
-	"github.com/ebar-go/ego/utils/json"
 	"github.com/ebar-go/ego/utils/number"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -85,14 +85,13 @@ func getRequestBody(c *gin.Context) interface{} {
 	case http.MethodPatch:
 		var bodyBytes []byte // 我们需要的body内容
 
-		bodyBytes, err := c.GetRawData()
+		bodyBytes, err := ioutil.ReadAll(c.Request.Body)
 		if err != nil {
 			return nil
 		}
+		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
-		var params interface{}
-		_ = json.Decode(bodyBytes, params)
-		return params
+		return string(bodyBytes)
 
 	}
 
