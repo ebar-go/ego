@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"github.com/ebar-go/ego/http/handler"
+	"github.com/ebar-go/ego/http/middleware"
 	"github.com/gin-gonic/gin"
 	"sync"
 	"testing"
@@ -64,8 +65,13 @@ func TestServer_Start(t *testing.T) {
 				Router:          tt.fields.Router,
 				NotFoundHandler: tt.fields.NotFoundHandler,
 			}
+			server.Router.Use(middleware.RequestLog)
 
 			server.Router.GET("/", func(context *gin.Context) {
+				fmt.Println("hello,world")
+			})
+
+			server.Router.POST("/post", func(context *gin.Context) {
 				fmt.Println("hello,world")
 			})
 			if err := server.Start(tt.args.args...); (err != nil) != tt.wantErr {

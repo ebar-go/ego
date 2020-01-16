@@ -10,7 +10,6 @@ import (
 	"github.com/ebar-go/ego/utils/json"
 	"github.com/ebar-go/ego/utils/number"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -86,15 +85,10 @@ func getRequestBody(c *gin.Context) interface{} {
 	case http.MethodPatch:
 		var bodyBytes []byte // 我们需要的body内容
 
-		// 从原有Request.Body读取
-		bodyBytes, err := ioutil.ReadAll(c.Request.Body)
+		bodyBytes, err := c.GetRawData()
 		if err != nil {
-			fmt.Println(err)
 			return nil
 		}
-
-		// 新建缓冲区并替换原有Request.body
-		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 		var params interface{}
 		_ = json.Decode(bodyBytes, params)
