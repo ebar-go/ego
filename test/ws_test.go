@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"github.com/ebar-go/ego/app"
+	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/ebar-go/ego/utils/date"
@@ -43,6 +44,6 @@ func TestClient_Listen(t *testing.T) {
 
 	go app.WebSocket().Start()
 
-	err := server.Start(app.Config().ServicePort)
+	err := server.Start(config.Server().Port)
 	assert.Nil(t, err)
 }

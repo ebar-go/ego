@@ -2,15 +2,12 @@ package app
 
 import (
 	"github.com/ebar-go/ego/component/log"
-	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/errors"
-	"github.com/ebar-go/ego/event"
 	"github.com/ebar-go/ego/utils"
-	"github.com/ebar-go/ego/ws"
+	"github.com/ebar-go/event"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
-	"github.com/robfig/cron"
 )
 
 const (
@@ -25,28 +22,14 @@ const (
 
 	// redis connect event
 	RedisConnectEvent = "REDIS_CONNECT_EVENT"
-
-	// websocket init event
-	WebSocketInitEvent = "WS_INIT_EVENT"
-
-	// mns client init event
-	MNSClientInitEvent = "MNS_INIT_EVENT"
-
-	// task manager init event
-	TaskManagerInitEvent = "TASK_INIT_EVENT"
-
 )
 
 func init() {
 	// init event dispatcher
-	utils.FatalError("InitEventDispatcher", initEventDispatcher())
+	utils.FatalError("InitEventDispatcher", Container.Provide(event.NewDispatcher))
 
 	// use eventDispatcher manage global service initialize
 	eventDispatcher := EventDispatcher()
-
-	eventDispatcher.Register(ConfigInitEvent, func(ev event.Event) {
-		utils.FatalError("InitConfig", initConfig())
-	})
 
 	eventDispatcher.Register(LogManagerInitEvent, func(ev event.Event) {
 		utils.FatalError("InitLogManager", initLogManager())
@@ -60,50 +43,23 @@ func init() {
 		utils.FatalError("ConnectRedis", connectRedis())
 	})
 
-	eventDispatcher.Register(WebSocketInitEvent, func(ev event.Event) {
-		utils.LogError("InitWebSocketManager", initWebSocketManager())
-	})
-
-	eventDispatcher.Register(MNSClientInitEvent, func(ev event.Event) {
-		utils.LogError("InitMnsClient", initMnsClient())
-	})
-
-	eventDispatcher.Register(TaskManagerInitEvent, func(ev event.Event) {
-		utils.LogError("InitTaskManager", initTaskManager())
-	})
-
-}
-
-// initConfig
-func initConfig() error {
-	return DefaultContainer.Provide(config.LoadEnv)
 }
 
 // initLogManager
 func initLogManager() error {
-	return DefaultContainer.Provide(func(conf config.Config) log.Manager {
+	return Container.Provide(func() log.Manager {
 		return log.NewManager(log.ManagerConf{
-			SystemName: conf.Server().Name,
-			SystemPort: conf.Server().Port,
-			LogPath:    conf.Server().LogPath,
+			SystemName: config.Server().Name,
+			SystemPort: config.Server().Port,
+			LogPath:    config.Server().LogPath,
 		})
 	})
 }
 
-// initTaskManager
-func initTaskManager() error {
-	return DefaultContainer.Provide(cron.New)
-}
-
-// initWebSocketManager
-func initWebSocketManager() error {
-	return DefaultContainer.Provide(ws.NewManager)
-}
-
 // connectRedis
 func connectRedis() error {
-	return DefaultContainer.Provide(func(conf config.Config) (*redis.Client, error) {
-		connection := redis.NewClient(conf.Redis().Options())
+	return Container.Provide(func() (*redis.Client, error) {
+		connection := redis.NewClient(config.Redis().Options())
 		_, err := connection.Ping().Result()
 		if err != nil {
 			return nil, errors.RedisConnectFailed("%s", err.Error())
@@ -115,8 +71,8 @@ func connectRedis() error {
 
 // connectDatabase
 func connectDatabase() error {
-	return DefaultContainer.Provide(func(conf config.Config) (*gorm.DB, error) {
-		options := conf.Mysql()
+	return Container.Provide(func() (*gorm.DB, error) {
+		options := config.Mysql()
 		connection, err := gorm.Open("mysql", options.Dsn())
 		if err != nil {
 			return nil, errors.MysqlConnectFailed("%s", err.Error())
@@ -132,19 +88,3 @@ func connectDatabase() error {
 	})
 }
 
-// initMnsClient
-func initMnsClient() error {
-	return DefaultContainer.Provide(func(conf config.Config, logManager log.Manager) (mns.Client) {
-		mnsConfig := conf.Mns()
-		return mns.NewClient(
-			mnsConfig.Url,
-			mnsConfig.AccessKeyId,
-			mnsConfig.AccessKeySecret,
-			logManager)
-	})
-}
-
-// initEventDispatcher
-func initEventDispatcher() error {
-	return DefaultContainer.Provide(event.NewDispatcher)
-}

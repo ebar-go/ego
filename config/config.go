@@ -1,97 +1,96 @@
 package config
 
 import (
-	"github.com/ebar-go/ego/utils/conv"
 	"github.com/ebar-go/ego/utils/number"
 	"github.com/ebar-go/ego/utils/strings"
+	"github.com/spf13/viper"
+	"go.uber.org/dig"
+	"time"
 )
 
-// Config接口
-type Config interface {
-	Server() *ServerOption
-	Redis() *RedisOptions
-	Mysql() *MysqlOptions
-	Mns() *MnsConfig
+var Container = dig.New()
+
+func init() {
+	viper.AutomaticEnv()
 }
 
-// config 系统配置项
-type config struct {
-	serverOption *ServerOption
+func Server() (options *ServerOptions) {
+	if err := Container.Invoke(func(o *ServerOptions) {
+		options = o
+	}); err != nil {
+		options = &ServerOptions{
+			Environment:        strings.Default(viper.GetString("ENVIRONMENT"), "local"),
+			Name:               strings.Default(viper.GetString("SYSTEM_NAME"), "app"),
+			Port:               number.DefaultInt(viper.GetInt("HTTP_PORT"), 8080),
+			MaxResponseLogSize: number.DefaultInt(viper.GetInt("MAX_RESPONSE_LOG_SIZE"), 1000),
+			LogPath:            strings.Default(viper.GetString("LOG_PATH"), "/tmp"),
+			JwtSignKey:         []byte(viper.GetString("JWT_KEY")),
+			TraceHeader:        strings.Default(viper.GetString("TRACE_HEADER"), "gateway-trace"),
+		}
 
-	// redis config
-	redisConfig *RedisOptions
-
-	// mysql config
-	mysqlOptions *MysqlOptions
-
-	// mns config
-	mnsConfig *MnsConfig
-}
-
-
-
-func (conf *config) Server() *ServerOption {
-	return conf.serverOption
-}
-
-// Redis config
-func (config *config) Redis() *RedisOptions {
-	return config.redisConfig
-}
-
-// Mysql config
-func (config *config) Mysql() *MysqlOptions {
-	return config.mysqlOptions
-}
-
-// Mns config
-func (config *config) Mns() *MnsConfig {
-	return config.mnsConfig
-}
-
-// LoadEnv 通过加载环境变量初始化系统配置
-func LoadEnv() Config {
-	instance := &config{
-		serverOption: new(ServerOption),
-		redisConfig:  new(RedisOptions),
-		mysqlOptions: new(MysqlOptions),
-		mnsConfig:    new(MnsConfig),
+		_ = Container.Provide(func() *ServerOptions {
+			return options
+		})
 	}
-	instance.serverOption.Name = strings.Default(Getenv("SYSTEM_NAME"), "app")
-	instance.serverOption.Port = number.DefaultInt(conv.String2Int(Getenv("HTTP_PORT")), 8080)
+	return
+}
 
-	instance.serverOption.LogPath = strings.Default(Getenv("LOG_PATH"), "/tmp")
-	instance.serverOption.MaxResponseLogSize = number.DefaultInt(conv.String2Int(Getenv("MAX_RESPONSE_LOG_SIZE")), 1000)
+func Redis() (options *RedisOptions) {
+	if err := Container.Invoke(func(o *RedisOptions) {
+		options = o
+	}); err != nil {
+		options = &RedisOptions{
+			AutoConnect: viper.GetBool("REDIS_AUTO_CONNECT"),
+			Host:        strings.Default(viper.GetString("REDIS_HOST"), "127.0.0.1"),
+			Port:        number.DefaultInt(viper.GetInt("REDIS_PORT"), 6379),
+			Auth:        viper.GetString("REDIS_AUTH"),
+			PoolSize:    number.DefaultInt(viper.GetInt("REDIS_POOL_SIZE"), 100),
+			MaxRetries:  number.DefaultInt(viper.GetInt("REDIS_MAX_RETRIES"), 3),
+			IdleTimeout: time.Duration(number.DefaultInt(viper.GetInt("REDIS_IDLE_TIMEOUT"), 5)) * time.Second,
+		}
 
-	instance.serverOption.JwtSignKey = []byte(Getenv("JWT_KEY"))
-	instance.serverOption.TraceHeader = strings.Default(Getenv("TRACE_HEADER"), "gateway-trace")
-
-	// init mysql config
-	instance.redisConfig = &RedisOptions{
-		AutoConnect:strings.ToBool(Getenv("REDIS_AUTO_CONNECT")),
-		Host: strings.Default(Getenv("REDIS_HOST"), "127.0.0.1"),
-		Port: number.DefaultInt(conv.String2Int(Getenv("REDIS_PORT")), 6379),
-		Auth: Getenv("REDIS_AUTH"),
+		_ = Container.Provide(func() *RedisOptions {
+			return options
+		})
 	}
-	instance.redisConfig.complete()
+	return
+}
 
-	// init redis config
-	instance.mysqlOptions = &MysqlOptions{
-		AutoConnect: strings.ToBool(Getenv("MYSQL_AUTO_CONNECT")),
-		Name:     Getenv("MYSQL_DATABASE"),
-		Host:     strings.Default(Getenv("MYSQL_MASTER_HOST"), "127.0.0.1"),
-		Port:     number.DefaultInt(conv.String2Int(Getenv("MYSQL_MASTER_PORT")), 3306),
-		User:     Getenv("MYSQL_MASTER_USER"),
-		Password: Getenv("MYSQL_MASTER_PASS"),
+func Mns() (options *MnsOptions) {
+	if err := Container.Invoke(func(o *MnsOptions) {
+		options = o
+	}); err != nil {
+		options = &MnsOptions{
+			Url:             viper.GetString("MNS_ENDPOINT"),
+			AccessKeyId:     viper.GetString("MNS_ACCESSID"),
+			AccessKeySecret: viper.GetString("MNS_ACCESSKEY"),
+		}
+
+		_ = Container.Provide(func() *MnsOptions {
+			return options
+		})
 	}
-	instance.mysqlOptions.complete()
+	return
+}
 
-	// mns config
-	instance.mnsConfig = &MnsConfig{
-		Url:             Getenv("MNS_ENDPOINT"),
-		AccessKeyId:     Getenv("MNS_ACCESSID"),
-		AccessKeySecret: Getenv("MNS_ACCESSKEY"),
+func Mysql() (options *MysqlOptions) {
+	if err := Container.Invoke(func(o *MysqlOptions) {
+		options = o
+	}); err != nil {
+		options = &MysqlOptions{
+			AutoConnect:        viper.GetBool("MYSQL_AUTO_CONNECT"),
+			Name:               viper.GetString("MYSQL_DATABASE"),
+			Host:               strings.Default(viper.GetString("MYSQL_MASTER_HOST"), "127.0.0.1"),
+			Port:               number.DefaultInt(viper.GetInt("MYSQL_MASTER_PORT"), 3306),
+			User:               viper.GetString("MYSQL_MASTER_USER"),
+			Password:           viper.GetString("MYSQL_MASTER_PASS"),
+			MaxOpenConnections: number.DefaultInt(viper.GetInt("MYSQL_MAX_OPEN_CONNECTIONS"), 10),
+			MaxIdleConnections: number.DefaultInt(viper.GetInt("MYSQL_MAX_IDLE_CONNECTIONS"), 40),
+		}
+
+		_ = Container.Provide(func() *MysqlOptions {
+			return options
+		})
 	}
-
-	return instance
+	return
 }

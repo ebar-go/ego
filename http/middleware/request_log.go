@@ -6,6 +6,7 @@ import (
 	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
+	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/utils/date"
 	"github.com/ebar-go/ego/utils/number"
 	"github.com/gin-gonic/gin"
@@ -37,7 +38,7 @@ func RequestLog(c *gin.Context) {
 	requestBody := getRequestBody(c)
 
 	// 从头部信息获取
-	traceId := strings.TrimSpace(c.GetHeader(app.Config().Server().TraceHeader))
+	traceId := strings.TrimSpace(c.GetHeader(config.Server().TraceHeader))
 	if traceId == "" {
 		traceId = trace.NewId()
 	}
@@ -54,7 +55,7 @@ func RequestLog(c *gin.Context) {
 	// 获取响应内容
 	responseBody := blw.body.String()
 	// 截断响应内容
-	maxResponseSize := number.Min(number.Max(0, blw.body.Len()-1), app.Config().Server().MaxResponseLogSize)
+	maxResponseSize := number.Min(number.Max(0, blw.body.Len()-1), config.Server().MaxResponseLogSize)
 
 	// 日志格式
 	logContext["trace_id"] = traceId

@@ -3,6 +3,7 @@ package consul
 import (
 	"fmt"
 	"github.com/ebar-go/ego/utils"
+	"github.com/ebar-go/loadbalance"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -53,8 +54,29 @@ func TestClient_Discover(t *testing.T) {
 	client := getClient()
 
 	items, err := client.Discover("epet-go-demo")
+
+	loader := loadbalance.WeightRoundLoader()
+
 	assert.Nil(t, err)
-	fmt.Println(items)
+
+	for _, item := range items {
+		value := item
+		loader.Items = append(loader.Items, &value)
+	}
+
+	loader.Init()
+	var count1, count2 int
+	for i:=0;i<30000 ; i++ {
+		service := loader.Get().(*Service)
+		if service.Port == 8080 {
+			count1++
+		}else {
+			count2++
+		}
+	}
+
+	fmt.Printf("node1:%d, node2:%d", count1, count2)
+
 }
 
 func TestClient_LoadBalance(t *testing.T) {
