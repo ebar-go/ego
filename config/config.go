@@ -19,7 +19,6 @@ func Server() (options *ServerOptions) {
 		options = o
 	}); err != nil {
 		options = &ServerOptions{
-			Environment:        strings.Default(viper.GetString("ENVIRONMENT"), "local"),
 			Name:               strings.Default(viper.GetString("SYSTEM_NAME"), "app"),
 			Port:               number.DefaultInt(viper.GetInt("HTTP_PORT"), 8080),
 			MaxResponseLogSize: number.DefaultInt(viper.GetInt("MAX_RESPONSE_LOG_SIZE"), 1000),

@@ -70,7 +70,6 @@ func (server *Server) Start(args ...int) error {
 func (server *Server) Setup() {
 	// before start
 	eventDispatcher := app.EventDispatcher()
-	eventDispatcher.Trigger(app.ConfigInitEvent, nil)
 	eventDispatcher.Trigger(app.LogManagerInitEvent, nil)
 
 	// mysql auto connect

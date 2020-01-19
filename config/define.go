@@ -10,7 +10,6 @@ import (
 
 // ServerOptions 服务配置
 type ServerOptions struct {
-	Environment string
 	// 服务名称
 	Name string
 
