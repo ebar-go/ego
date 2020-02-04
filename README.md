@@ -12,7 +12,6 @@
 - 集成prometheus监控
 - 集成MNS
 - 集成参数验证器
-- 集成websocket
 - 集成配置文件,支持json,ini,yaml等格式
 - 集成di,统一管理全局变量
 
