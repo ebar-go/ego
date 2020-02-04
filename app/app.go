@@ -4,7 +4,7 @@ import (
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
-	"github.com/ebar-go/ego/ws"
+	"github.com/ebar-go/ws"
 	"github.com/ebar-go/event"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
@@ -35,7 +35,7 @@ func WebSocket() (manager ws.Manager) {
 	if err := Container.Invoke(func(m ws.Manager) {
 		manager = m
 	}); err != nil {
-		manager = ws.NewManager()
+		manager = ws.New()
 		_ = Container.Provide(func() ws.Manager{
 			return manager
 		})
