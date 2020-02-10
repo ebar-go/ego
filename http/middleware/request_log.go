@@ -6,8 +6,8 @@ import (
 	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
+	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/utils/date"
-	"github.com/ebar-go/ego/utils/json"
 	"github.com/ebar-go/ego/utils/number"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
@@ -38,7 +38,7 @@ func RequestLog(c *gin.Context) {
 	requestBody := getRequestBody(c)
 
 	// 从头部信息获取
-	traceId := strings.TrimSpace(c.GetHeader(app.Config().TraceHeader))
+	traceId := strings.TrimSpace(c.GetHeader(config.Server().TraceHeader))
 	if traceId == "" {
 		traceId = trace.NewId()
 	}
@@ -55,7 +55,7 @@ func RequestLog(c *gin.Context) {
 	// 获取响应内容
 	responseBody := blw.body.String()
 	// 截断响应内容
-	maxResponseSize := number.Min(number.Max(0, blw.body.Len()-1), app.Config().MaxResponseLogSize)
+	maxResponseSize := number.Min(number.Max(0, blw.body.Len()-1), config.Server().MaxResponseLogSize)
 
 	// 日志格式
 	logContext["trace_id"] = traceId
@@ -86,19 +86,13 @@ func getRequestBody(c *gin.Context) interface{} {
 	case http.MethodPatch:
 		var bodyBytes []byte // 我们需要的body内容
 
-		// 从原有Request.Body读取
 		bodyBytes, err := ioutil.ReadAll(c.Request.Body)
 		if err != nil {
-			fmt.Println(err)
 			return nil
 		}
-
-		// 新建缓冲区并替换原有Request.body
 		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
-		var params interface{}
-		_ = json.Decode(bodyBytes, params)
-		return params
+		return string(bodyBytes)
 
 	}
 

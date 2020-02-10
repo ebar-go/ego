@@ -12,7 +12,6 @@
 - 集成prometheus监控
 - 集成MNS
 - 集成参数验证器
-- 集成websocket
 - 集成配置文件,支持json,ini,yaml等格式
 - 集成di,统一管理全局变量
 
@@ -120,6 +119,17 @@ func main() {
 
 #### 分页组件
 对数据进行分页
+```go
+package main
+import (
+ "github.com/ebar-go/ego/http/paginator"
+)
+
+func main() {
+    pagination := paginator.Paginate(20, 1, 10)
+    paginationSlice := paginator.PaginateSlice([]interface{}{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, 1, 10)
+}
+```
 
 #### 响应
 固定格式的json输出
@@ -198,7 +208,7 @@ func main() {
 ```
 
 ### 配置项
-读取配置项
+通过`viper`读取配置项
 
 ### utils
 常用工具库

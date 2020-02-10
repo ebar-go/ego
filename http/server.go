@@ -3,6 +3,7 @@ package http
 import (
 	"errors"
 	"github.com/ebar-go/ego/app"
+	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/gin-gonic/gin"
 	"net"
@@ -20,6 +21,9 @@ type Server struct {
 
 	// not found handler
 	NotFoundHandler func(ctx *gin.Context)
+
+	// setup 是否初始化
+	setup bool
 }
 
 // NewServer 实例化server
@@ -40,12 +44,15 @@ func (server *Server) Start(args ...int) error {
 	// use lock
 	server.mu.Lock()
 
-	server.beforeStart()
+	// 初始化
+	if !server.setup {
+		server.Setup()
+	}
 
-	port := app.Config().ServicePort
+	port := config.Server().Port
 	if len(args) == 1 {
 		port = args[0]
-		app.Config().ServicePort = port
+		config.Server().Port = port
 	} else if len(args) > 1 {
 		return errors.New("args must be less than one")
 	}
@@ -59,21 +66,22 @@ func (server *Server) Start(args ...int) error {
 	return server.Router.Run(completeHost)
 }
 
-// beforeStart
-func (server *Server) beforeStart() {
+// Setup 初始化
+func (server *Server) Setup() {
 	// before start
 	eventDispatcher := app.EventDispatcher()
-	eventDispatcher.Trigger(app.ConfigInitEvent, nil)
 	eventDispatcher.Trigger(app.LogManagerInitEvent, nil)
 
 	// mysql auto connect
-	if app.Config().Mysql().AutoConnect {
+	if config.Mysql().AutoConnect {
 		eventDispatcher.Trigger(app.MySqlConnectEvent, nil)
 	}
 
 	// redis auto connect
-	if app.Config().Redis().AutoConnect {
+	if config.Redis().AutoConnect {
 		eventDispatcher.Trigger(app.RedisConnectEvent, nil)
 	}
+
+	server.setup = true
 }
 

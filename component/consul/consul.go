@@ -28,6 +28,12 @@ type Service struct {
 
 	// 服务标签
 	Tags []string
+
+	Weight int
+}
+
+func (server *Service) GetWeight() int {
+	return server.Weight
 }
 
 // Client 客户端
@@ -44,7 +50,9 @@ func DefaultConfig() *consulapi.Config {
 
 // NewServiceRegistration 实例化服务注册项
 func NewServiceRegistration() *consulapi.AgentServiceRegistration {
-	return new(consulapi.AgentServiceRegistration)
+	r := new(consulapi.AgentServiceRegistration)
+	r.Weights = &consulapi.AgentWeights{Passing:1, Warning:1}
+	return r
 }
 
 // NewServiceCheck 实例化服务检查项
@@ -102,6 +110,7 @@ func (client *Client) Discover(name string) ([]Service, error) {
 			Address: service.Service.Address,
 			Port:    service.Service.Port,
 			Tags:    service.Service.Tags,
+			Weight: service.Service.Weights.Warning,
 		}
 		serviceItems = append(serviceItems, serviceItem)
 	}

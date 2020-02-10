@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"errors"
-	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/auth"
+	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/gin-gonic/gin"
 	"strings"
@@ -36,7 +36,7 @@ func validateToken(ctx *gin.Context) error {
 		return TokenNotExist
 	}
 
-	claims, err := auth.New(app.Config().JwtSignKey).ParseToken(kv[1])
+	claims, err := auth.New(config.Server().JwtSignKey).ParseToken(kv[1])
 	if err != nil {
 		return err
 	}
