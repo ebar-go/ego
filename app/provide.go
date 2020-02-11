@@ -8,6 +8,7 @@ import (
 	"github.com/ebar-go/event"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
+	"time"
 )
 
 const (
@@ -83,6 +84,7 @@ func connectDatabase() error {
 		// set pool config
 		connection.DB().SetMaxIdleConns(options.MaxIdleConnections)
 		connection.DB().SetMaxOpenConns(options.MaxOpenConnections)
+		connection.DB().SetConnMaxLifetime(time.Duration(options.MaxLifeTime) * time.Second)
 
 		return connection, nil
 	})
