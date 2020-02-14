@@ -85,7 +85,7 @@ func Mysql() (options *MysqlOptions) {
 			Password:           viper.GetString("MYSQL_MASTER_PASS"),
 			MaxOpenConnections: number.DefaultInt(viper.GetInt("MYSQL_MAX_OPEN_CONNECTIONS"), 10),
 			MaxIdleConnections: number.DefaultInt(viper.GetInt("MYSQL_MAX_IDLE_CONNECTIONS"), 40),
-			MaxLifeTime: number.DefaultInt(viper.GetInt("MYSQL_MAX_LIFE_TIME"), 60),
+			MaxLifeTime:        number.DefaultInt(viper.GetInt("MYSQL_MAX_LIFE_TIME"), 60),
 		}
 
 		_ = Container.Provide(func() *MysqlOptions {
