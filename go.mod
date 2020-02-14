@@ -5,8 +5,9 @@ go 1.13
 require (
 	github.com/aliyun/aliyun-mns-go-sdk v0.0.0-20191115025756-088ba95470f4
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/ebar-go/event v0.1.0
 	github.com/ebar-go/loadbalance v0.1.1
-	github.com/ebar-go/ws v0.1.0 // indirect
+	github.com/ebar-go/ws v0.1.0
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0

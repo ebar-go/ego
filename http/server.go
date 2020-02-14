@@ -5,6 +5,7 @@ import (
 	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/handler"
+	"github.com/ebar-go/ego/http/middleware"
 	"github.com/gin-gonic/gin"
 	"net"
 	"strconv"
@@ -29,6 +30,9 @@ type Server struct {
 // NewServer 实例化server
 func NewServer() *Server {
 	router := gin.Default()
+
+	// use global trace middleware
+	router.Use(middleware.Trace)
 
 	return &Server{
 		Router:          router,
