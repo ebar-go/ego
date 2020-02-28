@@ -37,6 +37,7 @@ func NewHttpClient() HttpClient {
 			MaxIdleConnsPerHost: DefaultMaxIdleConnsPerHost,
 			IdleConnTimeout:     time.Duration(90) * time.Second,
 		},
+		clientPool: &http.Client{},
 	}
 }
 

@@ -12,7 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -37,14 +36,6 @@ func RequestLog(c *gin.Context) {
 
 	requestBody := getRequestBody(c)
 
-	// 从头部信息获取
-	traceId := strings.TrimSpace(c.GetHeader(config.Server().TraceHeader))
-	if traceId == "" {
-		traceId = trace.NewId()
-	}
-	trace.SetTraceId(traceId)
-	defer trace.DeleteTraceId()
-
 	c.Next()
 
 	// after request
@@ -58,7 +49,7 @@ func RequestLog(c *gin.Context) {
 	maxResponseSize := number.Min(number.Max(0, blw.body.Len()-1), config.Server().MaxResponseLogSize)
 
 	// 日志格式
-	logContext["trace_id"] = traceId
+	logContext["trace_id"] = trace.GetTraceId()
 	logContext["request_uri"] = c.Request.RequestURI
 	logContext["request_method"] = c.Request.Method
 	logContext["refer_service_name"] = c.Request.Referer()

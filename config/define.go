@@ -72,6 +72,9 @@ type MysqlOptions struct {
 
 	// MaxOpenConnections, default 40
 	MaxOpenConnections int
+
+	// max life time, default 10
+	MaxLifeTime int
 }
 
 // RedisOptions redis配置
