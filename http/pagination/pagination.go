@@ -44,7 +44,7 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
 		pagination.CurrentPage = defaultCurrentPage
 	}
 
-	pagination.TotalPages = number.Div(totalCount, limit) //page总数
+	pagination.TotalPages = number.Div(totalCount, pagination.Limit) //page总数
 	if pagination.CurrentPage < pagination.TotalPages {
 		pagination.CurrentCount = pagination.Limit
 	} else if pagination.CurrentPage > pagination.TotalPages {
