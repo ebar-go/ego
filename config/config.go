@@ -10,8 +10,16 @@ import (
 
 var Container = dig.New()
 
-func init() {
+// ReadFromEnvironment read from system environment
+func ReadFromEnvironment() {
 	viper.AutomaticEnv()
+}
+
+// ReadFromFile read from file
+func ReadFromFile(path string) error {
+	viper.SetConfigFile(path)
+
+	return viper.ReadInConfig()
 }
 
 // Server return server config

@@ -22,9 +22,6 @@ type Server struct {
 
 	// not found handler
 	NotFoundHandler func(ctx *gin.Context)
-
-	// setup 是否初始化
-	setup bool
 }
 
 // NewServer 实例化server
@@ -48,11 +45,6 @@ func (server *Server) Start(args ...int) error {
 	// use lock
 	server.mu.Lock()
 
-	// 初始化
-	if !server.setup {
-		server.Setup()
-	}
-
 	port := config.Server().Port
 	if len(args) == 1 {
 		port = args[0]
@@ -67,25 +59,10 @@ func (server *Server) Start(args ...int) error {
 
 	completeHost := net.JoinHostPort("", strconv.Itoa(port))
 
+	// before start
+	app.EventDispatcher().Trigger(app.LogManagerInitEvent, nil)
+
 	return server.Router.Run(completeHost)
 }
 
-// Setup 初始化
-func (server *Server) Setup() {
-	// before start
-	eventDispatcher := app.EventDispatcher()
-	eventDispatcher.Trigger(app.LogManagerInitEvent, nil)
-
-	// mysql auto connect
-	if config.Mysql().AutoConnect {
-		eventDispatcher.Trigger(app.MySqlConnectEvent, nil)
-	}
-
-	// redis auto connect
-	if config.Redis().AutoConnect {
-		eventDispatcher.Trigger(app.RedisConnectEvent, nil)
-	}
-
-	server.setup = true
-}
 

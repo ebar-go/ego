@@ -41,7 +41,8 @@ func init() {
 	})
 
 	eventDispatcher.Register(RedisConnectEvent, func(ev event.Event) {
-		utils.FatalError("ConnectRedis", connectRedis())
+		err := connectRedis()
+		utils.FatalError("ConnectRedis", err)
 	})
 
 }
