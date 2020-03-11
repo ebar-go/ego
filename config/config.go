@@ -14,6 +14,7 @@ func init() {
 	viper.AutomaticEnv()
 }
 
+// Server return server config
 func Server() (options *ServerOptions) {
 	if err := Container.Invoke(func(o *ServerOptions) {
 		options = o

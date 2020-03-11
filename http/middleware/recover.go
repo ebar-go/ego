@@ -4,6 +4,7 @@ import (
 	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/http/response"
+	"github.com/ebar-go/ego/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +16,7 @@ func Recover(ctx *gin.Context) {
 
 			app.LogManager().System().Error("system_error", log.Context{
 				"error": r,
+				"trace": utils.Trace(),
 			})
 		}
 	}()

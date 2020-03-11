@@ -1,78 +1,40 @@
 package array
 
 import (
-	"reflect"
+	"github.com/magiconair/properties/assert"
 	"testing"
 )
 
-func TestInt2Interface(t *testing.T) {
-	type args struct {
-		items []int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []interface{}
-	}{
-		{
-			name:"test",
-			args: args{items:[]int{1,2,3}},
-			want: []interface{}{1,2,3},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Int2Interface(tt.args.items); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Int2Interface() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func getIntItems() []int {
+	return []int{1,2,3,4}
 }
 
-func TestInt2String(t *testing.T) {
-	type args struct {
-		items []int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []string
-	}{
-		{
-			name:"test",
-			args: args{items:[]int{1,2,3}},
-			want: []string{"1","2","3"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Int2String(tt.args.items); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Int2String() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func getStringItems() []string {
+	return []string{"1","2","3","4"}
 }
 
-func TestUniqueInt(t *testing.T) {
-	type args struct {
-		items []int
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
-	}{
-		{
-			name:"test",
-			args: args{items:[]int{1,2,3,3}},
-			want: []int{1,2,3},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := UniqueInt(tt.args.items); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("UniqueInt() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func TestInt(t *testing.T)  {
+	s := getIntItems()
+	a := Int(s)
+	assert.Equal(t, a.items, s)
+	assert.Equal(t, a.Length(), len(s))
+	assert.Equal(t, a.Implode(","), "1,2,3,4")
+	assert.Equal(t, a.ToString(), getStringItems())
+
+	a.Push(2)
+	assert.Equal(t, a.Length(), len(s)+1)
+	assert.Equal(t, a.Unique(), s)
+}
+
+func TestString(t *testing.T)  {
+	s := getStringItems()
+	a := String(s)
+	assert.Equal(t, a.items, s)
+	assert.Equal(t, a.Length(), len(s))
+	assert.Equal(t, a.Implode(","), "1,2,3,4")
+	assert.Equal(t, a.ToInt(), getIntItems())
+
+	a.Push("2")
+	assert.Equal(t, a.Length(), len(s)+1)
+	assert.Equal(t, a.Unique(), s)
 }

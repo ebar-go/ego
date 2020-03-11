@@ -12,8 +12,12 @@ const (
 
 // GetTime return current local time
 func GetTime() time.Time {
-	var cstZone = time.FixedZone("CST", 8*3600) // UTC+8
-	return time.Now().In(cstZone)
+	return time.Now().In(GetLocalTimeZone())
+}
+
+// GetLocalTimeZone
+func GetLocalTimeZone() *time.Location {
+	return time.FixedZone("CST", 8*3600) // UTC+8
 }
 
 // GetDateStr return current date string,eg: 2019-12-30
@@ -34,5 +38,12 @@ func GetTimeStamp() int64 {
 // GetMicroTimeStampStr return micro timestamp string
 func GetMicroTimeStampStr() string {
 	return fmt.Sprintf("%.6f", float64(GetTime().UnixNano())/1e9)
+}
+
+// GetDateTime
+func GetDateTime(day string) time.Time {
+	completeTime := day + " 00:00:00"
+	dayTime, _ := time.ParseInLocation(TimeFormat, completeTime , GetLocalTimeZone())
+	return dayTime
 }
 

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
-	"strconv"
 )
 
 // Struct2Map return map
@@ -62,12 +61,4 @@ func TransformInterface(source interface{}, target interface{}) error {
 	return json.Unmarshal(buf, target)
 }
 
-// String2Int return int of number string
-func String2Int(s string) int {
-	i, err := strconv.Atoi(s)
-	if err != nil {
-		return 0
-	}
 
-	return i
-}

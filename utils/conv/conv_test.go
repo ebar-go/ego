@@ -44,30 +44,6 @@ func TestMap2Struct(t *testing.T) {
 	}
 }
 
-func TestString2Int(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args args
-		want int
-	}{
-		{
-			name:"success",
-			args:args{s:"1"},
-			want: 1,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := String2Int(tt.args.s); got != tt.want {
-				t.Errorf("String2Int() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestStruct2Map(t *testing.T) {
 	type args struct {
 		obj interface{}
