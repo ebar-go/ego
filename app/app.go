@@ -5,7 +5,6 @@ import (
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ws"
-	"github.com/ebar-go/event"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -74,13 +73,5 @@ func Mns() (client mns.Client) {
 			return client
 		})
 	}
-	return
-}
-
-// EventDispatcher get event dispatcher instance
-func EventDispatcher() (dispatcher event.Dispatcher) {
-	_ = Container.Invoke(func(d event.Dispatcher) {
-		dispatcher = d
-	})
 	return
 }

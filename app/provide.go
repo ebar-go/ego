@@ -12,9 +12,6 @@ import (
 )
 
 const (
-	// config init event
-	ConfigInitEvent = "CONFIG_INIT_EVENT"
-
 	// log manager init event
 	LogManagerInitEvent = "LOG_MANAGER_INIT_EVENT"
 
@@ -27,22 +24,22 @@ const (
 
 func init() {
 	// init event dispatcher
-	utils.FatalError("InitEventDispatcher", Container.Provide(event.NewDispatcher))
-
-	// use eventDispatcher manage global service initialize
-	eventDispatcher := EventDispatcher()
-
-	eventDispatcher.Register(LogManagerInitEvent, func(ev event.Event) {
-		utils.FatalError("InitLogManager", initLogManager())
+	event.DefaultDispatcher().Register(LogManagerInitEvent, event.Listener{
+		Handle: func(ev event.Event) {
+			utils.FatalError("InitLogManager", initLogManager())
+		},
 	})
 
-	eventDispatcher.Register(MySqlConnectEvent, func(ev event.Event) {
-		utils.FatalError("ConnectDatabase", connectDatabase())
+	event.DefaultDispatcher().Register(MySqlConnectEvent, event.Listener{
+		Handle: func(ev event.Event) {
+			utils.FatalError("ConnectDatabase", connectDatabase())
+		},
 	})
 
-	eventDispatcher.Register(RedisConnectEvent, func(ev event.Event) {
-		err := connectRedis()
-		utils.FatalError("ConnectRedis", err)
+	event.DefaultDispatcher().Register(RedisConnectEvent, event.Listener{
+		Handle: func(ev event.Event) {
+			utils.FatalError("ConnectRedis", connectRedis())
+		},
 	})
 
 }
@@ -60,33 +57,33 @@ func initLogManager() error {
 
 // connectRedis
 func connectRedis() error {
-	return Container.Provide(func() (*redis.Client, error) {
-		connection := redis.NewClient(config.Redis().Options())
-		_, err := connection.Ping().Result()
-		if err != nil {
-			return nil, errors.RedisConnectFailed("%s", err.Error())
-		}
+	connection := redis.NewClient(config.Redis().Options())
+	_, err := connection.Ping().Result()
+	if err != nil {
+		return errors.RedisConnectFailed("%s", err.Error())
+	}
 
-		return connection, nil
+	return Container.Provide(func() *redis.Client {
+		return connection
 	})
 }
 
 // connectDatabase
 func connectDatabase() error {
+	options := config.Mysql()
+	connection, err := gorm.Open("mysql", options.Dsn())
+	if err != nil {
+		return errors.MysqlConnectFailed("%s", err.Error())
+	}
+
+	// set log mod
+	connection.LogMode(options.LogMode)
+	// set pool config
+	connection.DB().SetMaxIdleConns(options.MaxIdleConnections)
+	connection.DB().SetMaxOpenConns(options.MaxOpenConnections)
+	connection.DB().SetConnMaxLifetime(time.Duration(options.MaxLifeTime) * time.Second)
+
 	return Container.Provide(func() (*gorm.DB, error) {
-		options := config.Mysql()
-		connection, err := gorm.Open("mysql", options.Dsn())
-		if err != nil {
-			return nil, errors.MysqlConnectFailed("%s", err.Error())
-		}
-
-		// set log mod
-		connection.LogMode(options.LogMode)
-		// set pool config
-		connection.DB().SetMaxIdleConns(options.MaxIdleConnections)
-		connection.DB().SetMaxOpenConns(options.MaxOpenConnections)
-		connection.DB().SetConnMaxLifetime(time.Duration(options.MaxLifeTime) * time.Second)
-
 		return connection, nil
 	})
 }

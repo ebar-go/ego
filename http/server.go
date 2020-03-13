@@ -6,6 +6,7 @@ import (
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
+	"github.com/ebar-go/event"
 	"github.com/gin-gonic/gin"
 	"net"
 	"strconv"
@@ -60,7 +61,14 @@ func (server *Server) Start(args ...int) error {
 	completeHost := net.JoinHostPort("", strconv.Itoa(port))
 
 	// before start
-	app.EventDispatcher().Trigger(app.LogManagerInitEvent, nil)
+	_ = event.DefaultDispatcher().Trigger(app.LogManagerInitEvent, nil)
+	if config.Mysql().AutoConnect {
+		_ = event.DefaultDispatcher().Trigger(app.MySqlConnectEvent, nil)
+	}
+
+	if config.Redis().AutoConnect {
+		_ = event.DefaultDispatcher().Trigger(app.RedisConnectEvent, nil)
+	}
 
 	return server.Router.Run(completeHost)
 }

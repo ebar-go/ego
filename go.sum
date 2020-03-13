@@ -47,6 +47,8 @@ github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFP
 github.com/ebar-go/ego v0.7.7/go.mod h1:OTATT7duLTEdT4YOrBFyqwgJ4a/K/4yqfzgPkLsyvg8=
 github.com/ebar-go/event v0.1.0 h1:VwyVO0KauPYC+0+BRTbxChP0W/4GNNtj+9MXuwui4qc=
 github.com/ebar-go/event v0.1.0/go.mod h1:6jbMJhW8ZMmM6iOz6cI9EaYP7xbFGsIz9N17c/CB06Y=
+github.com/ebar-go/event v0.2.0 h1:+p4LXI4/L2nztpZJeXo2Hon1zEnbUGYPxu+pJfTCmAk=
+github.com/ebar-go/event v0.2.0/go.mod h1:6jbMJhW8ZMmM6iOz6cI9EaYP7xbFGsIz9N17c/CB06Y=
 github.com/ebar-go/loadbalance v0.1.1 h1:cfi2dKrawIK89GcDUwzIQQp1g9OqQIKzfCEb61iD1VU=
 github.com/ebar-go/loadbalance v0.1.1/go.mod h1:T3elba4bmh4tmnm4ZP8X6UJI0EdH8hsE3v8pnW8cqRg=
 github.com/ebar-go/ws v0.1.0 h1:aZ/x56pc4T8uaV39mI3HlwYvg6aD86c1Uxy8S4rTYgk=
