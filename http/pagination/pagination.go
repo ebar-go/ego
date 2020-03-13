@@ -28,7 +28,12 @@ const (
 	defaultCurrentPage = 1
 )
 
-// Paginate 根据总条数、当前页数、每页行数分页
+/**
+ Paginate paginate by total count
+	- totalCount : length of data
+	- currentPage: current page number
+	- limit: number of per page
+ */
 func Paginate(totalCount, currentPage, limit int) Paginator {
 	pagination := Paginator{
 		TotalCount:  totalCount,
@@ -44,7 +49,7 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
 		pagination.CurrentPage = defaultCurrentPage
 	}
 
-	pagination.TotalPages = number.Div(totalCount, pagination.Limit) //page总数
+	pagination.TotalPages = number.Div(totalCount, pagination.Limit)
 	if pagination.CurrentPage < pagination.TotalPages {
 		pagination.CurrentCount = pagination.Limit
 	} else if pagination.CurrentPage > pagination.TotalPages {
@@ -56,7 +61,12 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
 	return pagination
 }
 
-// PaginateSlice 根据切片分页
+/**
+ * PaginateSlice paginate by slice
+ 	- items : data items
+	- currentPage: current page number
+	- limit: number of per page
+ */
 func PaginateSlice(items []interface{}, currentPage, limit int) (paginate Paginator, result []interface{}) {
 	paginate.CurrentPage = currentPage
 	paginate.Limit = limit

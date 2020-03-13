@@ -6,7 +6,6 @@ import (
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/utils"
 	"github.com/ebar-go/ego/utils/date"
-	"github.com/ebar-go/ego/utils/file"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
@@ -42,7 +41,7 @@ func NewFileLogger(filePath string) Logger {
 	logger := &logger{}
 	logger.instance = defaultInstance()
 
-	if !file.Exist(filePath) {
+	if !utils.PathExist(filePath) {
 		err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm)
 		if err != nil {
 			fmt.Printf("Failed to init logger:%s,%s\n", filePath, err.Error())

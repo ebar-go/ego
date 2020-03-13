@@ -1,11 +1,9 @@
 package http
 
 import (
-	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/ebar-go/ego/utils"
-	"github.com/ebar-go/event"
 	"github.com/gin-gonic/gin"
 	"path/filepath"
 	"runtime"
@@ -22,6 +20,6 @@ func TestNewServer(t *testing.T) {
 
 	utils.FatalError("ReadFromFile", config.ReadFromFile(filepath.Dir(fileStr) + "/../config/app.yaml"))
 
-	_ = event.DefaultDispatcher().Trigger(app.RedisConnectEvent, nil)
+	//_ = event.DefaultDispatcher().Trigger(app.RedisConnectEvent, nil)
 	utils.FatalError("StartHttpServer",s.Start())
 }

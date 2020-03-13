@@ -13,6 +13,7 @@ import (
 // trans use single pattern
 var trans = GetZhTranslator()
 
+// GetZhTranslator get simple chinese translator
 func GetZhTranslator() ut.Translator {
 	//中文翻译器
 	zh_ch := zh.New()
@@ -21,7 +22,7 @@ func GetZhTranslator() ut.Translator {
 	return trans
 }
 
-// Validator 自定义验证器
+// Validator
 type Validator struct {
 	once     sync.Once
 	validate *validator.Validate
@@ -38,7 +39,7 @@ func getKindOf(data interface{}) reflect.Kind {
 	return valueType
 }
 
-// ValidateStruct 验证
+// ValidateStruct validate struct
 func (v *Validator) ValidateStruct(obj interface{}) error {
 
 	if getKindOf(obj) == reflect.Struct {
@@ -56,24 +57,24 @@ func (v *Validator) ValidateStruct(obj interface{}) error {
 	return nil
 }
 
-// Engine 获取一个实例
+// Engine
 func (v *Validator) Engine() interface{} {
 	v.lazyInit()
 	return v.validate
 }
 
-// lazyInit 懒加载
+// lazyInit
 func (v *Validator) lazyInit() {
 	v.once.Do(func() {
 		v.validate = validator.New()
 		v.validate.SetTagName("binding")
 
-		// 自定义名称字段
+		// define filed name
 		v.validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 			return fld.Tag.Get("comment")
 		})
 
-		// 使用中文
+		// use zh-CN
 		_ = zh_translations.RegisterDefaultTranslations(v.validate, trans)
 	})
 }
