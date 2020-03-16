@@ -9,6 +9,9 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"go.uber.org/dig"
+	"net"
+	"net/http"
+	"time"
 )
 
 var (
@@ -72,6 +75,28 @@ func Mns() (client mns.Client) {
 		_ = Container.Provide(func() (mns.Client) {
 			return client
 		})
+	}
+	return
+}
+
+// Http client
+func Http() (client *http.Client)  {
+	if err :=  Container.Invoke(func(cli *http.Client) {
+		client = cli
+	}); err != nil {
+		client = &http.Client{
+			Transport: &http.Transport{ // 配置连接池
+				Proxy: http.ProxyFromEnvironment,
+				DialContext: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				IdleConnTimeout: time.Duration(config.Server().HttpRequestTimeOut) * time.Second,
+			},
+			CheckRedirect: nil,
+			Jar:           nil,
+			Timeout:       time.Duration(config.Server().HttpRequestTimeOut) * time.Second,
+		}
 	}
 	return
 }

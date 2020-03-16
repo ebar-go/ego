@@ -26,6 +26,9 @@ type ServerOptions struct {
 
 	// trace header key
 	TraceHeader string
+
+	// http request timeout
+	HttpRequestTimeOut int
 }
 
 // MnsOptions 阿里云MNS 配置项

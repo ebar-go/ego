@@ -3,6 +3,8 @@ package auth
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/ebar-go/ego/utils/number"
+	"time"
 )
 
 // Jwt json web token
@@ -18,7 +20,6 @@ type Jwt interface {
 type JwtAuth struct {
 	SignKey []byte
 }
-
 
 // New return JwtAuth instance
 func New(signKey []byte) Jwt {
@@ -50,4 +51,19 @@ func (jwtAuth JwtAuth) ParseToken(token string) (jwt.Claims, error) {
 	}
 
 	return tokenClaims.Claims, nil
+}
+
+// GenerateToken
+func (jwtAuth JwtAuth) GenerateToken(tokenExpireTime int, iss string) (string, error) {
+	tokenExpireTime = number.DefaultInt(tokenExpireTime, 3000)
+	now := time.Now().Unix()
+	exp := now + int64(tokenExpireTime)
+	claim := jwt.MapClaims{
+		"iss": iss,
+		"iat": now,
+		"exp": exp,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	tokenStr, err := token.SignedString(jwtAuth.SignKey)
+	return tokenStr, err
 }

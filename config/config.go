@@ -34,6 +34,7 @@ func Server() (options *ServerOptions) {
 			LogPath:            strings.Default(viper.GetString("LOG_PATH"), "/tmp"),
 			JwtSignKey:         []byte(viper.GetString("JWT_KEY")),
 			TraceHeader:        strings.Default(viper.GetString("TRACE_HEADER"), "gateway-trace"),
+			HttpRequestTimeOut: number.DefaultInt(viper.GetInt("HTTP_REQUEST_TIME_OUT"), 10),
 		}
 
 		_ = Container.Provide(func() *ServerOptions {
