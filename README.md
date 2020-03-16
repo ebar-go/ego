@@ -47,27 +47,28 @@ func main() {
 }
 ```
 
-#### http请求客户端
-支持原生http、fasthttp、kong网关等
+#### 加载配置
+```go
+// 从环境变量中读取
+config.ReadFromEnvironment()
+// 或者从文件读取
+// config.ReadFromFile(configFilePath)
+
+```
+#### http请求
+使用原生http
 ```go
 package main
 import (
     "fmt"
-    "github.com/ebar-go/ego/http/client"
-    "github.com/ebar-go/ego/http/client/request"
+    "net/http"
+    "github.com/ebar-go/ego/utils/curl"
 )
 
 func main() {
-    cli := client.NewFastHttpClient()
-    // cli := client.NewHttpClient()
-    // cli := client.NewKongClient()
-    req := cli.NewRequest(request.Param{
-        Method:"GET",
-        Url:"http://localhost:8080/index",
-        Headers:nil,
-        Body:nil,
-    })
-    resp, err := cli.Execute(req)
+    address := "http://baidu.com"
+    request,_ := http.NewRequest(http.MethodGet, address, nil)
+    resp, err := curl.Execute(request)
     fmt.Println(resp, err)
 
 }
@@ -151,7 +152,7 @@ func IndexHandler(ctx *gin.Context) {
 ### 组件包
 #### apollo
 ```go
-err := apollo.Init(apollo.Conf{
+_ := apollo.Init(apollo.Conf{
     AppId:            "",
     Cluster:          "",
     Namespace:        "",
@@ -171,7 +172,7 @@ err := apollo.Init(apollo.Conf{
 ```go
 // trigger mns init event
 // make sure config is not empty 
-app.EventDispather().Trigger(app.MNSClientInitEvent, nil)
+event.DefaultDispatcher().Trigger(app.MNSClientInitEvent, nil)
 mns := app.Mns()
 ```
 
@@ -180,12 +181,17 @@ mns := app.Mns()
 ```go
 // trigger mysql connect event
 // make sure config is not empty 
-app.EventDispather().Trigger(app.MysqlConnectEvent, nil)
+event.DefaultDispatcher().Trigger(app.MySqlConnectEvent, nil)
 db := app.Mysql() 
 // .. curd
 ```
-- 自定义model
 
+#### redis
+- connect
+```go
+event.DefaultDispatcher().Trigger(app.RedisConnectEvent, nil)
+redis := app.Redis()
+```
 #### prometheus
 集成prometheus
 
@@ -206,9 +212,6 @@ func main() {
     fmt.Println(trace.GetTraceId())
 }
 ```
-
-### 配置项
-通过`viper`读取配置项
 
 ### utils
 常用工具库
