@@ -17,6 +17,7 @@ require (
 	github.com/hashicorp/consul/api v1.3.0
 	github.com/jinzhu/gorm v1.9.11
 	github.com/magiconair/properties v1.8.1
+	github.com/nsqio/go-nsq v1.0.8
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5
 	github.com/pkg/errors v0.8.1
 	github.com/pquerna/ffjson v0.0.0-20190930134022-aa0246cd15f7
