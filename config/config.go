@@ -22,19 +22,35 @@ func ReadFromFile(path string) error {
 	return viper.ReadInConfig()
 }
 
+func initDefaultConfig()  {
+
+	viper.SetDefault("SYSTEM_NAME", "app")
+	viper.SetDefault("HTTP_PORT", 8080)
+	viper.SetDefault("MAX_RESPONSE_LOG_SIZE", 1000)
+	viper.SetDefault("LOG_PATH", "/tmp")
+	viper.SetDefault("TRACE_HEADER", "gateway-trace")
+	viper.SetDefault("HTTP_REQUEST_TIME_OUT", 10)
+}
+
+func init()  {
+	// init default config
+	initDefaultConfig()
+}
+
+
 // Server return server config
 func Server() (options *ServerOptions) {
 	if err := Container.Invoke(func(o *ServerOptions) {
 		options = o
 	}); err != nil {
 		options = &ServerOptions{
-			Name:               strings.Default(viper.GetString("SYSTEM_NAME"), "app"),
-			Port:               number.DefaultInt(viper.GetInt("HTTP_PORT"), 8080),
-			MaxResponseLogSize: number.DefaultInt(viper.GetInt("MAX_RESPONSE_LOG_SIZE"), 1000),
-			LogPath:            strings.Default(viper.GetString("LOG_PATH"), "/tmp"),
+			Name:               viper.GetString("SYSTEM_NAME"),
+			Port:               viper.GetInt("HTTP_PORT"),
+			MaxResponseLogSize: viper.GetInt("MAX_RESPONSE_LOG_SIZE"),
+			LogPath:            viper.GetString("LOG_PATH"),
 			JwtSignKey:         []byte(viper.GetString("JWT_KEY")),
-			TraceHeader:        strings.Default(viper.GetString("TRACE_HEADER"), "gateway-trace"),
-			HttpRequestTimeOut: number.DefaultInt(viper.GetInt("HTTP_REQUEST_TIME_OUT"), 10),
+			TraceHeader:        viper.GetString("TRACE_HEADER"),
+			HttpRequestTimeOut: viper.GetInt("HTTP_REQUEST_TIME_OUT"),
 		}
 
 		_ = Container.Provide(func() *ServerOptions {

@@ -64,10 +64,16 @@ func (server *Server) Start(args ...int) error {
 	_ = event.DefaultDispatcher().Trigger(app.LogManagerInitEvent, nil)
 	if config.Mysql().AutoConnect {
 		_ = event.DefaultDispatcher().Trigger(app.MySqlConnectEvent, nil)
+		defer func() {
+			_ = app.Mysql().Close()
+		}()
 	}
 
 	if config.Redis().AutoConnect {
 		_ = event.DefaultDispatcher().Trigger(app.RedisConnectEvent, nil)
+		defer func() {
+			_ = app.Redis().Close()
+		}()
 	}
 
 	return server.Router.Run(completeHost)
