@@ -1,6 +1,7 @@
 package conv
 
 import (
+	"github.com/magiconair/properties/assert"
 	"reflect"
 	"testing"
 )
@@ -108,5 +109,10 @@ func TestTransformInterface(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestStr2Byte(t *testing.T) {
+	s := "hello,world"
+	assert.Equal(t, []byte(s), Str2Byte(s))
 }
 
