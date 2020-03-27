@@ -116,3 +116,9 @@ func TestStr2Byte(t *testing.T) {
 	assert.Equal(t, []byte(s), Str2Byte(s))
 }
 
+func TestByte2Str(t *testing.T) {
+	s := "hello,world"
+	b := Str2Byte(s)
+	assert.Equal(t, s, Byte2Str(b))
+}
+
