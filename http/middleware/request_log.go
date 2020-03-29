@@ -7,6 +7,7 @@ import (
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/config"
+	"github.com/ebar-go/ego/utils/conv"
 	"github.com/ebar-go/ego/utils/date"
 	"github.com/ebar-go/ego/utils/number"
 	"github.com/gin-gonic/gin"
@@ -41,14 +42,9 @@ func RequestLog(c *gin.Context) {
 	// after request
 	latency := time.Since(t)
 
+
+	// logContext
 	logContext := log.Context{}
-
-	// 获取响应内容
-	responseBody := blw.body.String()
-	// 截断响应内容
-	maxResponseSize := number.Min(number.Max(0, blw.body.Len()-1), config.Server().MaxResponseLogSize)
-
-	// 日志格式
 	logContext["trace_id"] = trace.GetTraceId()
 	logContext["request_uri"] = c.Request.RequestURI
 	logContext["request_method"] = c.Request.Method
@@ -57,11 +53,20 @@ func RequestLog(c *gin.Context) {
 	logContext["request_body"] = requestBody
 	logContext["request_time"] = requestTime
 	logContext["response_time"] = date.GetMicroTimeStampStr()
-	logContext["response_body"] = responseBody[0:maxResponseSize]
+	logContext["response_body"] = getResponseBody(blw.body.String())
 	logContext["time_used"] = fmt.Sprintf("%v", latency)
 	logContext["header"] = c.Request.Header
 
 	go app.LogManager().Request().Info("REQUEST LOG", logContext)
+}
+
+// getResponseBody
+func getResponseBody(s string) string {
+	maxResponseSize := number.Min(len(s), config.Server().MaxResponseLogSize)
+	res := make([]byte, maxResponseSize)
+	copy(res, s[:maxResponseSize])
+	return conv.Byte2Str(res)
+
 }
 
 // GetRequestBody 获取请求参数

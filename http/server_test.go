@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/ebar-go/ego/config"
+	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/ebar-go/ego/utils"
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,7 @@ import (
 func TestNewServer(t *testing.T) {
 	s := NewServer()
 
+	s.Router.Use(middleware.RequestLog, middleware.Favicon)
 	s.Router.GET("/", func(context *gin.Context) {
 		response.WrapContext(context).Success("hello")
 	})

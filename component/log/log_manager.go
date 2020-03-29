@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"github.com/ebar-go/ego/utils/date"
 	"github.com/ebar-go/ego/utils/strings"
 	"path"
@@ -72,6 +73,7 @@ func (manager *manager) getLogger(componentName, prefix string) Logger {
 		manager.conf.SystemName,
 		prefix+manager.rotateDate+LogSuffix)
 
+	fmt.Println(componentName, filePath)
 	logger := NewFileLogger(filePath)
 	logger.SetExtends(Context{
 		"service_name": manager.conf.SystemName,

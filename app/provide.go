@@ -46,12 +46,13 @@ func init() {
 
 // initLogManager
 func initLogManager() error {
+	loggerManager := log.NewManager(log.ManagerConf{
+		SystemName: config.Server().Name,
+		SystemPort: config.Server().Port,
+		LogPath:    config.Server().LogPath,
+	})
 	return Container.Provide(func() log.Manager {
-		return log.NewManager(log.ManagerConf{
-			SystemName: config.Server().Name,
-			SystemPort: config.Server().Port,
-			LogPath:    config.Server().LogPath,
-		})
+		return loggerManager
 	})
 }
 
