@@ -8,6 +8,7 @@ import (
 	"github.com/ebar-go/event"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
+	"sync"
 	"time"
 )
 
@@ -22,23 +23,33 @@ const (
 	RedisConnectEvent = "REDIS_CONNECT_EVENT"
 )
 
+var initDBOnce, initRedisOnce, initLogOnce *sync.Once
 func init() {
+	initLogOnce = new(sync.Once)
+	initDBOnce = new(sync.Once)
+	initRedisOnce = new(sync.Once)
 	// init event dispatcher
 	event.DefaultDispatcher().Register(LogManagerInitEvent, event.Listener{
 		Handle: func(ev event.Event) {
-			utils.FatalError("InitLogManager", initLogManager())
+			initLogOnce.Do(func() {
+				utils.FatalError("InitLogManager", initLogManager())
+			})
 		},
 	})
 
 	event.DefaultDispatcher().Register(MySqlConnectEvent, event.Listener{
 		Handle: func(ev event.Event) {
-			utils.FatalError("ConnectDatabase", connectDatabase())
+			initDBOnce.Do(func() {
+				utils.FatalError("ConnectDatabase", connectDatabase())
+			})
 		},
 	})
 
 	event.DefaultDispatcher().Register(RedisConnectEvent, event.Listener{
 		Handle: func(ev event.Event) {
-			utils.FatalError("ConnectRedis", connectRedis())
+			initRedisOnce.Do(func() {
+				utils.FatalError("ConnectRedis", connectRedis())
+			})
 		},
 	})
 
@@ -88,4 +99,3 @@ func connectDatabase() error {
 		return connection, nil
 	})
 }
-
