@@ -15,7 +15,7 @@ func TestNewServer(t *testing.T) {
 	s := NewServer()
 
 	s.Router.Use( middleware.Favicon, middleware.RequestLog, middleware.Recover)
-	s.Router.GET("/", func(context *gin.Context) {
+	s.Router.GET("/check", func(context *gin.Context) {
 		response.WrapContext(context).Success("hello")
 	})
 
