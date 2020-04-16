@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/ebar-go/ego/component/log"
-	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/utils/conv"
 	"github.com/ebar-go/ego/utils/date"
 	"github.com/ebar-go/ego/utils/number"
+	"github.com/ebar-go/event"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -19,6 +19,19 @@ import (
 type bodyLogWriter struct {
 	gin.ResponseWriter
 	body *bytes.Buffer
+}
+
+const(
+	writeRequestLogEvent = "WRITE_REQUEST_LOG_EVENT"
+)
+
+func init()  {
+	event.DefaultDispatcher().Register(writeRequestLogEvent, event.Listener{
+		Async:  true,
+		Handle: func(ev event.Event) {
+			log.Request().Info("REQUEST INFO", log.Context(ev.Params.(map[string]interface{})))
+		},
+	})
 }
 
 // Write 读取响应数据
@@ -38,12 +51,8 @@ func RequestLog(c *gin.Context) {
 
 	c.Next()
 
-	// after request
-	latency := time.Since(t)
-
-
+	// package log content
 	items := make(map[string]interface{})
-	items["trace_id"] = trace.GetTraceId()
 	items["request_uri"] = c.Request.RequestURI
 	items["request_method"] = c.Request.Method
 	items["refer_service_name"] = c.Request.Referer()
@@ -52,10 +61,11 @@ func RequestLog(c *gin.Context) {
 	items["request_time"] = requestTime
 	items["response_time"] = date.GetMicroTimeStampStr()
 	items["response_body"] = getResponseBody(blw.body.String())
-	items["time_used"] = fmt.Sprintf("%v", latency)
+	items["time_used"] = fmt.Sprintf("%v", time.Since(t))
 	items["header"] = c.Request.Header
 
-	go log.Request().Info("REQUEST LOG", log.Context(items))
+	// trigger writeRequestLogEvent
+	_ = event.DefaultDispatcher().Trigger(writeRequestLogEvent, items)
 }
 
 // getResponseBody
