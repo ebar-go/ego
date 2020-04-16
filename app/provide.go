@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/errors"
 	"github.com/ebar-go/ego/utils"
@@ -13,9 +12,6 @@ import (
 )
 
 const (
-	// log manager init event
-	LogManagerInitEvent = "LOG_MANAGER_INIT_EVENT"
-
 	// mysql connect event
 	MySqlConnectEvent = "MYSQL_CONNECT_EVENT"
 
@@ -23,19 +19,10 @@ const (
 	RedisConnectEvent = "REDIS_CONNECT_EVENT"
 )
 
-var initDBOnce, initRedisOnce, initLogOnce *sync.Once
+var initDBOnce, initRedisOnce *sync.Once
 func init() {
-	initLogOnce = new(sync.Once)
 	initDBOnce = new(sync.Once)
 	initRedisOnce = new(sync.Once)
-	// init event dispatcher
-	event.DefaultDispatcher().Register(LogManagerInitEvent, event.Listener{
-		Handle: func(ev event.Event) {
-			initLogOnce.Do(func() {
-				utils.FatalError("InitLogManager", initLogManager())
-			})
-		},
-	})
 
 	event.DefaultDispatcher().Register(MySqlConnectEvent, event.Listener{
 		Handle: func(ev event.Event) {
@@ -53,18 +40,6 @@ func init() {
 		},
 	})
 
-}
-
-// initLogManager
-func initLogManager() error {
-	loggerManager := log.NewManager(log.ManagerConf{
-		SystemName: config.Server().Name,
-		SystemPort: config.Server().Port,
-		LogPath:    config.Server().LogPath,
-	})
-	return Container.Provide(func() log.Manager {
-		return loggerManager
-	})
 }
 
 // connectRedis

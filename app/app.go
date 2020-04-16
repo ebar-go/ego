@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ws"
@@ -21,15 +20,6 @@ var (
 // NewContainer return an empty container
 func NewContainer() *dig.Container {
 	return dig.New()
-}
-
-// LogManager return log manager
-func LogManager() (manager log.Manager) {
-	_ = Container.Invoke(func(m log.Manager) {
-		manager = m
-	})
-
-	return
 }
 
 // WebSocket return ws manager
@@ -71,7 +61,7 @@ func Mns() (client mns.Client) {
 			mnsConfig.Url,
 			mnsConfig.AccessKeyId,
 			mnsConfig.AccessKeySecret,
-			LogManager())
+			)
 		_ = Container.Provide(func() (mns.Client) {
 			return client
 		})

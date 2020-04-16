@@ -61,7 +61,6 @@ func (server *Server) Start(args ...int) error {
 	completeHost := net.JoinHostPort("", strconv.Itoa(port))
 
 	// before start
-	_ = event.DefaultDispatcher().Trigger(app.LogManagerInitEvent, nil)
 	if config.Mysql().AutoConnect {
 		_ = event.DefaultDispatcher().Trigger(app.MySqlConnectEvent, nil)
 		defer func() {

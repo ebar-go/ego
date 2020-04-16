@@ -16,6 +16,8 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/hashicorp/consul/api v1.3.0
 	github.com/jinzhu/gorm v1.9.11
+	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible
+	github.com/lestrrat-go/strftime v1.0.1 // indirect
 	github.com/magiconair/properties v1.8.1
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5
@@ -30,6 +32,7 @@ require (
 	github.com/valyala/fasthttp v1.6.0
 	github.com/zouyx/agollo v1.9.0
 	go.uber.org/dig v1.8.0
+	go.uber.org/zap v1.14.1
 	golang.org/x/tools v0.0.0-20191030062658-86caa796c7ab
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/yaml.v2 v2.2.4

@@ -3,7 +3,6 @@ package apollo
 import (
 	"encoding/json"
 	"fmt"
-	config2 "github.com/ebar-go/ego/config"
 	"github.com/robfig/cron"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -21,10 +20,6 @@ func prepareConf() Conf {
 		}
 	}{}
 
-	if err := config2.LoadYaml(&conf, "/tmp/app.yaml"); err != nil {
-		panic(err)
-	}
-	
 	return Conf{
 		AppId:            conf.Apollo.AppId,
 		Cluster:          conf.Apollo.Cluster,

@@ -147,7 +147,44 @@ func IndexHandler(ctx *gin.Context) {
 ```
 
 #### validator
-集成`github.com/go-playground/validator`
+集成`github.com/go-playground/validator`,支持自定义字段名称`comment`
+
+- 使用方式:
+```go
+package main
+import (
+"fmt"
+"github.com/ebar-go/ego/http/validator"
+"github.com/gin-gonic/gin"
+"github.com/gin-gonic/gin/binding"
+)
+func main() {
+    // 设置自定义验证器
+    binding.Validator = new(validator.Validator)
+    router := gin.Default()
+    
+    	router.POST("user/auth", func(ctx *gin.Context) {
+    		type AuthRequest struct {
+    			// 如果是表单提交，使用form,否则获取不到数据
+    			Email string `json:"email" validate:"required,email" comment:"邮箱"` // 验证邮箱格式
+    			Pass string `json:"pass" binding:"required,min=6,max=10" comment:"密码"` // 验证密码，长度为6~10
+    		}
+    
+    		var request AuthRequest
+    		// 使用bind
+    		if err := ctx.ShouldBindJSON(&request); err != nil {
+    			ctx.JSON(200, gin.H{
+    				"message" : err.Error(),
+    			})
+    			return
+    		}
+    
+    		// other logic..
+    	})
+    
+    	router.Run(":8080")
+}
+```
 
 ### 组件包
 #### apollo
@@ -167,6 +204,18 @@ _ := apollo.Init(apollo.Conf{
 - 服务发现
 
 #### 日志
+基于`go.uber.org/zap`实现的按日期分割的日志组件
+
+- 使用方式:
+```go
+package main
+import "github.com/ebar-go/ego/component/log"
+func main() {
+    log.App().Info("infoContent", log.Context(map[string]interface{}{
+        "hello": "world",
+    }))
+}
+```
 #### mns
 阿里云mns客户端
 ```go
@@ -245,25 +294,4 @@ httpPort = number.DefaultInt(httpPort, 8080)
 ```go
 // default string
 host = strings.Default(host, "127.0.0.1")
-```
-
-### log
-日志管理器
-- 系统日志
-```go
-package main
-import (
- "fmt"
- "github.com/ebar-go/ego/app"
-"github.com/ebar-go/ego/component/log"
-)
-func main() {
-    // if not run http server,please trigger log manager init event
-    app.EventDispatcher().Trigger(app.LogManagerInitEvent, nil)
-    app.LogManager().App().Info("test", log.Context{"hello":"world"})
-    app.LogManager().App().Debug("debug", log.Context{"hello":"world"})
-    app.LogManager().App().Warn("warn", log.Context{"hello":"world"})
-    app.LogManager().App().Error("error", log.Context{"hello":"world"})
-}
-
 ```

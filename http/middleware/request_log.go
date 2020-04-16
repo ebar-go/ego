@@ -3,7 +3,6 @@ package middleware
 import (
 	"bytes"
 	"fmt"
-	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/config"
@@ -43,21 +42,20 @@ func RequestLog(c *gin.Context) {
 	latency := time.Since(t)
 
 
-	// logContext
-	logContext := log.Context{}
-	logContext["trace_id"] = trace.GetTraceId()
-	logContext["request_uri"] = c.Request.RequestURI
-	logContext["request_method"] = c.Request.Method
-	logContext["refer_service_name"] = c.Request.Referer()
-	logContext["refer_request_host"] = c.ClientIP()
-	logContext["request_body"] = requestBody
-	logContext["request_time"] = requestTime
-	logContext["response_time"] = date.GetMicroTimeStampStr()
-	logContext["response_body"] = getResponseBody(blw.body.String())
-	logContext["time_used"] = fmt.Sprintf("%v", latency)
-	logContext["header"] = c.Request.Header
+	items := make(map[string]interface{})
+	items["trace_id"] = trace.GetTraceId()
+	items["request_uri"] = c.Request.RequestURI
+	items["request_method"] = c.Request.Method
+	items["refer_service_name"] = c.Request.Referer()
+	items["refer_request_host"] = c.ClientIP()
+	items["request_body"] = requestBody
+	items["request_time"] = requestTime
+	items["response_time"] = date.GetMicroTimeStampStr()
+	items["response_body"] = getResponseBody(blw.body.String())
+	items["time_used"] = fmt.Sprintf("%v", latency)
+	items["header"] = c.Request.Header
 
-	go app.LogManager().Request().Info("REQUEST LOG", logContext)
+	go log.Request().Info("REQUEST LOG", log.Context(items))
 }
 
 // getResponseBody

@@ -1,7 +1,7 @@
 package mns
 
 import (
-	ali_mns "github.com/aliyun/aliyun-mns-go-sdk"
+	alimns "github.com/aliyun/aliyun-mns-go-sdk"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/utils"
@@ -24,7 +24,7 @@ type Client interface {
 	// 监听队列
 	ListenQueues()
 
-	PublishMessage(topicName string, params Params, filterTag string) (*ali_mns.MessageSendResponse, error)
+	PublishMessage(topicName string, params Params, filterTag string) (*alimns.MessageSendResponse, error)
 }
 
 // Client MNS客户端
@@ -33,26 +33,22 @@ type client struct {
 	accessKeySecret string
 
 	// 阿里云mns实例
-	instance ali_mns.MNSClient
+	instance alimns.MNSClient
 
 	// 队列
 	queueItems map[string]Queue
 
 	// 主题
 	topicItems map[string]Topic
-
-	// log manager
-	logManager log.Manager
 }
 
 // NewClient 实例化
-func NewClient(url, accessKeyId, accessKeySecret string, manager log.Manager) Client {
+func NewClient(url, accessKeyId, accessKeySecret string) Client {
 	cli := new(client)
 	cli.accessKeySecret = accessKeySecret
-	cli.instance = ali_mns.NewAliMNSClient(url, accessKeyId, accessKeySecret)
+	cli.instance = alimns.NewAliMNSClient(url, accessKeyId, accessKeySecret)
 	cli.queueItems = make(map[string]Queue)
 	cli.topicItems = make(map[string]Topic)
-	cli.logManager = manager
 
 	return cli
 }
@@ -68,14 +64,14 @@ func (cli *client) AddQueue(name string, handler QueueHandler, waitSecond int) {
 	q.Name = name
 	q.handler = handler
 	q.WaitSecond = waitSecond
-	q.instance = ali_mns.NewMNSQueue(name, cli.instance)
+	q.instance = alimns.NewMNSQueue(name, cli.instance)
 	cli.queueItems[name] = q
 }
 
 // GetTopic 获取主题
 func (cli *client) getTopic(name string) Topic {
 	if _, ok := cli.topicItems[name]; !ok {
-		cli.topicItems[name] = Topic{Name: name, Instance: ali_mns.NewMNSTopic(name, cli.instance)}
+		cli.topicItems[name] = Topic{Name: name, Instance: alimns.NewMNSTopic(name, cli.instance)}
 	}
 
 	return cli.topicItems[name]
@@ -106,7 +102,7 @@ func (cli *client) ReceiveMessage(queueName string) {
 		q.WaitSecond = 30
 	}
 	endChan := make(chan int)
-	respChan := make(chan ali_mns.MessageReceiveResponse)
+	respChan := make(chan alimns.MessageReceiveResponse)
 	errChan := make(chan error)
 	go func() {
 		select {
@@ -116,37 +112,37 @@ func (cli *client) ReceiveMessage(queueName string) {
 
 				// 解析消息
 				if err := json.Decode([]byte(strings.DecodeBase64(resp.MessageBody)), &params); err != nil {
-					cli.logManager.System().Error("invalidMessageBody", log.Context{
+					log.MQ().Error("invalidMessageBody", log.Context(map[string]interface{}{
 						"err":   err.Error(),
 						"trace": utils.Trace(),
-					})
+					}))
 				} else {
 
-					cli.logManager.Mq().Info("receiveMessage", log.Context{
+					log.MQ().Info("receiveMessage", log.Context(map[string]interface{}{
 						"receiveTime": date.GetTimeStr(),
 						"queue_name":  q.Name,
 						"messageBody": params.Content,
 						"tag":         params.Tag,
 						"trace_id":    params.TraceId,
-					})
+					}))
 
 					if err := q.handler(params); err != nil {
-						cli.logManager.System().Warn("processMessageFailed", log.Context{
+						log.MQ().Warn("processMessageFailed", log.Context(map[string]interface{}{
 							"err":   err.Error(),
 							"trace": utils.Trace(),
-						})
+						}))
 
 					} else {
 						// 处理成功，删除消息
 						err := q.DeleteMessage(resp.ReceiptHandle)
-						cli.logManager.Mq().Info("deleteMessage", log.Context{
+						log.MQ().Info("deleteMessage", log.Context(map[string]interface{}{
 							"receiveTime": date.GetTimeStr(),
 							"queue_name":  q.Name,
 							"messageBody": params.Content,
 							"tag":         params.Tag,
 							"trace_id":    params.TraceId,
 							"err":         err,
-						})
+						}))
 
 						endChan <- 1
 					}
@@ -155,10 +151,10 @@ func (cli *client) ReceiveMessage(queueName string) {
 			}
 		case err := <-errChan:
 			{
-				cli.logManager.System().Info("receiveMessageFailed", log.Context{
+				log.MQ().Info("receiveMessageFailed", log.Context(map[string]interface{}{
 					"err":   err.Error(),
 					"trace": utils.Trace(),
-				})
+				}))
 				endChan <- 1
 			}
 		}
@@ -170,7 +166,7 @@ func (cli *client) ReceiveMessage(queueName string) {
 }
 
 // PublishMessage 发布消息
-func (cli *client) PublishMessage(topicName string, params Params, filterTag string) (*ali_mns.MessageSendResponse, error) {
+func (cli *client) PublishMessage(topicName string, params Params, filterTag string) (*alimns.MessageSendResponse, error) {
 	params.TraceId = strings.Default(params.TraceId, trace.GetTraceId())
 	params.Sign = strings.Default(params.Sign, cli.GenerateSign(params.TraceId))
 	bytes, err := json.Encode(params)
@@ -179,7 +175,7 @@ func (cli *client) PublishMessage(topicName string, params Params, filterTag str
 	}
 
 	topic := cli.getTopic(topicName)
-	request := ali_mns.MessagePublishRequest{
+	request := alimns.MessagePublishRequest{
 		MessageBody: strings.EncodeBase64([]byte(bytes)),
 		MessageTag:  filterTag,
 	}
@@ -188,7 +184,7 @@ func (cli *client) PublishMessage(topicName string, params Params, filterTag str
 		return nil, err
 	}
 
-	cli.logManager.Mq().Info("publishMessage", log.Context{
+	log.MQ().Info("publishMessage", log.Context(map[string]interface{}{
 		"action":          "publishMessage",
 		"publish_time":    date.GetTimeStr(),
 		"msectime":        date.GetMicroTimeStampStr(),
@@ -200,7 +196,7 @@ func (cli *client) PublishMessage(topicName string, params Params, filterTag str
 		"trace_id":        params.TraceId,
 		"filter_tag":      filterTag,
 		"sign":            params.Sign,
-	})
+	}))
 
 	return &resp, nil
 }

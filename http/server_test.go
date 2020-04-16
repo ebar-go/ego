@@ -14,9 +14,13 @@ import (
 func TestNewServer(t *testing.T) {
 	s := NewServer()
 
-	s.Router.Use(middleware.RequestLog, middleware.Favicon)
+	s.Router.Use( middleware.Favicon, middleware.RequestLog, middleware.Recover)
 	s.Router.GET("/", func(context *gin.Context) {
 		response.WrapContext(context).Success("hello")
+	})
+
+	s.Router.GET("/error", func(context *gin.Context) {
+		panic("err")
 	})
 	_, fileStr, _, _ := runtime.Caller(0)
 
