@@ -14,6 +14,8 @@ type Jwt interface {
 
 	// Create token
 	CreateToken(claimsCreator func() jwt.Claims) (string, error)
+
+	GenerateToken(tokenExpireTime int, iss string) (string, error)
 }
 
 // JwtAuth jwt

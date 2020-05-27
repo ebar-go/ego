@@ -41,7 +41,7 @@ const (
 	httpPortKey = "server.httpPort"
 	maxResponseLogSizeKey = "server.maxResponseLogSize"
 	logPathKey = "server.logPath"
-	traceHeaderKey = "server.TraceHeader"
+	traceHeaderKey = "server.traceHeader"
 	httpRequestTimeoutKey = "server.httpRequestTimeout"
 	jwtSignKey = "server.jwtSign"
 )
