@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
+	"github.com/ebar-go/ego/constant"
 	"github.com/ebar-go/ws"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
@@ -15,6 +16,7 @@ import (
 
 var (
 	Container = NewContainer()
+	dbGroup        = make(map[string]*gorm.DB)
 )
 
 // NewContainer return an empty container
@@ -43,13 +45,16 @@ func Redis() (connection *redis.Client) {
 	return
 }
 
-// Mysql return mysql connection
-func Mysql() (connection *gorm.DB) {
-	_ = Container.Invoke(func(conn *gorm.DB) {
-		connection = conn
-	})
-	return
+// DB 返回数据库连接
+func DB() *gorm.DB {
+	return dbGroup[constant.MysqlDefaultConnection]
 }
+
+// GetDB 通过名称获取数据库连接
+func GetDB(connectionName string) *gorm.DB {
+	return dbGroup[connectionName]
+}
+
 
 // Mns return ali yun mns client
 func Mns() (client mns.Client) {

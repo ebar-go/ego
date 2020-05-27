@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"hash/crc32"
 	"math"
+	"math/rand"
 	"strconv"
+	"time"
 )
 
 //Min return min number
@@ -81,4 +83,10 @@ func HashCode(s string) int {
 	}
 	// v == MinInt
 	return 0
+}
+
+// RandInt 取随机数
+func RandInt(min, max int) int {
+	rand.Seed(time.Now().UnixNano())
+	return min + rand.Intn(max-min)
 }

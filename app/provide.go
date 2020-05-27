@@ -1,49 +1,18 @@
 package app
 
 import (
+	"fmt"
+	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/errors"
-	"github.com/ebar-go/ego/utils"
-	"github.com/ebar-go/event"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
-	"sync"
 	"time"
 )
 
-const (
-	// mysql connect event
-	MySqlConnectEvent = "MYSQL_CONNECT_EVENT"
 
-	// redis connect event
-	RedisConnectEvent = "REDIS_CONNECT_EVENT"
-)
-
-var initDBOnce, initRedisOnce *sync.Once
-func init() {
-	initDBOnce = new(sync.Once)
-	initRedisOnce = new(sync.Once)
-
-	event.DefaultDispatcher().Register(MySqlConnectEvent, event.Listener{
-		Handle: func(ev event.Event) {
-			initDBOnce.Do(func() {
-				utils.FatalError("ConnectDatabase", connectDatabase())
-			})
-		},
-	})
-
-	event.DefaultDispatcher().Register(RedisConnectEvent, event.Listener{
-		Handle: func(ev event.Event) {
-			initRedisOnce.Do(func() {
-				utils.FatalError("ConnectRedis", connectRedis())
-			})
-		},
-	})
-
-}
-
-// connectRedis
-func connectRedis() error {
+// InitRedis 初始化redis
+func InitRedis() error {
 	connection := redis.NewClient(config.Redis().Options())
 	_, err := connection.Ping().Result()
 	if err != nil {
@@ -54,23 +23,32 @@ func connectRedis() error {
 		return connection
 	})
 }
-
-// connectDatabase
-func connectDatabase() error {
-	options := config.Mysql()
-	connection, err := gorm.Open("mysql", options.Dsn())
-	if err != nil {
-		return errors.MysqlConnectFailed("%s", err.Error())
+// InitDB 初始化DB
+func InitDB() error {
+	dialect := "mysql"
+	group := config.MysqlGroup()
+	if group.Items == nil {
+		return fmt.Errorf("mysql config is empty")
 	}
 
-	// set log mod
-	connection.LogMode(options.LogMode)
-	// set pool config
-	connection.DB().SetMaxIdleConns(options.MaxIdleConnections)
-	connection.DB().SetMaxOpenConns(options.MaxOpenConnections)
-	connection.DB().SetConnMaxLifetime(time.Duration(options.MaxLifeTime) * time.Second)
+	for name, item := range group.Items {
+		dataSourceItems := item.DsnItems()
 
-	return Container.Provide(func() (*gorm.DB, error) {
-		return connection, nil
-	})
+		adapter, err := mysql.NewReadWriteAdapter(dialect, dataSourceItems)
+		if err != nil {
+			return err
+		}
+
+		adapter.SetMaxIdleConns(item.MaxIdleConnections)
+		adapter.SetMaxOpenConns(item.MaxOpenConnections)
+		adapter.SetConnMaxLifetime(time.Duration(item.MaxLifeTime) * time.Second)
+
+		conn, err := gorm.Open(dialect, adapter)
+		if err != nil {
+			return err
+		}
+		dbGroup[name] = conn
+	}
+
+	return nil
 }

@@ -10,16 +10,6 @@ import (
 	"runtime"
 )
 
-// FatalError
-func FatalError(msg string, err error) {
-	if err != nil {
-
-		panic(errors.New(fmt.Sprintf("%s Error: %v\n", msg, err)))
-	}
-
-	log.Printf("%s Success\n", msg)
-}
-
 // LogError
 func LogError(msg string, err error)  {
 	if err == nil {
@@ -29,12 +19,6 @@ func LogError(msg string, err error)  {
 	}
 }
 
-// SecurePanic only panic when err not nil
-func SecurePanic(err error)  {
-	if err != nil {
-		panic(err)
-	}
-}
 
 // MergeMaps merge items
 func MergeMaps(items ...map[string]interface{}) map[string]interface{} {

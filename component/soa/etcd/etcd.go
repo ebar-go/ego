@@ -10,12 +10,15 @@ import (
 )
 
 var instance client.Client
+
+// InitClient 初始化Client
 func InitClient(config client.Config) error   {
 	var err error
 	instance , err = client.New(config)
 	return err
 }
 
+// Register 服务注册
 func Register(node service.Node) error {
 	kapi := client.NewKeysAPI(instance)
 
@@ -27,6 +30,7 @@ func Register(node service.Node) error {
 	return err
 }
 
+// Deregister 服务注销
 func Deregister(node service.Node) error {
 	kapi := client.NewKeysAPI(instance)
 
@@ -37,6 +41,7 @@ func Deregister(node service.Node) error {
 	return err
 }
 
+// Discover 服务发现
 func Discover(name string) error {
 	kapi := client.NewKeysAPIWithPrefix(instance, name)
 	resp, err := kapi.Get(context.Background(), "*", nil)

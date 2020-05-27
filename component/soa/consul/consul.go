@@ -25,16 +25,6 @@ func DefaultConfig() *consulapi.Config {
 	return consulapi.DefaultConfig()
 }
 
-// NewServiceRegistration 实例化服务注册项
-func NewServiceRegistration() *consulapi.AgentServiceRegistration {
-	return new(consulapi.AgentServiceRegistration)
-}
-
-// NewServiceCheck 实例化服务检查项
-func NewServiceCheck() *consulapi.AgentServiceCheck {
-	return new(consulapi.AgentServiceCheck)
-}
-
 // Discover 服务发现
 func Discover(name string) (*service.Group, error) {
 	services, _, err := client.Health().Service(name, "", true, &consulapi.QueryOptions{})
@@ -63,14 +53,14 @@ func Discover(name string) (*service.Group, error) {
 
 // Register 注册服务
 func Register(node service.Node) error {
-	registration := NewServiceRegistration()
+	registration := new(consulapi.AgentServiceRegistration)
 	registration.ID = node.ID
 	registration.Name = node.Name
 	registration.Port = node.Port
 	registration.Tags = node.Tags
 	registration.Address = node.Address
 
-	check := NewServiceCheck()
+	check := new(consulapi.AgentServiceCheck)
 	check.HTTP = fmt.Sprintf("http://%s:%d%s", registration.Address, registration.Port, "/check")
 	check.Timeout = "3s"
 	check.Interval = "3s"

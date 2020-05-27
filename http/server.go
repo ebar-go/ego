@@ -1,12 +1,10 @@
 package http
 
 import (
-	"errors"
-	"github.com/ebar-go/ego/app"
+	"fmt"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
-	"github.com/ebar-go/event"
 	"github.com/gin-gonic/gin"
 	"net"
 	"strconv"
@@ -23,6 +21,18 @@ type Server struct {
 
 	// not found handler
 	NotFoundHandler func(ctx *gin.Context)
+
+	tree tree
+}
+
+type tree struct {
+	nodes map[string]node
+}
+
+type node struct {
+	name string
+	path string
+	children []node
 }
 
 // NewServer 实例化server
@@ -46,13 +56,12 @@ func (server *Server) Start(args ...int) error {
 	// use lock
 	server.mu.Lock()
 
-	port := config.Server().Port
-	if len(args) == 1 {
-		port = args[0]
-		config.Server().Port = port
-	} else if len(args) > 1 {
-		return errors.New("args must be less than one")
+	if len(args) > 1 {
+		return fmt.Errorf("args must be less than one")
 	}
+
+	// 解析port
+	port := getPortFromArgs(args...)
 
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)
@@ -60,22 +69,15 @@ func (server *Server) Start(args ...int) error {
 
 	completeHost := net.JoinHostPort("", strconv.Itoa(port))
 
-	// before start
-	if config.Mysql().AutoConnect {
-		_ = event.DefaultDispatcher().Trigger(app.MySqlConnectEvent, nil)
-		defer func() {
-			_ = app.Mysql().Close()
-		}()
-	}
-
-	if config.Redis().AutoConnect {
-		_ = event.DefaultDispatcher().Trigger(app.RedisConnectEvent, nil)
-		defer func() {
-			_ = app.Redis().Close()
-		}()
-	}
-
 	return server.Router.Run(completeHost)
 }
 
-
+// getPortFromArgs
+func getPortFromArgs(args ...int) int {
+	port := config.Server().Port
+	if len(args) == 1 {
+		port = args[0]
+		config.Server().Port = port
+	}
+	return port
+}

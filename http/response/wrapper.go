@@ -1,70 +1,54 @@
-// response 基于gin的Context,实现响应数据结构体
+// r 基于gin的Context,实现响应数据结构体
 // 集成全局traceID
 package response
 
 import (
 	"github.com/ebar-go/ego/http/pagination"
-	"github.com/ebar-go/ego/utils/json"
 	"github.com/gin-gonic/gin"
 	"reflect"
 )
 
 // Wrapper include context
-type Wrapper struct {
+type wrapper struct {
 	ctx *gin.Context
 }
 
 // WrapContext
-func WrapContext(ctx *gin.Context) *Wrapper {
-	return &Wrapper{ctx:ctx}
+func WrapContext(ctx *gin.Context) *wrapper {
+	return &wrapper{ctx:ctx}
+}
+// output output r
+func (w *wrapper) output(r *response) {
+	w.ctx.JSON(200, r)
 }
 
-// 数据对象
-type Data map[string]interface{}
+// Success 输出成功响应
+func (w *wrapper) Success(data interface{}) {
+	r := rp.Get()
+	r.Data = data
 
-// Paginate 分页输出
-// formatMap 是否将data项格式化为数组
-func (wrapper *Wrapper) Paginate( data interface{}, paginate *pagination.Paginator, formatMap bool) {
-	resp := New()
+	w.output(r)
+}
 
+// Error 输出错误响应
+func (w *wrapper) Error(code int, message string) {
+	r := rp.Get()
+	r.StatusCode = code
+	r.Message = message
+
+	w.output(r)
+}
+
+// Paginate 输出分页响应内容
+func (w *wrapper) Paginate(data interface{}, pagination *pagination.Paginator) {
+	r := rp.Get()
+	// 如果data为nil,则默认设置为[]
 	v := reflect.ValueOf(data)
-	if formatMap && v.IsNil() {
-		resp.Data = []interface{}{}
-	} else {
-		resp.Data = data
+	if v.IsNil() {
+		data = []interface{}{}
 	}
+	r.Data = data
+	r.Meta.Pagination = pagination
 
-	resp.Meta.Pagination = paginate
-	wrapper.Json(resp)
-}
-
-// Json 输出json,支持自定义response结构体
-func (wrapper *Wrapper) Json(response IResponse) {
-	wrapper.ctx.JSON(200, response)
-}
-
-// Success 成功的输出
-func (wrapper *Wrapper) Success( data interface{}) {
-	response := New()
-	response.Data = data
-	wrapper.Json(response)
-}
-
-// Error 错误输出
-func (wrapper *Wrapper) Error( statusCode int, message string) {
-	response := New()
-	response.StatusCode = statusCode
-	response.Message = message
-	wrapper.Json(response)
-}
-
-// Decode 解析json数据Response
-func Decode(result string) *Response {
-	resp := New()
-
-	if err := json.Decode([]byte(result), resp);err != nil {
-		return nil
-	}
-
-	return resp
+	w.output(r)
 }
