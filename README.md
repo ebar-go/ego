@@ -17,7 +17,7 @@ go get -u github.com/ebar-go/ego
 ```
 
 ## 示例
-完整的web项目请查看[github.com/ebar-go/ego-demo](github.com/ebar-go/ego-demo)
+完整的web项目请查看[github.com/ebar-go/ego-demo](https://github.com/ebar-go/ego-demo)
 
 ## 模块
 ### web
@@ -82,8 +82,8 @@ response.WrapContext(ctx).Success(response.Data{"hello":"world"})
 response.WrapContext(ctx).Error(1001, "some error")
 ```
 
-#### validator
-集成`github.com/go-playground/validator`,支持自定义字段名称`comment`
+#### 数据校验器
+基于`github.com/go-playground/validator`,支持自定义字段名称`comment`
 
 - 使用方式:
 ```go
@@ -99,5 +99,4 @@ var request AuthRequest
 if err := ctx.ShouldBindJSON(&request); err != nil {
     secure.Panic(errors.New(1001, "参数错误"))
 }
-
 ```
