@@ -88,10 +88,23 @@ response.WrapContext(ctx).Error(1001, "some error")
 #### 数据校验器
 基于`github.com/go-playground/validator`,支持自定义字段名称`comment`
 
-- 使用方式:
+- 给Gin设置全局自定义验证器
+一般在init函数里执行
 ```go
-// 给Gin设置全局自定义验证器
-binding.Validator = new(validator.Validator)
+package main
+import (
+  "github.com/ebar-go/ego/http/validator"
+  "github.com/ebar-go/ego/utils/secure"
+  "github.com/gin-gonic/gin/binding"
+)
+func init() {
+  binding.Validator = new(validator.Validator)
+}
+
+```
+
+- handler里校验参数
+```go
 type AuthRequest struct {
     // 如果是表单提交，使用form,否则获取不到数据
     Email string `json:"email" validate:"required,email" comment:"邮箱"` // 验证邮箱格式
