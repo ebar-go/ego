@@ -142,3 +142,47 @@ log.Error("errorMessage", log.Context{
   "hello":"world",
 })
 ```
+
+#### Mysql
+基于`gorm`的数据库组件，支持多数据库连接，读写分离。
+
+- 配置
+```yaml
+mysql:    # mysql配置。支持多数据库，读写分离
+  default:  # 默认连接，如果还有其他数据库要连接，换个名字即可
+    maxIdleConnections: 10  # 最大空闲连接数
+    maxOpenConnections: 40  # 最大打开连接数
+    maxLifeTime: 60          # 超时时间
+    dsn:    # 连接配置，默认第一个为写库，也可以只配置一个，即读写使用一个连接
+      - host: 127.0.0.1
+        port: 32768
+        user: root
+        password: mysql
+        name: blog
+      - host: 127.0.0.1 # 从库,读库
+        port: 32769
+        user: root
+        password: mysql
+        name: blog
+  otherDB:  # 其他数据库
+    maxIdleConnections: 10  # 最大空闲连接数
+    maxOpenConnections: 40  # 最大打开连接数
+    maxLifeTime: 60          # 超时时间
+    dsn:    # 连接配置，默认第一个为写库，也可以只配置一个，即读写使用一个连接
+      - host: 127.0.0.1
+        port: 32768
+        user: root
+        password: mysql
+        name: blog
+```
+
+- 使用
+```go
+// 初始化数据库，一般在init函数里，加载了配置文件之后执行
+secure.Panic(app.InitDB())
+
+// 获取默认的库连接
+app.DB()
+// 指定库连接
+app.GetDB("otherDB")
+```
