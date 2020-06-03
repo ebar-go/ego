@@ -3,19 +3,15 @@ package auth
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/ebar-go/ego/utils/number"
-	"time"
 )
 
 // Jwt json web token
 type Jwt interface {
-	// Parse token
+	// 解析token
 	ParseToken(token string) (jwt.Claims, error)
 
-	// Create token
-	CreateToken(claimsCreator func() jwt.Claims) (string, error)
-
-	GenerateToken(tokenExpireTime int, iss string) (string, error)
+	// 生成token
+	GenerateToken(claims jwt.Claims) (string, error)
 }
 
 // JwtAuth jwt
@@ -31,10 +27,9 @@ func New(signKey []byte) Jwt {
 var (
 	TokenValidateFailed = errors.New("token validate failed")
 )
-
-// CreateToken create token
-func (jwtAuth JwtAuth) CreateToken(claimsCreator func() jwt.Claims) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsCreator())
+// CreateToken 生成token
+func (jwtAuth JwtAuth) GenerateToken(claims jwt.Claims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtAuth.SignKey)
 }
 
@@ -53,19 +48,4 @@ func (jwtAuth JwtAuth) ParseToken(token string) (jwt.Claims, error) {
 	}
 
 	return tokenClaims.Claims, nil
-}
-
-// GenerateToken
-func (jwtAuth JwtAuth) GenerateToken(tokenExpireTime int, iss string) (string, error) {
-	tokenExpireTime = number.DefaultInt(tokenExpireTime, 3000)
-	now := time.Now().Unix()
-	exp := now + int64(tokenExpireTime)
-	claim := jwt.MapClaims{
-		"iss": iss,
-		"iat": now,
-		"exp": exp,
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	tokenStr, err := token.SignedString(jwtAuth.SignKey)
-	return tokenStr, err
 }

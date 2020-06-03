@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/response"
@@ -18,13 +19,13 @@ var (
 )
 
 // GetCurrentClaims 获取解析jwt后的信息
-func GetCurrentClaims(ctx *gin.Context) interface{} {
+func GetCurrentClaims(ctx *gin.Context) jwt.MapClaims {
 	claims, exist := ctx.Get(ClaimsKey)
-	if !exist {
+	if !exist || claims == nil{
 		return nil
 	}
 
-	return claims
+	return claims.(jwt.MapClaims)
 }
 
 // validateToken 验证token

@@ -17,10 +17,10 @@ func Recover(ctx *gin.Context) {
 				response.WrapContext(ctx).Error(err.Code, err.Message)
 
 			}else {
-				log.System().Error("system_error", log.Context(map[string]interface{}{
+				log.Error("system_error", log.Context{
 					"error": r,
 					"trace": utils.Trace(),
-				}))
+				})
 				response.WrapContext(ctx).Error(500, "System Error")
 			}
 

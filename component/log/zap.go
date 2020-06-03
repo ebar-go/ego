@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-// NewZap return zap logger instance
-func NewZap(filename string, enableLevel zapcore.LevelEnabler, initFields ...zap.Field) (*zap.Logger) {
+// newZap return zap logger instance
+func newZap(filename string, enableLevel zapcore.LevelEnabler, initFields ...zap.Field) (*zap.Logger) {
 	conf := zapcore.EncoderConfig{
 		MessageKey:  "message",
 		LevelKey:    "level_name",

@@ -6,7 +6,7 @@ func init()  {
 	viper.SetDefault(systemNameKey, "app")
 	viper.SetDefault(httpPortKey, 8080)
 	viper.SetDefault(maxResponseLogSizeKey, 2000)
-	viper.SetDefault(logPathKey, "/tmp")
+	viper.SetDefault(logPathKey, "/tmp/app.log")
 	viper.SetDefault(traceHeaderKey, "gateway-trace")
 	viper.SetDefault(httpRequestTimeoutKey, 3)
 }
@@ -25,6 +25,7 @@ type server struct {
 
 	// 日志路径
 	LogPath string
+
 	// jwt的key
 	JwtSignKey []byte
 
@@ -33,6 +34,9 @@ type server struct {
 
 	// http request timeout
 	HttpRequestTimeOut int
+
+	// 是否开启debug,开启后会显示debug信息
+	Debug bool
 }
 
 
@@ -44,6 +48,7 @@ const (
 	traceHeaderKey = "server.traceHeader"
 	httpRequestTimeoutKey = "server.httpRequestTimeout"
 	jwtSignKey = "server.jwtSign"
+	debugKey = "server.debug"
 )
 
 
@@ -61,6 +66,7 @@ func Server() (options *server) {
 			JwtSignKey:         []byte(viper.GetString(jwtSignKey)),
 			TraceHeader:        viper.GetString(traceHeaderKey),
 			HttpRequestTimeOut: viper.GetInt(httpRequestTimeoutKey),
+			Debug: viper.GetBool(debugKey),
 		}
 
 		_ = Container.Provide(func() *server {

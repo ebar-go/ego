@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/ebar-go/ego/component/log"
+	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/utils/conv"
 	"github.com/ebar-go/ego/utils/date"
@@ -29,7 +30,7 @@ func init()  {
 	event.DefaultDispatcher().Register(writeRequestLogEvent, event.Listener{
 		Async:  true,
 		Handle: func(ev event.Event) {
-			log.Request().Info("REQUEST INFO", log.Context(ev.Params.(map[string]interface{})))
+			log.Info("REQUEST INFO", ev.Params.(log.Context))
 		},
 	})
 }
@@ -52,7 +53,7 @@ func RequestLog(c *gin.Context) {
 	c.Next()
 
 	// package log content
-	items := make(map[string]interface{})
+	items := log.Context{}
 	items["request_uri"] = c.Request.RequestURI
 	items["request_method"] = c.Request.Method
 	items["refer_service_name"] = c.Request.Referer()
@@ -63,6 +64,7 @@ func RequestLog(c *gin.Context) {
 	items["response_body"] = getResponseBody(blw.body.String())
 	items["time_used"] = fmt.Sprintf("%v", time.Since(t))
 	items["header"] = c.Request.Header
+	items["trace_id"] = trace.GetTraceId()
 
 	// trigger writeRequestLogEvent
 	_ = event.DefaultDispatcher().Trigger(writeRequestLogEvent, items)

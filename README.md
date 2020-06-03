@@ -103,3 +103,29 @@ if err := ctx.ShouldBindJSON(&request); err != nil {
     secure.Panic(errors.New(1001, "参数错误"))
 }
 ```
+
+#### 日志
+使用[https://github.com/uber-go/zap](https://github.com/uber-go/zap)实在日志组件，支持日志文件按日期自动分割。   
+配置如下：
+```yaml
+server :
+  logPath: /tmp/app.log #日志文件路径
+  debug: true  # 是否开启debug日志
+```
+
+写日志
+```go
+import (
+ "github.com/ebar-go/ego/component/log"
+)
+// 输出：{"level_name":"info","datetime":"2020-06-03 22:52:49","file":"log/log.go:24","message":"Info","system_name":"app","system_port":8080,"context":{"hello":"world","trace_id":""}}
+log.Info("infoMessage", log.Context{
+  "hello":"world",
+})
+log.Debug("debugMessage", log.Context{
+  "hello":"world",
+})
+log.Error("errorMessage", log.Context{
+  "hello":"world",
+})
+```

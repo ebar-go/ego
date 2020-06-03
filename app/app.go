@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/ebar-go/ego/component/mns"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/constant"
 	"github.com/ebar-go/ws"
@@ -53,25 +52,6 @@ func DB() *gorm.DB {
 // GetDB 通过名称获取数据库连接
 func GetDB(connectionName string) *gorm.DB {
 	return dbGroup[connectionName]
-}
-
-
-// Mns return ali yun mns client
-func Mns() (client mns.Client) {
-	if err :=  Container.Invoke(func(cli mns.Client) {
-		client = cli
-	}); err != nil {
-		mnsConfig := config.Mns()
-		client = mns.NewClient(
-			mnsConfig.Url,
-			mnsConfig.AccessKeyId,
-			mnsConfig.AccessKeySecret,
-			)
-		_ = Container.Provide(func() (mns.Client) {
-			return client
-		})
-	}
-	return
 }
 
 // Http client
