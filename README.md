@@ -43,13 +43,16 @@ func main() {
 ```
 
 #### 加载配置
+集成[https://github.com/spf13/viper](https://github.com/spf13/viper)
 ```go
 // 从环境变量中读取
 config.ReadFromEnvironment()
 // 或者从文件读取
 config.ReadFromFile(configFilePath)
-
+// 读取配置
+fmt.Println(viper.GetString("someKey"))
 ```
+
 #### 发起http请求
 ```go
 url := "http://baidu.com"
