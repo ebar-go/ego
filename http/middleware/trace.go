@@ -7,15 +7,14 @@ import (
 	"strings"
 )
 
-func Trace(c *gin.Context)  {
+func Trace(c *gin.Context) {
 	// 从头部信息获取
 	traceId := strings.TrimSpace(c.GetHeader(config.Server().TraceHeader))
 	if traceId == "" {
-		traceId = trace.NewId()
+		traceId = trace.Id()
 	}
-	trace.SetTraceId(traceId)
-
+	trace.Set(traceId)
+	defer trace.GC()
 	c.Next()
 
-	defer trace.DeleteTraceId()
 }

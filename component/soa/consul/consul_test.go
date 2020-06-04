@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestMain(m *testing.M)  {
+func TestMain(m *testing.M) {
 	config := DefaultConfig()
 	config.Address = "10.0.75.2:8500"
 	err := InitClient(config)

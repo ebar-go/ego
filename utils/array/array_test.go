@@ -6,14 +6,14 @@ import (
 )
 
 func getIntItems() []int {
-	return []int{1,2,3,4}
+	return []int{1, 2, 3, 4}
 }
 
 func getStringItems() []string {
-	return []string{"1","2","3","4"}
+	return []string{"1", "2", "3", "4"}
 }
 
-func TestInt(t *testing.T)  {
+func TestInt(t *testing.T) {
 	s := getIntItems()
 	a := Int(s)
 	assert.Equal(t, a.items, s)
@@ -26,7 +26,7 @@ func TestInt(t *testing.T)  {
 	assert.Equal(t, a.Unique(), s)
 }
 
-func TestString(t *testing.T)  {
+func TestString(t *testing.T) {
 	s := getStringItems()
 	a := String(s)
 	assert.Equal(t, a.items, s)

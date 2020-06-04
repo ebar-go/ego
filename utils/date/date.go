@@ -1,8 +1,8 @@
 package date
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
 const (
@@ -43,7 +43,6 @@ func GetMicroTimeStampStr() string {
 // GetDateTime
 func GetDateTime(day string) time.Time {
 	completeTime := day + " 00:00:00"
-	dayTime, _ := time.ParseInLocation(TimeFormat, completeTime , GetLocalTimeZone())
+	dayTime, _ := time.ParseInLocation(TimeFormat, completeTime, GetLocalTimeZone())
 	return dayTime
 }
-

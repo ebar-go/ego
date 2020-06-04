@@ -73,4 +73,3 @@ func Str2Byte(s string) []byte {
 func Byte2Str(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
-

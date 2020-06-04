@@ -2,7 +2,7 @@ package config
 
 import "github.com/spf13/viper"
 
-func init()  {
+func init() {
 	viper.SetDefault(systemNameKey, "app")
 	viper.SetDefault(httpPortKey, 8080)
 	viper.SetDefault(maxResponseLogSizeKey, 2000)
@@ -10,7 +10,6 @@ func init()  {
 	viper.SetDefault(traceHeaderKey, "gateway-trace")
 	viper.SetDefault(httpRequestTimeoutKey, 3)
 }
-
 
 // server  服务配置
 type server struct {
@@ -39,19 +38,16 @@ type server struct {
 	Debug bool
 }
 
-
 const (
-	systemNameKey = "server.systemName"
-	httpPortKey = "server.httpPort"
+	systemNameKey         = "server.systemName"
+	httpPortKey           = "server.httpPort"
 	maxResponseLogSizeKey = "server.maxResponseLogSize"
-	logPathKey = "server.logPath"
-	traceHeaderKey = "server.traceHeader"
+	logPathKey            = "server.logPath"
+	traceHeaderKey        = "server.traceHeader"
 	httpRequestTimeoutKey = "server.httpRequestTimeout"
-	jwtSignKey = "server.jwtSign"
-	debugKey = "server.debug"
+	jwtSignKey            = "server.jwtSign"
+	debugKey              = "server.debug"
 )
-
-
 
 // Server return server config
 func Server() (options *server) {
@@ -66,7 +62,7 @@ func Server() (options *server) {
 			JwtSignKey:         []byte(viper.GetString(jwtSignKey)),
 			TraceHeader:        viper.GetString(traceHeaderKey),
 			HttpRequestTimeOut: viper.GetInt(httpRequestTimeoutKey),
-			Debug: viper.GetBool(debugKey),
+			Debug:              viper.GetBool(debugKey),
 		}
 
 		_ = Container.Provide(func() *server {

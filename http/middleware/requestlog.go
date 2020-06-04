@@ -3,13 +3,13 @@ package middleware
 import (
 	"bytes"
 	"fmt"
+	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/utils/conv"
 	"github.com/ebar-go/ego/utils/date"
 	"github.com/ebar-go/ego/utils/number"
-	"github.com/ebar-go/event"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -22,14 +22,10 @@ type bodyLogWriter struct {
 	body *bytes.Buffer
 }
 
-const(
-	writeRequestLogEvent = "WRITE_REQUEST_LOG_EVENT"
-)
-
-func init()  {
-	event.DefaultDispatcher().Register(writeRequestLogEvent, event.Listener{
-		Async:  true,
-		Handle: func(ev event.Event) {
+func init() {
+	event.Register(event.AfterRoute, event.Listener{
+		Mode: event.Async,
+		Handler: func(ev event.Event) {
 			log.Info("REQUEST INFO", ev.Params.(log.Context))
 		},
 	})
@@ -48,8 +44,6 @@ func RequestLog(c *gin.Context) {
 	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 	c.Writer = blw
 
-	requestBody := getRequestBody(c)
-
 	c.Next()
 
 	// package log content
@@ -58,16 +52,15 @@ func RequestLog(c *gin.Context) {
 	items["request_method"] = c.Request.Method
 	items["refer_service_name"] = c.Request.Referer()
 	items["refer_request_host"] = c.ClientIP()
-	items["request_body"] = requestBody
+	items["request_body"] = getRequestBody(c)
 	items["request_time"] = requestTime
 	items["response_time"] = date.GetMicroTimeStampStr()
 	items["response_body"] = getResponseBody(blw.body.String())
 	items["time_used"] = fmt.Sprintf("%v", time.Since(t))
 	items["header"] = c.Request.Header
-	items["trace_id"] = trace.GetTraceId()
-
-	// trigger writeRequestLogEvent
-	_ = event.DefaultDispatcher().Trigger(writeRequestLogEvent, items)
+	items["trace_id"] = trace.Get()
+	// trigger event
+	defer event.Trigger(event.AfterRoute, items)
 }
 
 // getResponseBody
@@ -84,7 +77,6 @@ func getRequestBody(c *gin.Context) interface{} {
 	switch c.Request.Method {
 	case http.MethodGet:
 		return c.Request.URL.Query()
-
 	case http.MethodPost:
 		fallthrough
 	case http.MethodPut:
@@ -97,9 +89,7 @@ func getRequestBody(c *gin.Context) interface{} {
 			return nil
 		}
 		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
-
 		return string(bodyBytes)
-
 	}
 
 	return nil

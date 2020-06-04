@@ -9,12 +9,12 @@ type Obj struct {
 	Name string `json:"name"`
 }
 
-func TestJson(t *testing.T)  {
+func TestJson(t *testing.T) {
 	o := Obj{
-		Name:"test",
+		Name: "test",
 	}
 
-	s , err:= Encode(o)
+	s, err := Encode(o)
 	assert.Nil(t, err)
 
 	var d Obj

@@ -12,12 +12,12 @@ type StringSlice struct {
 }
 
 // Int return IntSlice
-func String(items []string) StringSlice  {
-	return StringSlice{items:items}
+func String(items []string) StringSlice {
+	return StringSlice{items: items}
 }
 
 // Length
-func (s StringSlice) Length() int  {
+func (s StringSlice) Length() int {
 	return len(s.items)
 }
 

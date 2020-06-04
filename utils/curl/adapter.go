@@ -15,7 +15,7 @@ type Adapter struct {
 
 // NewAdapter
 func NewAdapter() *Adapter {
-	return &Adapter{pool:sync.Pool{New: func() interface{} {
+	return &Adapter{pool: sync.Pool{New: func() interface{} {
 		return bytes.NewBuffer(make([]byte, 4096))
 	}}}
 }

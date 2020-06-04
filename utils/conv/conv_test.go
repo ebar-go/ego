@@ -21,16 +21,16 @@ func TestMap2Struct(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:"success",
+			name: "success",
 			args: args{
-				mapInstance: map[string]interface{}{"hello":"world"},
+				mapInstance: map[string]interface{}{"hello": "world"},
 				obj:         &target{},
 			},
 			wantErr: false,
-		},{
-			name:"failed",
+		}, {
+			name: "failed",
 			args: args{
-				mapInstance: map[string]interface{}{"hello":1},
+				mapInstance: map[string]interface{}{"hello": 1},
 				obj:         &target{},
 			},
 			wantErr: true,
@@ -60,9 +60,9 @@ func TestStruct2Map(t *testing.T) {
 		want map[string]interface{}
 	}{
 		{
-			name:"success",
-			args:args{obj:target{Hello:"world"}},
-			want: map[string]interface{}{"Hello":"world"},
+			name: "success",
+			args: args{obj: target{Hello: "world"}},
+			want: map[string]interface{}{"Hello": "world"},
 		},
 	}
 	for _, tt := range tests {
@@ -95,8 +95,8 @@ func TestTransformInterface(t *testing.T) {
 	}{
 		{
 			name: "success",
-			args:args{
-				source: sourceTarget{Hello:"1"},
+			args: args{
+				source: sourceTarget{Hello: "1"},
 				target: &target{},
 			},
 			wantErr: false,
@@ -121,4 +121,3 @@ func TestByte2Str(t *testing.T) {
 	b := Str2Byte(s)
 	assert.Equal(t, s, Byte2Str(b))
 }
-

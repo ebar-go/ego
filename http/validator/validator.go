@@ -1,13 +1,13 @@
 package validator
 
 import (
-	ut "github.com/go-playground/universal-translator"
-	"reflect"
-	"sync"
-	"github.com/go-playground/validator/v10"
 	"errors"
 	"github.com/go-playground/locales/zh"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 	zh_translations "github.com/go-playground/validator/v10/translations/zh"
+	"reflect"
+	"sync"
 )
 
 // trans use single pattern

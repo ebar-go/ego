@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/errors"
@@ -49,6 +50,8 @@ func InitDB() error {
 		}
 		dbGroup[name] = conn
 	}
+
+	event.Trigger(event.AfterDatabaseConnect, nil)
 
 	return nil
 }

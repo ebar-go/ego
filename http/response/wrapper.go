@@ -15,8 +15,9 @@ type wrapper struct {
 
 // WrapContext
 func WrapContext(ctx *gin.Context) *wrapper {
-	return &wrapper{ctx:ctx}
+	return &wrapper{ctx: ctx}
 }
+
 // output output r
 func (w *wrapper) output(r *response) {
 	w.ctx.JSON(200, r)

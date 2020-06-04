@@ -12,9 +12,9 @@ import (
 var instance client.Client
 
 // InitClient 初始化Client
-func InitClient(config client.Config) error   {
+func InitClient(config client.Config) error {
 	var err error
-	instance , err = client.New(config)
+	instance, err = client.New(config)
 	return err
 }
 

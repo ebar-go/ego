@@ -11,14 +11,13 @@ import (
 )
 
 // LogError
-func LogError(msg string, err error)  {
+func LogError(msg string, err error) {
 	if err == nil {
 		log.Printf("%s Success\n", msg)
-	}else {
+	} else {
 		log.Printf("%s Error: %v\n", msg, err)
 	}
 }
-
 
 // MergeMaps merge items
 func MergeMaps(items ...map[string]interface{}) map[string]interface{} {
@@ -115,7 +114,7 @@ func Mkdir(dir string, parents bool) error {
 func SplitPathExt(path string) (string, string) {
 	for i := len(path) - 1; i >= 0 && path[i] != '/'; i-- {
 		if path[i] == '.' {
-			return path[:i],path[i:]
+			return path[:i], path[i:]
 		}
 	}
 	return path, ""

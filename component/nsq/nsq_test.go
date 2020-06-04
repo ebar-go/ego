@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	topic = "nsq-test"
+	topic   = "nsq-test"
 	channel = "channel-test"
 	address = "192.168.0.222:4150"
 )
@@ -25,7 +25,7 @@ func (*Consumer) HandleMessage(msg *nsq.Message) error {
 func TestPublish(t *testing.T) {
 	var err error
 
-	client := Client{Address:address}
+	client := Client{Address: address}
 	producer, err := client.NewProducer()
 	assert.Nil(t, err)
 
@@ -33,8 +33,8 @@ func TestPublish(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestReceive(t *testing.T)  {
-	client := Client{Address:address}
+func TestReceive(t *testing.T) {
+	client := Client{Address: address}
 	err := client.Listen(Param{
 		Topic:               topic,
 		Channel:             channel,

@@ -27,11 +27,11 @@ type Conf struct {
 	BackupConfigPath string `json:"backup_config_path"`
 }
 
-const(
+const (
 	loadEnvironmentEvent = "APOLLO_LOAD_ENVIRONMENT"
 )
 
-func init()  {
+func init() {
 	// register environment load event
 	event.DefaultDispatcher().Register(loadEnvironmentEvent, event.Listener{
 		Handle: func(ev event.Event) {

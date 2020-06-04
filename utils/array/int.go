@@ -12,12 +12,12 @@ type IntSlice struct {
 }
 
 // Int return IntSlice
-func Int(items []int) *IntSlice  {
-	return &IntSlice{items:items}
+func Int(items []int) *IntSlice {
+	return &IntSlice{items: items}
 }
 
 // Length return len of slice
-func (s IntSlice) Length() int  {
+func (s IntSlice) Length() int {
 	return len(s.items)
 }
 
@@ -52,4 +52,3 @@ func (s IntSlice) ToString() []string {
 func (s IntSlice) Implode(separator string) string {
 	return strings.Replace(strings.Trim(fmt.Sprint(s.items), "[]"), " ", separator, -1)
 }
-

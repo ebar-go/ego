@@ -13,7 +13,7 @@ import (
 )
 
 // newZap return zap logger instance
-func newZap(filename string, enableLevel zapcore.LevelEnabler, initFields ...zap.Field) (*zap.Logger) {
+func newZap(filename string, enableLevel zapcore.LevelEnabler, initFields ...zap.Field) *zap.Logger {
 	conf := zapcore.EncoderConfig{
 		MessageKey:  "message",
 		LevelKey:    "level_name",
@@ -49,10 +49,10 @@ func getRotateWriter(filename string) io.Writer {
 	prefixName, ext := utils.SplitPathExt(filename)
 	// demo.log是指向最新日志的链接
 	hook, err := rotatelogs.New(
-		prefixName+"-%Y%m%d%H%M" + ext, // 没有使用go风格反人类的format格式
+		prefixName+"-%Y%m%d%H%M"+ext, // 没有使用go风格反人类的format格式
 		//rotatelogs.WithLinkName(filename),
-		rotatelogs.WithMaxAge(time.Hour*24*30),      // 保存30天
-		rotatelogs.WithRotationTime(time.Hour * 24), //切割频率 24小时
+		rotatelogs.WithMaxAge(time.Hour*24*30),    // 保存30天
+		rotatelogs.WithRotationTime(time.Hour*24), //切割频率 24小时
 	)
 
 	if err != nil {

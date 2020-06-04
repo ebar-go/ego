@@ -11,7 +11,7 @@ import (
 func TestNewServer(t *testing.T) {
 	s := NewServer()
 
-	s.Router.Use( middleware.Favicon, middleware.RequestLog, middleware.Recover)
+	s.Router.Use(middleware.Favicon, middleware.RequestLog, middleware.Recover)
 	s.Router.GET("/check", func(context *gin.Context) {
 		response.WrapContext(context).Success("hello")
 	})
@@ -24,5 +24,5 @@ func TestNewServer(t *testing.T) {
 	//utils.FatalError("ReadFromFile", config.ReadFromFile(filepath.Dir(fileStr) + "/../config/app.yaml"))
 
 	//_ = event.DefaultDispatcher().Trigger(app.RedisConnectEvent, nil)
-	secure.FatalError("StartHttpServer",s.Start())
+	secure.FatalError("StartHttpServer", s.Start())
 }

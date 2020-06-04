@@ -1,6 +1,7 @@
 package trace
 
 import (
+	"github.com/ebar-go/ego/constant"
 	"github.com/ebar-go/ego/utils/strings"
 	"github.com/petermattis/goid"
 	"sync"
@@ -11,12 +12,12 @@ var (
 	rwm      sync.RWMutex
 )
 
-func NewId() string {
-	return "TraceId" + strings.UUID()
+func Id() string {
+	return constant.TraceIdPrefix + strings.UUID()
 }
 
 // SetTraceId
-func SetTraceId(id string) {
+func Set(id string) {
 	goID := getGoroutineId()
 	rwm.Lock()
 	defer rwm.Unlock()
@@ -24,8 +25,8 @@ func SetTraceId(id string) {
 	traceIds[goID] = id
 }
 
-// GetTraceId
-func GetTraceId() string {
+// Get
+func Get() string {
 	goID := getGoroutineId()
 	rwm.RLock()
 	defer rwm.RUnlock()
@@ -33,8 +34,8 @@ func GetTraceId() string {
 	return traceIds[goID]
 }
 
-// DeleteTraceId
-func DeleteTraceId() {
+// GC
+func GC() {
 	goID := getGoroutineId()
 	rwm.Lock()
 	defer rwm.Unlock()

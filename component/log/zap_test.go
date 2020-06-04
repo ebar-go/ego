@@ -7,13 +7,13 @@ import (
 func TestZap(t *testing.T) {
 
 	Info("Info", Context{
-		"hello":"world",
+		"hello": "world",
 	})
 	Debug("Debug", Context{
-		"hello":"world",
+		"hello": "world",
 	})
 	Error("Error", Context{
-		"hello":"world",
+		"hello": "world",
 	})
 
 }

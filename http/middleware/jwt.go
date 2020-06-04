@@ -21,7 +21,7 @@ var (
 // GetCurrentClaims 获取解析jwt后的信息
 func GetCurrentClaims(ctx *gin.Context) jwt.MapClaims {
 	claims, exist := ctx.Get(ClaimsKey)
-	if !exist || claims == nil{
+	if !exist || claims == nil {
 		return nil
 	}
 

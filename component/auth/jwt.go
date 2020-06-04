@@ -27,6 +27,7 @@ func New(signKey []byte) Jwt {
 var (
 	TokenValidateFailed = errors.New("token validate failed")
 )
+
 // CreateToken 生成token
 func (jwtAuth JwtAuth) GenerateToken(claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

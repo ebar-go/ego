@@ -10,8 +10,8 @@ import (
 
 func TestNewClient(t *testing.T) {
 	cfg := client.Config{
-		Endpoints:               []string{"http://10.0.75.2:3379"},
-		Transport:               client.DefaultTransport,
+		Endpoints: []string{"http://10.0.75.2:3379"},
+		Transport: client.DefaultTransport,
 		// set timeout per request to fail fast when the target endpoint is unavailable
 		HeaderTimeoutPerRequest: time.Second,
 	}

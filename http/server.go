@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
@@ -30,8 +31,8 @@ type tree struct {
 }
 
 type node struct {
-	name string
-	path string
+	name     string
+	path     string
 	children []node
 }
 
@@ -69,7 +70,17 @@ func (server *Server) Start(args ...int) error {
 
 	completeHost := net.JoinHostPort("", strconv.Itoa(port))
 
-	return server.Router.Run(completeHost)
+	// before start
+	event.Trigger(event.BeforeHttpStart, nil)
+
+	// start
+	if err := server.Router.Run(completeHost); err != nil {
+		return err
+	}
+
+	// after start
+	event.Trigger(event.AfterHttpStart, nil)
+	return nil
 }
 
 // getPortFromArgs

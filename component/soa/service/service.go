@@ -61,6 +61,6 @@ func (group *Group) Next() Node {
 }
 
 // Add add node
-func (group *Group) Add(node Node)  {
+func (group *Group) Add(node Node) {
 	group.items = append(group.items, node)
 }

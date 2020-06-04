@@ -7,13 +7,12 @@ import (
 	"sync"
 )
 
-
 type Context map[string]interface{}
 
 // format
 func format(ctx Context) zap.Field {
 	if _, ok := ctx["trace_id"]; !ok {
-		ctx["trace_id"] = trace.GetTraceId()
+		ctx["trace_id"] = trace.Get()
 	}
 
 	return zap.Any("context", ctx)
@@ -34,12 +33,11 @@ func Error(message string, ctx Context) {
 	d.getInstance().Error(message, format(ctx))
 }
 
-
-var d  = new(Logger)
+var d = new(Logger)
 
 // Logger
 type Logger struct {
-	once sync.Once
+	once     sync.Once
 	instance *zap.Logger
 }
 

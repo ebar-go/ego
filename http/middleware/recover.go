@@ -16,15 +16,13 @@ func Recover(ctx *gin.Context) {
 			if ok {
 				response.WrapContext(ctx).Error(err.Code, err.Message)
 
-			}else {
+			} else {
 				log.Error("system_error", log.Context{
 					"error": r,
 					"trace": utils.Trace(),
 				})
 				response.WrapContext(ctx).Error(500, "System Error")
 			}
-
-
 
 		}
 	}()

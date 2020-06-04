@@ -13,4 +13,3 @@ func FatalError(msg string, err error) {
 
 	log.Printf("%s Success\n", msg)
 }
-

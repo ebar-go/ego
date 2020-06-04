@@ -2,12 +2,9 @@ package response
 
 import (
 	"github.com/ebar-go/ego/component/trace"
+	"github.com/ebar-go/ego/constant"
 	"github.com/ebar-go/ego/http/pagination"
 	"github.com/ebar-go/ego/utils/strings"
-)
-
-const(
-	requestIdPrefix = "request:"
 )
 
 // Response 数据结构体
@@ -31,14 +28,14 @@ type Meta struct {
 }
 
 // Reset response
-func (r *response) Reset(){
+func (r *response) Reset() {
 	r.StatusCode = 0
 	r.Message = "success"
 	r.Data = nil
 	r.Meta = Meta{
 		Trace: Trace{
-			RequestId: requestIdPrefix + strings.UUID(),
-			TraceId:   trace.GetTraceId(),
+			RequestId: constant.RequestIdPrefix + strings.UUID(),
+			TraceId:   trace.Get(),
 		},
 	}
 }

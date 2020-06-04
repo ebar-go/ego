@@ -45,16 +45,16 @@ func (conf *redisConfig) Options() *redis.Options {
 	}
 }
 
-const(
-	redisHostKey = "redis.host"
-	redisPortKey = "redis.port"
-	redisPassKey = "redis.pass"
-	redisPoolSizeKey = "redis.pool_size"
-	redisMaxRetriesKey = "redis.max_retries"
+const (
+	redisHostKey        = "redis.host"
+	redisPortKey        = "redis.port"
+	redisPassKey        = "redis.pass"
+	redisPoolSizeKey    = "redis.pool_size"
+	redisMaxRetriesKey  = "redis.max_retries"
 	redisIdleTimeoutKey = "redis.idle_timeout"
 )
 
-func init()  {
+func init() {
 	viper.SetDefault(redisHostKey, "127.0.0.1")
 	viper.SetDefault(redisPortKey, 6379)
 	viper.SetDefault(redisPoolSizeKey, 100)

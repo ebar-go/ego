@@ -33,7 +33,7 @@ const (
 	- totalCount : length of data
 	- currentPage: current page number
 	- limit: number of per page
- */
+*/
 func Paginate(totalCount, currentPage, limit int) Paginator {
 	pagination := Paginator{
 		TotalCount:  totalCount,
@@ -66,7 +66,7 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
  	- items : data items
 	- currentPage: current page number
 	- limit: number of per page
- */
+*/
 func PaginateSlice(items []interface{}, currentPage, limit int) (paginate Paginator, result []interface{}) {
 	paginate.CurrentPage = currentPage
 	paginate.Limit = limit

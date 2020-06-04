@@ -12,7 +12,7 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-const(
+const (
 	MysqlConnectFailedCode = 1001
 	RedisConnectFailedCode = 1002
 )
@@ -24,7 +24,7 @@ func (e *Error) Error() string {
 }
 
 // New
-func New( code int, message string) *Error {
+func New(code int, message string) *Error {
 	return &Error{
 		Code:    code,
 		Message: message,
@@ -82,4 +82,3 @@ func MysqlConnectFailed(format string, v ...interface{}) *Error {
 func RedisConnectFailed(format string, v ...interface{}) *Error {
 	return New(RedisConnectFailedCode, fmt.Sprintf(format, v...))
 }
-

@@ -9,13 +9,12 @@ import (
 	consulapi "github.com/hashicorp/consul/api"
 )
 
-
 var client *consulapi.Client
 
 // InitClient 初始化consul客户端
 func InitClient(config *consulapi.Config) error {
 	var err error
-	client, err =  consulapi.NewClient(config)
+	client, err = consulapi.NewClient(config)
 
 	return err
 }
@@ -49,7 +48,6 @@ func Discover(name string) (*service.Group, error) {
 
 	return group, nil
 }
-
 
 // Register 注册服务
 func Register(node service.Node) error {
