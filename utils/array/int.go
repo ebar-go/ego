@@ -21,9 +21,9 @@ func (s IntSlice) Length() int {
 	return len(s.items)
 }
 
-// Push add item
-func (s *IntSlice) Push(item int) {
-	s.items = append(s.items, item)
+// Push
+func (s *IntSlice) Push(items ...int) {
+	s.items = append(s.items, items...)
 }
 
 // Unique return unique elem slice

@@ -22,8 +22,8 @@ func (s StringSlice) Length() int {
 }
 
 // Push
-func (s *StringSlice) Push(item string) {
-	s.items = append(s.items, item)
+func (s *StringSlice) Push(items ...string) {
+	s.items = append(s.items, items...)
 }
 
 // Unique return unique elem slice
