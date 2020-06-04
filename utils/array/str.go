@@ -53,3 +53,19 @@ func (s StringSlice) ToInt() []int {
 func (s StringSlice) Implode(separator string) string {
 	return strings.Replace(strings.Trim(fmt.Sprint(s.items), "[]"), " ", separator, -1)
 }
+
+// Items
+func (s StringSlice) Items() []string {
+	return s.items
+}
+
+// Has
+func (s StringSlice) Has(elem string) bool {
+	for _, i := range s.items {
+		if elem == i {
+			return true
+		}
+	}
+
+	return false
+}

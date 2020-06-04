@@ -52,3 +52,31 @@ func (s IntSlice) ToString() []string {
 func (s IntSlice) Implode(separator string) string {
 	return strings.Replace(strings.Trim(fmt.Sprint(s.items), "[]"), " ", separator, -1)
 }
+
+// Items
+func (s IntSlice) Items() []int {
+	return s.items
+}
+
+// Has
+func (s IntSlice) Has(elem int) bool {
+	for _, i := range s.items {
+		if elem == i {
+			return true
+		}
+	}
+
+	return false
+}
+
+
+// Sum
+func (s IntSlice) Sum() int {
+	total := 0
+	for _, i := range s.items {
+		total += i
+	}
+
+	return total
+}
+

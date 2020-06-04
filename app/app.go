@@ -3,7 +3,6 @@ package app
 import (
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/constant"
-	"github.com/ebar-go/ws"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -21,19 +20,6 @@ var (
 // NewContainer return an empty container
 func NewContainer() *dig.Container {
 	return dig.New()
-}
-
-// WebSocket return ws manager
-func WebSocket() (manager ws.Manager) {
-	if err := Container.Invoke(func(m ws.Manager) {
-		manager = m
-	}); err != nil {
-		manager = ws.New()
-		_ = Container.Provide(func() ws.Manager{
-			return manager
-		})
-	}
-	return
 }
 
 // Redis get redis connection
@@ -56,9 +42,10 @@ func GetDB(connectionName string) *gorm.DB {
 
 // Http client
 func Http() (client *http.Client)  {
-	if err :=  Container.Invoke(func(cli *http.Client) {
+	err :=  Container.Invoke(func(cli *http.Client) {
 		client = cli
-	}); err != nil {
+	})
+	if err != nil {
 		client = &http.Client{
 			Transport: &http.Transport{ // 配置连接池
 				Proxy: http.ProxyFromEnvironment,
@@ -72,6 +59,10 @@ func Http() (client *http.Client)  {
 			Jar:           nil,
 			Timeout:       time.Duration(config.Server().HttpRequestTimeOut) * time.Second,
 		}
+
+		_ =  Container.Provide(func() *http.Client {
+			return client
+		})
 	}
 	return
 }
