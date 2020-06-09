@@ -2,7 +2,7 @@
 基于Gin的web微服务框架。
 
 ## 特性
-- 简单的HTTP服务启动方式。
+- 简单的HTTP服务启动方式，支持平滑重启。
 - 提供强大的日志管理器，支持按日期自动分割。
 - 丰富的中间件(请求日志、JWT认证,跨域,Recover,全局链路)
 - 支持基于consul,etcd的服务注册、发现、注销
@@ -28,10 +28,13 @@ go get -u github.com/ebar-go/ego
 ```go
 package main
 import (
-    "fmt"
-    "github.com/ebar-go/ego/http"
-    "github.com/gin-gonic/gin"
-    "github.com/ebar-go/ego/utils/secure"
+
+"fmt"
+"github.com/ebar-go/ego/http"
+"github.com/gin-gonic/gin"
+"github.com/ebar-go/ego/utils/secure"
+"time"
+)"time"
 )
 func main() {
     server := http.NewServer()
@@ -41,6 +44,17 @@ func main() {
     })
     secure.Panic(server.Start())
 }
+// 支持平滑重启
+func init() {
+    // 支持停止http服务时的回调
+    event.Listen(event.BeforeHttpShutdown, func(ev event.Event) {
+        // 让服务器等待3秒，等待异步业务执行结束
+        time.Sleep(time.Second * 3)
+    	// 关闭数据库
+    	fmt.Println("close database")
+    	_ = app.DB().Close()
+    })
+} 
 ```
 
 #### 加载配置
@@ -181,9 +195,16 @@ mysql:    # mysql配置。支持多数据库，读写分离
 ```go
 // 初始化数据库，一般在init函数里，加载了配置文件之后执行
 secure.Panic(app.InitDB())
-
 // 获取默认的库连接
 app.DB()
 // 指定库连接
 app.GetDB("otherDB")
+// 事务
+if err := app.DB().Transaction(func(tx *gorm.Db) error {
+    // some query or update
+    return nil
+}); err != nil {
+    // 
+    return fmt.Errorf("Save failed:%v", err)
+}
 ```

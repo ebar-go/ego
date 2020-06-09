@@ -31,6 +31,11 @@ func New(code int, message string) *Error {
 	}
 }
 
+// Format 格式化输出
+func Format(code int, format string, v ...interface{}) *Error  {
+	return New(code, fmt.Sprintf(format, v...))
+}
+
 // Parse tries to parse a JSON string into an error. If that
 // fails, it will set the given string as the error detail.
 func Parse(errStr string) *Error {
@@ -71,14 +76,4 @@ func Timeout(format string, v ...interface{}) *Error {
 // InternalServerError generates a 500 error.
 func InternalServer(format string, v ...interface{}) *Error {
 	return New(http.StatusInternalServerError, fmt.Sprintf(format, v...))
-}
-
-// MysqlConnectFailed
-func MysqlConnectFailed(format string, v ...interface{}) *Error {
-	return New(MysqlConnectFailedCode, fmt.Sprintf(format, v...))
-}
-
-// RedisConnectFailed
-func RedisConnectFailed(format string, v ...interface{}) *Error {
-	return New(RedisConnectFailedCode, fmt.Sprintf(format, v...))
 }

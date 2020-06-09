@@ -5,7 +5,6 @@ import (
 	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/config"
-	"github.com/ebar-go/ego/errors"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 	"time"
@@ -17,7 +16,7 @@ func InitRedis() error {
 	connection := redis.NewClient(config.Redis().Options())
 	_, err := connection.Ping().Result()
 	if err != nil {
-		return errors.RedisConnectFailed("%s", err.Error())
+		return err
 	}
 
 	return Container.Provide(func() *redis.Client {

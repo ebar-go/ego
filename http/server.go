@@ -1,15 +1,21 @@
 package http
 
 import (
-	"fmt"
+	"context"
 	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net"
+	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
 	"sync"
+	"syscall"
+	"time"
 )
 
 // Server Web服务管理器
@@ -22,19 +28,8 @@ type Server struct {
 
 	// not found handler
 	NotFoundHandler func(ctx *gin.Context)
-
-	tree tree
 }
 
-type tree struct {
-	nodes map[string]node
-}
-
-type node struct {
-	name     string
-	path     string
-	children []node
-}
 
 // NewServer 实例化server
 func NewServer() *Server {
@@ -57,10 +52,6 @@ func (server *Server) Start(args ...int) error {
 	// use lock
 	server.mu.Lock()
 
-	if len(args) > 1 {
-		return fmt.Errorf("args must be less than one")
-	}
-
 	// 解析port
 	port := getPortFromArgs(args...)
 
@@ -73,13 +64,22 @@ func (server *Server) Start(args ...int) error {
 	// before start
 	event.Trigger(event.BeforeHttpStart, nil)
 
-	// start
-	if err := server.Router.Run(completeHost); err != nil {
-		return err
+	srv := &http.Server{
+		Addr:    completeHost,
+		Handler: server.Router,
 	}
+	go func() {
+		// service connections
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen:%s\n", err)
+		}
 
-	// after start
-	event.Trigger(event.AfterHttpStart, nil)
+		// after start
+		event.Trigger(event.AfterHttpStart, nil)
+	}()
+
+	server.shutdown(srv)
+
 	return nil
 }
 
@@ -91,4 +91,25 @@ func getPortFromArgs(args ...int) int {
 		config.Server().Port = port
 	}
 	return port
+}
+
+//
+func (server *Server) shutdown(srv *http.Server) {
+	// wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 10 seconds.
+	quit := make(chan os.Signal, 1)
+	// kill (no param) default send syscall.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
+	event.Trigger(event.BeforeHttpShutdown, nil)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown:", err)
+	}
+	log.Println("Server exiting")
 }

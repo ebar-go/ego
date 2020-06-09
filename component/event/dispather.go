@@ -16,6 +16,14 @@ func Register(eventName string, listener Listener) {
 	}
 }
 
+// Listen
+func Listen(eventName string, handler Handler)  {
+	Register(eventName, Listener{
+		Mode:    Sync,
+		Handler: handler,
+	})
+}
+
 // Has
 func Has(eventName string) bool {
 	_, ok := d.items[eventName]
