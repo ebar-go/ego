@@ -208,3 +208,38 @@ if err := app.DB().Transaction(func(tx *gorm.Db) error {
     return fmt.Errorf("Save failed:%v", err)
 }
 ```
+
+### 事件
+提供快捷的事件开发模式。
+- 使用
+```go
+// 注册事件
+event.Register("someEvent", event.Listener{
+  Mode: event.Sync, // 同步事件,异步事件为 event.Async
+  Handler: func(ev event.Event) {
+    fmt.Println(ev.Params) 
+  }
+})
+// 更快捷的注册事件
+event.Listen("someEvent", func(ev event.Event) {
+	fmt.Println(ev.Params)
+})
+
+// 触发事件
+event.Trigger("someEvent", "someParam")
+```
+- 系统事件
+```
+// http服务启动前触发
+event.BeforeHttpStart
+// http服务启动后触发
+event.AfterHttpStart
+// http服务关闭前触发，平滑重启
+event.BeforeHttpShutdown
+// 数据库连接成功后触发
+event.AfterDatabaseConnect
+// 路由执行前触发
+event.BeforeRoute
+// 路由执行后触发
+event.AfterRoute
+```
