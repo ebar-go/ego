@@ -243,3 +243,7 @@ event.BeforeRoute
 // 路由执行后触发
 event.AfterRoute
 ```
+
+### 集成Swagger，自动生成API文档。
+刚开始我不喜欢让项目代码冗余太多得注释，但实际使用后，发现确实特别实用且方便。
+关于swagger请参考我得文档，有详细说明，这里不再做过多描述。直接：[swagger使用说明](https://hongker.github.io/2020/06/10/golang-swagger/)
