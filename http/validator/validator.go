@@ -11,10 +11,10 @@ import (
 )
 
 // trans use single pattern
-var trans = GetZhTranslator()
+var trans = zht()
 
-// GetZhTranslator get simple chinese translator
-func GetZhTranslator() ut.Translator {
+// zht return a simple chinese translator
+func zht() ut.Translator {
 	//中文翻译器
 	zh_ch := zh.New()
 	uni := ut.New(zh_ch)

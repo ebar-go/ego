@@ -69,7 +69,6 @@ func (s IntSlice) Has(elem int) bool {
 	return false
 }
 
-
 // Sum
 func (s IntSlice) Sum() int {
 	total := 0
@@ -79,4 +78,3 @@ func (s IntSlice) Sum() int {
 
 	return total
 }
-

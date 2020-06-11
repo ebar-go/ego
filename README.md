@@ -2,7 +2,7 @@
 基于Gin的web微服务框架。
 
 ## 特性
-- 简单的HTTP服务启动方式，支持平滑重启。
+- 为分布式而生的http,websocket服务。
 - 提供强大的日志管理器，支持按日期自动分割。
 - 丰富的中间件(请求日志、JWT认证,跨域,Recover,全局链路)
 - 支持基于consul,etcd的服务注册、发现、注销
@@ -21,23 +21,18 @@ go get -u github.com/ebar-go/ego
 完整的web项目请查看[github.com/ebar-go/ego-demo](https://github.com/ebar-go/ego-demo)
 
 ## 模块
-### web
-
-- 启动web服务
-
+### http服务
 ```go
 package main
 import (
-
 "fmt"
-"github.com/ebar-go/ego/http"
+"github.com/ebar-go/ego"
 "github.com/gin-gonic/gin"
 "github.com/ebar-go/ego/utils/secure"
 "time"
-)"time"
 )
 func main() {
-    server := http.NewServer()
+    server := ego.HttpServer()
     // 添加路由
     server.Router.GET("/test", func(context *gin.Context) {
         fmt.Println("hello,world")
@@ -57,11 +52,49 @@ func init() {
 } 
 ```
 
-#### 加载配置
+### websocket服务
+支持与http服务共存的websocket服务   
+```go
+package main
+import (
+"github.com/ebar-go/ego"
+"github.com/ebar-go/ego/utils/secure"
+"github.com/gin-gonic/gin"
+"github.com/ebar-go/ego/http/response"
+)
+func main() {
+    s := ego.HttpServer()
+    ws := ego.WebsocketServer()
+
+	s.Router.GET("/check", func(context *gin.Context) {
+		response.WrapContext(context).Success("hello")
+	})
+	s.Router.GET("/ws", func(ctx *gin.Context) {
+		// get websocket conn
+		conn, err := ws.UpgradeConn(ctx.Writer, ctx.Request)
+		if err != nil {
+			secure.Panic(err.Error())
+		}
+
+		ws.Register(conn, func(message []byte){
+			if string(message) == "broadcast" {// 广播
+				ws.Broadcast([]byte("hello,welcome"), nil)
+				return
+			}
+			ws.Send(message, conn) // 单对单发送
+
+		})
+	})
+
+	go ws.Start()
+
+	secure.FatalError("StartHttpServer", s.Start())
+}
+```
+
+### 配置
 集成[https://github.com/spf13/viper](https://github.com/spf13/viper)
 ```go
-// 从环境变量中读取
-config.ReadFromEnvironment()
 // 或者从文件读取
 config.ReadFromFile(configFilePath)
 // 读取配置
@@ -102,21 +135,6 @@ response.WrapContext(ctx).Error(1001, "some error")
 
 #### 数据校验器
 基于`github.com/go-playground/validator`,支持自定义字段名称`comment`
-
-- 给Gin设置全局自定义验证器
-一般在init函数里执行
-```go
-package main
-import (
-  "github.com/ebar-go/ego/http/validator"
-  "github.com/ebar-go/ego/utils/secure"
-  "github.com/gin-gonic/gin/binding"
-)
-func init() {
-  binding.Validator = new(validator.Validator)
-}
-
-```
 
 - handler里校验参数
 ```go

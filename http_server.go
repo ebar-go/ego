@@ -1,4 +1,4 @@
-package http
+package ego
 
 import (
 	"context"
@@ -6,7 +6,9 @@ import (
 	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
+	"github.com/ebar-go/ego/http/validator"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"log"
 	"net"
 	"net/http"
@@ -18,8 +20,8 @@ import (
 	"time"
 )
 
-// Server Web服务管理器
-type Server struct {
+// httpServer Web服务管理器
+type httpServer struct {
 	// 并发锁,可导出结构体采用私有变量，而不采用内嵌的方式
 	mu sync.Mutex
 
@@ -30,15 +32,20 @@ type Server struct {
 	NotFoundHandler func(ctx *gin.Context)
 }
 
+func init()  {
+	event.Listen(event.BeforeHttpStart, func(ev event.Event) {
+		binding.Validator = new(validator.Validator)
+	})
+}
 
-// NewServer 实例化server
-func NewServer() *Server {
+// HttpServer 获取httpServer示例
+func HttpServer() *httpServer {
 	router := gin.Default()
 
 	// use global trace middleware
 	router.Use(middleware.Trace)
 
-	return &Server{
+	return &httpServer{
 		Router:          router,
 		NotFoundHandler: handler.NotFoundHandler,
 	}
@@ -48,12 +55,12 @@ func NewServer() *Server {
 // args must be less than one,
 // eg: Start()
 //	   Start(8080)
-func (server *Server) Start(args ...int) error {
+func (server *httpServer) Start(args ...int) error {
 	// use lock
 	server.mu.Lock()
 
 	// 解析port
-	port := getPortFromArgs(args...)
+	port := parseArgs(args...)
 
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)
@@ -83,8 +90,8 @@ func (server *Server) Start(args ...int) error {
 	return nil
 }
 
-// getPortFromArgs
-func getPortFromArgs(args ...int) int {
+// parseArgs
+func parseArgs(args ...int) int {
 	port := config.Server().Port
 	if len(args) == 1 {
 		port = args[0]
@@ -94,7 +101,7 @@ func getPortFromArgs(args ...int) int {
 }
 
 //
-func (server *Server) shutdown(srv *http.Server) {
+func (server *httpServer) shutdown(srv *http.Server) {
 	// wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/config"
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,9 @@ func Trace(c *gin.Context) {
 	}
 	trace.Set(traceId)
 	defer trace.GC()
+
+	event.Trigger(event.BeforeRoute, nil)
 	c.Next()
+	event.Trigger(event.AfterRoute, nil)
 
 }

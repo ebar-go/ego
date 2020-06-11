@@ -3,7 +3,6 @@ package middleware
 import (
 	"bytes"
 	"fmt"
-	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/config"
@@ -20,15 +19,6 @@ import (
 type bodyLogWriter struct {
 	gin.ResponseWriter
 	body *bytes.Buffer
-}
-
-func init() {
-	event.Register(event.AfterRoute, event.Listener{
-		Mode: event.Async,
-		Handler: func(ev event.Event) {
-			log.Info("REQUEST INFO", ev.Params.(log.Context))
-		},
-	})
 }
 
 // Write 读取响应数据
@@ -59,8 +49,7 @@ func RequestLog(c *gin.Context) {
 	items["time_used"] = fmt.Sprintf("%v", time.Since(t))
 	items["header"] = c.Request.Header
 	items["trace_id"] = trace.Get()
-	// trigger event
-	defer event.Trigger(event.AfterRoute, items)
+	log.Info("REQUEST INFO", items)
 }
 
 // getResponseBody

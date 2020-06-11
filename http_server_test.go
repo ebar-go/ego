@@ -1,4 +1,4 @@
-package http
+package ego
 
 import (
 	"github.com/ebar-go/ego/http/middleware"
@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewServer(t *testing.T) {
-	s := NewServer()
+	s := HttpServer()
 
 	s.Router.Use(middleware.Favicon, middleware.RequestLog, middleware.Recover)
 	s.Router.GET("/check", func(context *gin.Context) {

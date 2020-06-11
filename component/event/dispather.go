@@ -17,7 +17,7 @@ func Register(eventName string, listener Listener) {
 }
 
 // Listen
-func Listen(eventName string, handler Handler)  {
+func Listen(eventName string, handler Handler) {
 	Register(eventName, Listener{
 		Mode:    Sync,
 		Handler: handler,

@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"github.com/ebar-go/ego"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -23,12 +24,4 @@ func TestParse(t *testing.T) {
 
 	errParse := Parse(err.Error())
 	assert.Error(t, errParse)
-
-}
-
-func TestInternalServerError(t *testing.T) {
-	err := InternalServerError("aha")
-	assert.Error(t, err)
-	pe := Parse(err.Error())
-	assert.Equal(t, pe.Code, 500)
 }

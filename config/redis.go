@@ -63,7 +63,7 @@ func init() {
 }
 
 func Redis() (options *redisConfig) {
-	if err := Container.Invoke(func(o *redisConfig) {
+	if err := container.Invoke(func(o *redisConfig) {
 		options = o
 	}); err != nil {
 		options = &redisConfig{
@@ -75,7 +75,7 @@ func Redis() (options *redisConfig) {
 			IdleTimeout: time.Duration(viper.GetInt(redisIdleTimeoutKey)) * time.Second,
 		}
 
-		_ = Container.Provide(func() *redisConfig {
+		_ = container.Provide(func() *redisConfig {
 			return options
 		})
 	}

@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-
 // InitRedis 初始化redis
 func InitRedis() error {
 	connection := redis.NewClient(config.Redis().Options())
@@ -23,6 +22,7 @@ func InitRedis() error {
 		return connection
 	})
 }
+
 // InitDB 初始化DB
 func InitDB() error {
 	dialect := "mysql"

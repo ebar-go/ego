@@ -5,10 +5,9 @@ import (
 	"go.uber.org/dig"
 )
 
-var Container = dig.New()
+var container = dig.New()
 
-// ReadFromEnvironment read from system environment
-func ReadFromEnvironment() {
+func init() {
 	viper.AutomaticEnv()
 }
 

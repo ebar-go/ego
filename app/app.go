@@ -14,7 +14,7 @@ import (
 
 var (
 	Container = NewContainer()
-	dbGroup        = make(map[string]*gorm.DB)
+	dbGroup   = make(map[string]*gorm.DB)
 )
 
 // NewContainer return an empty container
@@ -41,8 +41,8 @@ func GetDB(connectionName string) *gorm.DB {
 }
 
 // Http client
-func Http() (client *http.Client)  {
-	err :=  Container.Invoke(func(cli *http.Client) {
+func Http() (client *http.Client) {
+	err := Container.Invoke(func(cli *http.Client) {
 		client = cli
 	})
 	if err != nil {
@@ -60,7 +60,7 @@ func Http() (client *http.Client)  {
 			Timeout:       time.Duration(config.Server().HttpRequestTimeOut) * time.Second,
 		}
 
-		_ =  Container.Provide(func() *http.Client {
+		_ = Container.Provide(func() *http.Client {
 			return client
 		})
 	}

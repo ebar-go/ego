@@ -51,7 +51,7 @@ const (
 
 // Server return server config
 func Server() (options *server) {
-	if err := Container.Invoke(func(o *server) {
+	if err := container.Invoke(func(o *server) {
 		options = o
 	}); err != nil {
 		options = &server{
@@ -65,7 +65,7 @@ func Server() (options *server) {
 			Debug:              viper.GetBool(debugKey),
 		}
 
-		_ = Container.Provide(func() *server {
+		_ = container.Provide(func() *server {
 			return options
 		})
 	}
