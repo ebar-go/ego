@@ -95,7 +95,7 @@ func main() {
 ### 配置
 集成[https://github.com/spf13/viper](https://github.com/spf13/viper)
 ```go
-// 或者从文件读取
+// 加载配置文件
 config.ReadFromFile(configFilePath)
 // 读取配置
 fmt.Println(viper.GetString("someKey"))
@@ -112,7 +112,7 @@ fmt.Println(resp, err)
 #### 中间件
 
 ```go
-server := http.NewServer()
+server := ego.HttpServer()
 // middleware must used before init router 
 // Recover middleware
 server.Router.Use(middleware.Recover)
