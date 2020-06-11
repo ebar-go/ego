@@ -1,8 +1,8 @@
 ## 说明
-基于Gin的web微服务框架。
+简单易用又强大的微服务golang框架。
 
 ## 特性
-- 为分布式而生的http,websocket服务。
+- 集成http,websocket服务。
 - 提供强大的日志管理器，支持按日期自动分割。
 - 丰富的中间件(请求日志、JWT认证,跨域,Recover,全局链路)
 - 支持基于consul,etcd的服务注册、发现、注销
