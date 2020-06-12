@@ -1,4 +1,4 @@
-package curl
+package ego
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ func TestExecute(t *testing.T) {
 	request, err := http.NewRequest(http.MethodGet, address, nil)
 	assert.Nil(t, err)
 
-	response, err := Execute(request)
+	response, err := Curl(request)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

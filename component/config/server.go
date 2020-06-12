@@ -48,26 +48,3 @@ const (
 	jwtSignKey            = "server.jwtSign"
 	debugKey              = "server.debug"
 )
-
-// Server return server config
-func Server() (options *server) {
-	if err := container.Invoke(func(o *server) {
-		options = o
-	}); err != nil {
-		options = &server{
-			Name:               viper.GetString(systemNameKey),
-			Port:               viper.GetInt(httpPortKey),
-			MaxResponseLogSize: viper.GetInt(maxResponseLogSizeKey),
-			LogPath:            viper.GetString(logPathKey),
-			JwtSignKey:         []byte(viper.GetString(jwtSignKey)),
-			TraceHeader:        viper.GetString(traceHeaderKey),
-			HttpRequestTimeOut: viper.GetInt(httpRequestTimeoutKey),
-			Debug:              viper.GetBool(debugKey),
-		}
-
-		_ = container.Provide(func() *server {
-			return options
-		})
-	}
-	return
-}

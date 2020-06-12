@@ -2,7 +2,6 @@ package log
 
 import (
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/config"
 	"go.uber.org/zap"
 	"sync"
 )
@@ -19,42 +18,50 @@ func format(ctx Context) zap.Field {
 }
 
 // Info
-func Info(message string, ctx Context) {
-	d.getInstance().Info(message, format(ctx))
+func (logger *Logger) Info(message string, ctx Context) {
+	logger.instance.Info(message, format(ctx))
 }
 
 // Debug
-func Debug(message string, ctx Context) {
-	d.getInstance().Debug(message, format(ctx))
+func (logger *Logger) Debug(message string, ctx Context) {
+	logger.instance.Debug(message, format(ctx))
 }
 
 // Error
-func Error(message string, ctx Context) {
-	d.getInstance().Error(message, format(ctx))
+func (logger *Logger) Error(message string, ctx Context) {
+	logger.instance.Error(message, format(ctx))
 }
-
-var d = new(Logger)
 
 // Logger
 type Logger struct {
-	once     sync.Once
+	path string
+	debug bool
+	fields map[string]interface{}
 	instance *zap.Logger
+	once *sync.Once
 }
 
 // getInstance init logger instance
-func (l *Logger) getInstance() *zap.Logger {
-	serverConfig := config.Server()
+func New(logPath string, debug bool, fields map[string]interface{}) *Logger {
+	logger := new(Logger)
+	logger.path = logPath
+	logger.debug = debug
+	logger.fields = fields
+	logger.once.Do(logger.init)
 
+	return logger
+
+}
+
+func (logger *Logger) init() {
 	level := zap.InfoLevel
-	if serverConfig.Debug {
+	if logger.debug {
 		level = zap.DebugLevel
 	}
-	// init once
-	l.once.Do(func() {
-		l.instance = newZap(serverConfig.LogPath, level,
-			zap.String("system_name", serverConfig.Name),
-			zap.Int("system_port", serverConfig.Port))
-	})
 
-	return l.instance
+	var fields []zap.Field
+	for idx, val := range logger.fields {
+		fields = append(fields, zap.Any(idx, val))
+	}
+	logger.instance = newZap(logger.path, level, fields...)
 }

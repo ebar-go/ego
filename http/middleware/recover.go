@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/errors"
 	"github.com/ebar-go/ego/http/response"
@@ -17,7 +18,7 @@ func Recover(ctx *gin.Context) {
 				response.WrapContext(ctx).Error(err.Code, err.Message)
 
 			} else {
-				log.Error("system_error", log.Context{
+				app.Logger().Error("system_error", log.Context{
 					"error": r,
 					"trace": utils.Trace(),
 				})

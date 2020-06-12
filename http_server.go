@@ -2,8 +2,8 @@ package ego
 
 import (
 	"context"
+	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/event"
-	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/validator"
@@ -92,10 +92,11 @@ func (server *httpServer) Start(args ...int) error {
 
 // parseArgs
 func parseArgs(args ...int) int {
-	port := config.Server().Port
+	// 读取第一个参数为port
+	port := app.Config().Server().Port
 	if len(args) == 1 {
 		port = args[0]
-		config.Server().Port = port
+		app.Config().Server().Port = port
 	}
 	return port
 }

@@ -2,8 +2,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
-	"log"
 	"net"
 	"strconv"
 )
@@ -14,19 +12,6 @@ const (
 
 type mysqlGroup struct {
 	Items map[string]mysql
-}
-
-// MysqlGroup 读取多条mysql配置项
-func MysqlGroup() *mysqlGroup {
-	group := new(mysqlGroup)
-	var items map[string]mysql
-	if err := viper.UnmarshalKey(mysqlKey, &items); err != nil {
-		log.Println("Read Mysql Config:", err.Error())
-		return group
-	}
-	group.Items = items
-
-	return group
 }
 
 // mysql Mysql的配置项

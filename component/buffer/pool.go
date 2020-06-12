@@ -1,4 +1,4 @@
-package curl
+package buffer
 
 import (
 	"bytes"
@@ -8,20 +8,20 @@ import (
 	"sync"
 )
 
-// Adapter buffer pool
-type Adapter struct {
-	pool sync.Pool
+// Pool buffer instance
+type Pool struct {
+	instance sync.Pool
 }
 
-// NewAdapter
-func NewAdapter() *Adapter {
-	return &Adapter{pool: sync.Pool{New: func() interface{} {
+// NewPool
+func NewPool() *Pool {
+	return &Pool{instance: sync.Pool{New: func() interface{} {
 		return bytes.NewBuffer(make([]byte, 4096))
 	}}}
 }
 
 // StringifyResponse return response body as string
-func (adapter *Adapter) StringifyResponse(response *http.Response) (string, error) {
+func (p *Pool) StringifyResponse(response *http.Response) (string, error) {
 	if response == nil {
 		return "", fmt.Errorf("response is empty")
 	}
@@ -30,11 +30,11 @@ func (adapter *Adapter) StringifyResponse(response *http.Response) (string, erro
 		return "", fmt.Errorf("response status code is:%d", response.StatusCode)
 	}
 
-	buffer := adapter.pool.Get().(*bytes.Buffer)
+	buffer := p.instance.Get().(*bytes.Buffer)
 	buffer.Reset()
 	defer func() {
 		if buffer != nil {
-			adapter.pool.Put(buffer)
+			p.instance.Put(buffer)
 			buffer = nil
 		}
 	}()

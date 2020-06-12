@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 	"net"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -30,14 +31,27 @@ type redisConfig struct {
 
 	// timeout, default 10 seconds
 	IdleTimeout time.Duration
+
+	Cluster string
 }
 
-// Options get redis options
+// Options 单机选项
 func (conf *redisConfig) Options() *redis.Options {
 	address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
 
 	return &redis.Options{
 		Addr:        address,
+		Password:    conf.Auth,
+		PoolSize:    conf.PoolSize,    // Redis连接池大小
+		MaxRetries:  conf.MaxRetries,  // 最大重试次数
+		IdleTimeout: conf.IdleTimeout, // 空闲链接超时时间
+	}
+}
+
+// ClusterOption 集群选项
+func (conf *redisConfig) ClusterOption() *redis.ClusterOptions {
+	return &redis.ClusterOptions{
+		Addrs: strings.Split(conf.Cluster, ","),
 		Password:    conf.Auth,
 		PoolSize:    conf.PoolSize,    // Redis连接池大小
 		MaxRetries:  conf.MaxRetries,  // 最大重试次数
@@ -52,6 +66,7 @@ const (
 	redisPoolSizeKey    = "redis.pool_size"
 	redisMaxRetriesKey  = "redis.max_retries"
 	redisIdleTimeoutKey = "redis.idle_timeout"
+	redisCluster = "redis.cluster"
 )
 
 func init() {
@@ -60,24 +75,4 @@ func init() {
 	viper.SetDefault(redisPoolSizeKey, 100)
 	viper.SetDefault(redisMaxRetriesKey, 3)
 	viper.SetDefault(redisIdleTimeoutKey, 5)
-}
-
-func Redis() (options *redisConfig) {
-	if err := container.Invoke(func(o *redisConfig) {
-		options = o
-	}); err != nil {
-		options = &redisConfig{
-			Host:        viper.GetString(redisHostKey),
-			Port:        viper.GetInt(redisPortKey),
-			Auth:        viper.GetString(redisPassKey),
-			PoolSize:    viper.GetInt(redisPoolSizeKey),
-			MaxRetries:  viper.GetInt(redisMaxRetriesKey),
-			IdleTimeout: time.Duration(viper.GetInt(redisIdleTimeoutKey)) * time.Second,
-		}
-
-		_ = container.Provide(func() *redisConfig {
-			return options
-		})
-	}
-	return
 }

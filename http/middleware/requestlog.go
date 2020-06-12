@@ -3,9 +3,9 @@ package middleware
 import (
 	"bytes"
 	"fmt"
+	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/config"
 	"github.com/ebar-go/ego/utils/conv"
 	"github.com/ebar-go/ego/utils/date"
 	"github.com/ebar-go/ego/utils/number"
@@ -49,16 +49,15 @@ func RequestLog(c *gin.Context) {
 	items["time_used"] = fmt.Sprintf("%v", time.Since(t))
 	items["header"] = c.Request.Header
 	items["trace_id"] = trace.Get()
-	log.Info("REQUEST INFO", items)
+	app.Logger().Info("REQUEST INFO", items)
 }
 
 // getResponseBody
 func getResponseBody(s string) string {
-	maxResponseSize := number.Min(len(s), config.Server().MaxResponseLogSize)
+	maxResponseSize := number.Min(len(s), app.Config().Server().MaxResponseLogSize)
 	res := make([]byte, maxResponseSize)
 	copy(res, s[:maxResponseSize])
 	return conv.Byte2Str(res)
-
 }
 
 // GetRequestBody 获取请求参数
