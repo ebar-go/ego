@@ -5,6 +5,7 @@ import (
 	"github.com/ebar-go/ego/component/buffer"
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/log"
+	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -12,59 +13,71 @@ import (
 	"net/http"
 )
 
-var (
-	Container = dig.New()
-	dbGroup   = make(map[string]*gorm.DB)
-)
+var container *dig.Container
 
 func init()  {
+	container = dig.New()
 	// 注入配置文件
-	_ = Container.Provide(config.New)
+	container.Provide(config.New)
 	// 注入http客户端
-	_ = Container.Provide(newHttpClient)
+	container.Provide(newHttpClient)
 	// 注入日志管理器
-	_ = Container.Provide(newLogger)
+	container.Provide(newLogger)
 	// 注入jwt组件
-	_ = Container.Provide(func(conf *config.Config) *auth.JwtAuth{
-		return auth.New(conf.Server().JwtSignKey)
-	})
-	_ = Container.Provide(func(conf *config.Config) *redis.Redis {
-		return &redis.Redis{
-			Options: conf.Redis().Options(),
-		}
-	})
-	_ = Container.Provide(buffer.NewPool)
+	container.Provide(newJwt)
+	// 注入bufferPool
+	container.Provide(buffer.NewPool)
+	// 注入redis组件
+	container.Provide(newRedis)
+	// 注入DB组件
+	container.Provide(newDB)
+
+}
+
+// Container 容器
+func Container() *dig.Container {
+	return container
 }
 
 // Config 配置文件
 func Config() (conf *config.Config)  {
-	_ = Container.Invoke(func(c *config.Config) {
+	_ = container.Invoke(func(c *config.Config) {
 		conf = c
 	})
 	return
 }
 
 // Redis get redis connection
-func Redis() (connection *redis.Redis) {
-	_ = Container.Invoke(func(conn *redis.Redis) {
-		connection = conn
+func Redis() (client *redis.Client) {
+	_ = container.Invoke(func(cli *redis.Client) {
+		client = cli
 	})
 	return
 }
 
+// InitDB 初始化DB
+func InitDB() error  {
+	 return  container.Invoke(func(gm *mysql.GroupManager) error {
+		return gm.Connect()
+	})
+}
+
 // DB 返回数据库连接
 func DB() *gorm.DB {
-	return dbGroup["default"]
+	return GetDB("default")
 }
 
 // GetDB 通过名称获取数据库连接
-func GetDB(connectionName string) *gorm.DB {
-	return dbGroup[connectionName]
+func GetDB(name string) (conn *gorm.DB) {
+	_ = container.Invoke(func(gm *mysql.GroupManager) {
+		conn = gm.GetConnection(name)
+	})
+	return
 }
 
 // Http client
 func Http() (client *http.Client) {
-	_ = Container.Invoke(func(instance *http.Client) {
+	_ = container.Invoke(func(instance *http.Client) {
 		client = instance
 	})
 	return
@@ -73,7 +86,7 @@ func Http() (client *http.Client) {
 
 // Logger 日志管理器
 func Logger() (logger *log.Logger) {
-	_ = Container.Invoke(func(instance *log.Logger) {
+	_ = container.Invoke(func(instance *log.Logger) {
 		logger = instance
 	})
 	return
@@ -81,7 +94,7 @@ func Logger() (logger *log.Logger) {
 
 // Jwt jwt组件
 func Jwt() (jwt *auth.JwtAuth) {
-	_ = Container.Invoke(func(instance *auth.JwtAuth) {
+	_ = container.Invoke(func(instance *auth.JwtAuth) {
 		jwt = instance
 	})
 	return
@@ -90,7 +103,7 @@ func Jwt() (jwt *auth.JwtAuth) {
 
 // BufferPool buffer池
 func BufferPool() (pool *buffer.Pool) {
-	_ = Container.Invoke(func(instance *buffer.Pool) {
+	_ = container.Invoke(func(instance *buffer.Pool) {
 		pool = instance
 	})
 	return

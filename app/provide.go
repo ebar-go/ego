@@ -1,45 +1,15 @@
 package app
 
 import (
+	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/log"
+	"github.com/ebar-go/ego/component/mysql"
+	"github.com/ebar-go/ego/component/redis"
 	"net"
 	"net/http"
 	"time"
 )
-
-
-// InitDB 初始化DB
-func InitDB() error {
-	//dialect := "mysql"
-	//group := config.MysqlGroup()
-	//if group.Items == nil {
-	//	return fmt.Errorf("mysql config is empty")
-	//}
-	//
-	//for name, item := range group.Items {
-	//	dataSourceItems := item.DsnItems()
-	//
-	//	adapter, err := mysql.NewReadWriteAdapter(dialect, dataSourceItems)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	adapter.SetMaxIdleConns(item.MaxIdleConnections)
-	//	adapter.SetMaxOpenConns(item.MaxOpenConnections)
-	//	adapter.SetConnMaxLifetime(time.Duration(item.MaxLifeTime) * time.Second)
-	//
-	//	conn, err := gorm.Open(dialect, adapter)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	dbGroup[name] = conn
-	//}
-	//
-	//event.Trigger(event.AfterDatabaseConnect, nil)
-
-	return nil
-}
 
 // newHttpClient
 func newHttpClient(conf *config.Config) *http.Client {
@@ -65,4 +35,19 @@ func newLogger (conf *config.Config) *log.Logger {
 		map[string]interface{}{
 			"system_name": conf.Server().Name,
 		})
+}
+
+// newJwt
+func newJwt(conf *config.Config) *auth.JwtAuth {
+	return auth.New(conf.Server().JwtSignKey)
+}
+
+// newDB
+func newDB(conf *config.Config) *mysql.GroupManager{
+	return mysql.New(conf.Mysql())
+}
+
+// newRedis
+func newRedis(conf *config.Config) *redis.Client{
+	return redis.New(conf.Redis())
 }

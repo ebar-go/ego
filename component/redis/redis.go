@@ -2,35 +2,41 @@ package redis
 
 import (
 	goredis "github.com/go-redis/redis"
+	"log"
 )
 
-type Redis struct {
-	Options *goredis.Options
-	*goredis.Client
+// Client
+type Client struct {
+	conf *Config
+	goredis.UniversalClient
+}
+
+func New(conf *Config) *Client {
+	return &Client{conf:conf}
 }
 
 
-func (redis *Redis) Connect() error {
-	connection := goredis.NewClient(redis.Options)
+// Connect 单点连接
+func (client *Client) Connect() error {
+	connection := goredis.NewClient(client.conf.Options())
 	_, err := connection.Ping().Result()
 	if err != nil {
 		return err
 	}
-	redis.Client = connection
+	log.Printf("redis connect success:%s", client.conf.Host)
+	client.UniversalClient = connection
 	return nil
 }
 
-type RedisCluster struct {
-	Options *goredis.ClusterOptions
-	*goredis.ClusterClient
-}
-
-func (redis *RedisCluster) Connect() error {
-	connection := goredis.NewClusterClient(redis.Options)
+// ConnectCluster 连接集群
+func (client *Client) ConnectCluster() error {
+	connection := goredis.NewClusterClient(client.conf.ClusterOption())
 	_, err := connection.Ping().Result()
 	if err != nil {
 		return err
 	}
-	redis.ClusterClient = connection
+	log.Printf("redis connect success:%s", client.conf.Cluster)
+	client.UniversalClient = connection
+
 	return nil
 }

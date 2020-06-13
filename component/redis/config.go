@@ -1,19 +1,15 @@
-package config
+package redis
 
 import (
 	"github.com/go-redis/redis"
-	"github.com/spf13/viper"
 	"net"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// redisConfig redis配置
-type redisConfig struct {
-	// AutoConnect
-	AutoConnect bool
-
+// Config Redis配置
+type Config struct {
 	// host
 	Host string
 
@@ -32,11 +28,12 @@ type redisConfig struct {
 	// timeout, default 10 seconds
 	IdleTimeout time.Duration
 
+	// 集群
 	Cluster string
 }
 
 // Options 单机选项
-func (conf *redisConfig) Options() *redis.Options {
+func (conf *Config) Options() *redis.Options {
 	address := net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port))
 
 	return &redis.Options{
@@ -49,7 +46,7 @@ func (conf *redisConfig) Options() *redis.Options {
 }
 
 // ClusterOption 集群选项
-func (conf *redisConfig) ClusterOption() *redis.ClusterOptions {
+func (conf *Config) ClusterOption() *redis.ClusterOptions {
 	return &redis.ClusterOptions{
 		Addrs: strings.Split(conf.Cluster, ","),
 		Password:    conf.Auth,
@@ -57,22 +54,4 @@ func (conf *redisConfig) ClusterOption() *redis.ClusterOptions {
 		MaxRetries:  conf.MaxRetries,  // 最大重试次数
 		IdleTimeout: conf.IdleTimeout, // 空闲链接超时时间
 	}
-}
-
-const (
-	redisHostKey        = "redis.host"
-	redisPortKey        = "redis.port"
-	redisPassKey        = "redis.pass"
-	redisPoolSizeKey    = "redis.pool_size"
-	redisMaxRetriesKey  = "redis.max_retries"
-	redisIdleTimeoutKey = "redis.idle_timeout"
-	redisCluster = "redis.cluster"
-)
-
-func init() {
-	viper.SetDefault(redisHostKey, "127.0.0.1")
-	viper.SetDefault(redisPortKey, 6379)
-	viper.SetDefault(redisPoolSizeKey, 100)
-	viper.SetDefault(redisMaxRetriesKey, 3)
-	viper.SetDefault(redisIdleTimeoutKey, 5)
 }

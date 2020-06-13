@@ -1,4 +1,4 @@
-package config
+package mysql
 
 import (
 	"fmt"
@@ -6,16 +6,8 @@ import (
 	"strconv"
 )
 
-const (
-	mysqlKey = "mysql"
-)
-
-type mysqlGroup struct {
-	Items map[string]mysql
-}
-
-// mysql Mysql的配置项
-type mysql struct {
+// Config Mysql的配置项
+type Config struct {
 	// 表前缀
 	TablePrefix string `mapstructure:"tablePrefix"`
 
@@ -36,28 +28,26 @@ type mysql struct {
 type DataSource struct {
 	// host
 	Host string `mapstruture:"host"`
-
 	// 端口号
 	Port int `mapstructure:"port"`
-
 	// 用户名
 	User string `mapstructure:"user"`
-
 	// 密码
 	Password string `mapstructure:"password"`
-
 	// 数据库名称
 	Name string `mapstructure:"name"`
 }
 
+
 // DsnItems 获取全部dsn资源
-func (conf mysql) DsnItems() []string {
+func (conf Config) DsnItems() []string {
 	var items []string
 	for _, dsn := range conf.DataSources {
 		items = append(items, dsn.dsn())
 	}
 	return items
 }
+
 
 // Dsn return mysql dsn
 func (conf DataSource) dsn() string {
