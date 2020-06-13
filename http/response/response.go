@@ -2,9 +2,12 @@ package response
 
 import (
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/constant"
 	"github.com/ebar-go/ego/http/pagination"
 	"github.com/ebar-go/ego/utils/strings"
+)
+
+const(
+	prefix = "request:"
 )
 
 // Response 数据结构体
@@ -34,7 +37,7 @@ func (r *response) Reset() {
 	r.Data = nil
 	r.Meta = Meta{
 		Trace: Trace{
-			RequestId: constant.RequestIdPrefix + strings.UUID(),
+			RequestId: prefix + strings.UUID(),
 			TraceId:   trace.Get(),
 		},
 	}

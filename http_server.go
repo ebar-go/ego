@@ -2,6 +2,7 @@ package ego
 
 import (
 	"context"
+	"fmt"
 	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/http/handler"
@@ -76,6 +77,8 @@ func (server *httpServer) Start(args ...int) error {
 		Handler: server.Router,
 	}
 	go func() {
+		fmt.Printf("server start: %s\n", completeHost)
+
 		// service connections
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen:%s\n", err)

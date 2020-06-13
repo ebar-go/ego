@@ -24,5 +24,5 @@ func TestNewServer(t *testing.T) {
 	//utils.FatalError("ReadFromFile", config.ReadFromFile(filepath.Dir(fileStr) + "/../config/app.yaml"))
 
 	//_ = event.DefaultDispatcher().Trigger(app.RedisConnectEvent, nil)
-	secure.FatalError("StartHttpServer", s.Start())
+	secure.FatalError("StartHttpServer", s.Start(8080))
 }

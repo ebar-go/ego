@@ -1,7 +1,6 @@
 package trace
 
 import (
-	"github.com/ebar-go/ego/constant"
 	"github.com/ebar-go/ego/utils/strings"
 	"github.com/petermattis/goid"
 	"sync"
@@ -12,8 +11,12 @@ var (
 	rwm      sync.RWMutex
 )
 
+const(
+	prefix = "trace:"
+)
+
 func Id() string {
-	return constant.TraceIdPrefix + strings.UUID()
+	return prefix + strings.UUID()
 }
 
 // SetTraceId

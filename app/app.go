@@ -6,7 +6,6 @@ import (
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/redis"
-	"github.com/ebar-go/ego/constant"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"go.uber.org/dig"
@@ -55,7 +54,7 @@ func Redis() (connection *redis.Redis) {
 
 // DB 返回数据库连接
 func DB() *gorm.DB {
-	return dbGroup[constant.MysqlDefaultConnection]
+	return dbGroup["default"]
 }
 
 // GetDB 通过名称获取数据库连接

@@ -3,7 +3,6 @@ package log
 import (
 	"github.com/ebar-go/ego/component/trace"
 	"go.uber.org/zap"
-	"sync"
 )
 
 type Context map[string]interface{}
@@ -38,7 +37,6 @@ type Logger struct {
 	debug bool
 	fields map[string]interface{}
 	instance *zap.Logger
-	once *sync.Once
 }
 
 // getInstance init logger instance
@@ -47,7 +45,7 @@ func New(logPath string, debug bool, fields map[string]interface{}) *Logger {
 	logger.path = logPath
 	logger.debug = debug
 	logger.fields = fields
-	logger.once.Do(logger.init)
+	logger.init()
 
 	return logger
 
