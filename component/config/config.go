@@ -24,9 +24,9 @@ const (
 	redisHostKey        = "redis.host"
 	redisPortKey        = "redis.port"
 	redisPassKey        = "redis.pass"
-	redisPoolSizeKey    = "redis.pool_size"
-	redisMaxRetriesKey  = "redis.max_retries"
-	redisIdleTimeoutKey = "redis.idle_timeout"
+	redisPoolSizeKey    = "redis.poolSize"
+	redisMaxRetriesKey  = "redis.maxRetries"
+	redisIdleTimeoutKey = "redis.idleTimeout"
 	redisCluster = "redis.cluster"
 )
 
@@ -81,6 +81,7 @@ func New() *Config  {
 
 
 func (conf *Config) setDefault() {
+	conf.AutomaticEnv()
 	conf.SetDefault(systemNameKey, "app")
 	conf.SetDefault(httpPortKey, 8080)
 	conf.SetDefault(maxResponseLogSizeKey, 2000)

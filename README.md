@@ -3,13 +3,10 @@
 
 ## 特性
 - 集成http,websocket服务。
-- 提供强大的日志管理器，支持按日期自动分割。
 - 丰富的中间件(请求日志、JWT认证,跨域,Recover,全局链路)
+- 通过依赖注入的方式，动态加载基础组件。包括配置，日志管理器，Redis,Mysql等
 - 支持基于consul,etcd的服务注册、发现、注销
-- 基于gorm扩展的支持多库连接，读写分离的mysql组件
-- redis组件
 - 自定义参数验证器
-- 配置文件,支持json,ini,yaml等格式
 
 ## 安装
 
@@ -37,6 +34,9 @@ func main() {
     server.Router.GET("/test", func(context *gin.Context) {
         fmt.Println("hello,world")
     })
+    // 默认启动8080
+    // 也可以通过传参指定端口启动,如: server.Start(8081)
+    // 如果不传参，则读取配置文件中的 server.port配置项
     secure.Panic(server.Start())
 }
 // 支持平滑重启
@@ -96,16 +96,18 @@ func main() {
 集成[https://github.com/spf13/viper](https://github.com/spf13/viper)
 ```go
 // 加载配置文件
-config.ReadFromFile(configFilePath)
-// 读取配置
-fmt.Println(viper.GetString("someKey"))
+app.Config().LoadFile("app.yaml")
+// 读取string配置
+app.Config().GetString("someKey")
+// 读取int配置
+app.Config().GetInt("someKey")
 ```
 
 #### 发起http请求
 ```go
 url := "http://baidu.com"
 request,_ := http.NewRequest(http.MethodGet, url, nil)
-resp, err := curl.Execute(request)
+resp, err := ego.Curl(request)
 fmt.Println(resp, err)
 ```
 
@@ -117,7 +119,7 @@ server := ego.HttpServer()
 // Recover middleware
 server.Router.Use(middleware.Recover)
 // JWT middleware,make sure Config.JwtKey is not empty
-server.Router.Use(middleware.JWT)
+server.Router.Use(middleware.JWT(&jwt.StandClaims{}))
 // CORS middleware
 server.Router.Use(middleware.CORS)
 // RequestLog middleware
@@ -165,13 +167,13 @@ import (
  "github.com/ebar-go/ego/component/log"
 )
 // 输出：{"level_name":"info","datetime":"2020-06-03 22:52:49","file":"log/log.go:24","message":"Info","system_name":"app","system_port":8080,"context":{"hello":"world","trace_id":""}}
-log.Info("infoMessage", log.Context{
+app.Logger().Info("infoMessage", log.Context{
   "hello":"world",
 })
-log.Debug("debugMessage", log.Context{
+app.Logger().Debug("debugMessage", log.Context{
   "hello":"world",
 })
-log.Error("errorMessage", log.Context{
+app.Logger().Error("errorMessage", log.Context{
   "hello":"world",
 })
 ```
@@ -225,6 +227,29 @@ if err := app.DB().Transaction(func(tx *gorm.Db) error {
     // 
     return fmt.Errorf("Save failed:%v", err)
 }
+```
+
+#### Redis
+配置如下：
+```yaml
+redis:
+  host: 127.0.0.1
+  pass: 
+  port: 6379
+  poolSize: 100   # 连接池大小
+  maxRetries: 3   # 重试次数
+  idleTimeout: 3  # 操作时间
+  cluster:        # 集群(如：127.0.0.1:6379,127.0.0.1:6380)
+```
+
+调用：
+```go
+// 连接
+app.Redis().Connect()
+// 写入
+app.Redis().Set("hello", "world", time.Second * 30)
+// 读取
+res := app.Redis().Get("hello").String()
 ```
 
 ### 事件
