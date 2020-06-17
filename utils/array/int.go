@@ -78,3 +78,25 @@ func (s IntSlice) Sum() int {
 
 	return total
 }
+
+// Max return max number
+func (s IntSlice) Max() int {
+	max := 0
+	for _, n := range s.items {
+		if n > max {
+			max = n
+		}
+	}
+	return max
+}
+
+// Min return min number
+func (s IntSlice) Min() int {
+	min := 0
+	for _, n := range s.items {
+		if n < min {
+			min = n
+		}
+	}
+	return min
+}

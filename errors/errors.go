@@ -12,15 +12,9 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-const (
-	MysqlConnectFailedCode = 1001
-	RedisConnectFailedCode = 1002
-)
-
 // Error string
 func (e *Error) Error() string {
-	s, _ := json.Encode(e)
-	return s
+	return e.Message
 }
 
 // New

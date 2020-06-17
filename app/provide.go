@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/config"
+	"github.com/ebar-go/ego/component/etcd"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
@@ -50,4 +51,8 @@ func newDB(conf *config.Config) *mysql.GroupManager{
 // newRedis
 func newRedis(conf *config.Config) *redis.Client{
 	return redis.New(conf.Redis())
+}
+
+func newEtcd(conf *config.Config) *etcd.Client  {
+	return etcd.New(conf.Etcd())
 }

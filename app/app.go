@@ -4,6 +4,7 @@ import (
 	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/buffer"
 	"github.com/ebar-go/ego/component/config"
+	"github.com/ebar-go/ego/component/etcd"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
@@ -18,20 +19,21 @@ var container *dig.Container
 func init()  {
 	container = dig.New()
 	// 注入配置文件
-	container.Provide(config.New)
+	_ = container.Provide(config.New)
 	// 注入http客户端
-	container.Provide(newHttpClient)
+	_ = container.Provide(newHttpClient)
 	// 注入日志管理器
-	container.Provide(newLogger)
+	_ = container.Provide(newLogger)
 	// 注入jwt组件
-	container.Provide(newJwt)
+	_ = container.Provide(newJwt)
 	// 注入bufferPool
-	container.Provide(buffer.NewPool)
+	_ = container.Provide(buffer.NewPool)
 	// 注入redis组件
-	container.Provide(newRedis)
+	_ = container.Provide(newRedis)
 	// 注入DB组件
-	container.Provide(newDB)
-
+	_ = container.Provide(newDB)
+	// 注入etcd主键
+	_ = container.Provide(newEtcd)
 }
 
 // Container 容器
@@ -105,6 +107,14 @@ func Jwt() (jwt *auth.JwtAuth) {
 func BufferPool() (pool *buffer.Pool) {
 	_ = container.Invoke(func(instance *buffer.Pool) {
 		pool = instance
+	})
+	return
+}
+
+// Etcd
+func Etcd() (client *etcd.Client)  {
+	_ = container.Invoke(func(instance *etcd.Client) {
+		client = instance
 	})
 	return
 }

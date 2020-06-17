@@ -4,9 +4,7 @@ Apollo配置初始化、监听配置变动、获取配置
 package apollo
 
 import (
-	"github.com/ebar-go/event"
 	"github.com/zouyx/agollo"
-	"os"
 )
 
 // Conf apollo config
@@ -31,21 +29,6 @@ const (
 	loadEnvironmentEvent = "APOLLO_LOAD_ENVIRONMENT"
 )
 
-func init() {
-	// register environment load event
-	event.DefaultDispatcher().Register(loadEnvironmentEvent, event.Listener{
-		Handle: func(ev event.Event) {
-			cache := agollo.GetApolloConfigCache().NewIterator()
-			for {
-				item := cache.Next()
-				if item == nil {
-					break
-				}
-				_ = os.Setenv(string(item.Key), string(item.Value))
-			}
-		},
-	})
-}
 
 // Init
 func Init(conf Conf) error {
@@ -63,7 +46,6 @@ func Init(conf Conf) error {
 		return err
 	}
 
-	_ = event.DefaultDispatcher().Trigger(loadEnvironmentEvent, nil)
 	return nil
 }
 

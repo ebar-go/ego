@@ -14,11 +14,11 @@ func NewObj() (*Obj, error) {
 }
 
 func TestProvide(t *testing.T)  {
-	err := Container.Provide(NewObj)
+	err := Container().Provide(NewObj)
 	fmt.Println("err:",err)
 
 	// 当构造函数NewObj返回err时，provide不会立刻报错，而是再invoke得时候报错
-	err1 := Container.Invoke(func(obj *Obj) {
+	err1 := Container().Invoke(func(obj *Obj) {
 		fmt.Println(obj.Number)
 	})
 	fmt.Println("err1:", err1)

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/ebar-go/ego/component/etcd"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/spf13/viper"
@@ -28,6 +29,9 @@ const (
 	redisMaxRetriesKey  = "redis.maxRetries"
 	redisIdleTimeoutKey = "redis.idleTimeout"
 	redisCluster = "redis.cluster"
+
+	etcdEndpoints = "etcd.endpoints"
+	etcdTimeout = "etcd.timeout"
 )
 
 
@@ -39,6 +43,7 @@ type Config struct {
 	server *serverConf
 	mysql map[string]mysql.Config
 	redis *redis.Config
+	etcd *etcd.Config
 	mu *sync.Mutex
 }
 
@@ -158,4 +163,16 @@ func (conf *Config) Redis() (*redis.Config){
 	}
 	return conf.redis
 
+}
+
+// etcd
+func (conf *Config) Etcd() *etcd.Config {
+	if conf.etcd == nil {
+		conf.mu.Lock()
+		defer conf.mu.Unlock()
+		conf.etcd = &etcd.Config{
+			Endpoints: conf.GetStringSlice(etcdEndpoints),
+			Timeout:   conf.GetInt(etcdTimeout),
+		}
+	}
 }
