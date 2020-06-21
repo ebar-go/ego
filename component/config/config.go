@@ -175,4 +175,5 @@ func (conf *Config) Etcd() *etcd.Config {
 			Timeout:   conf.GetInt(etcdTimeout),
 		}
 	}
+	return conf.etcd
 }
