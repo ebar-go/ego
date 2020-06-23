@@ -10,6 +10,7 @@ package etcd
 
 import (
 	client "go.etcd.io/etcd/clientv3"
+	"log"
 	"time"
 )
 
@@ -30,6 +31,9 @@ func (c *Client) Connect() error  {
 		Endpoints: c.conf.Endpoints,
 		DialTimeout: time.Second * time.Duration(c.conf.Timeout),
 	})
+	if err == nil {
+		log.Println("Connect Etcd success:", c.conf.Endpoints)
+	}
 	return err
 }
 

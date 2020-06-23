@@ -23,7 +23,7 @@ func (client *Client) Connect() error {
 	if err != nil {
 		return err
 	}
-	log.Printf("redis connect success:%s", client.conf.Host)
+	log.Println("Connect redis success:", client.conf.Host)
 	client.UniversalClient = connection
 	return nil
 }
@@ -35,7 +35,7 @@ func (client *Client) ConnectCluster() error {
 	if err != nil {
 		return err
 	}
-	log.Printf("redis connect success:%s", client.conf.Cluster)
+	log.Println("Connect redis cluster success:", client.conf.Cluster)
 	client.UniversalClient = connection
 
 	return nil

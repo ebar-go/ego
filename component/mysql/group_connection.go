@@ -40,10 +40,10 @@ func (gm *GroupManager) Connect() error {
 		if err := adapter.Ping(); err != nil {
 			return err
 		}
+		log.Println("Connect mysql success:", name)
 		gm.connections[name] = conn
 	}
 
-	log.Printf("mysql connect success")
 
 	return nil
 }
