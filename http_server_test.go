@@ -12,17 +12,10 @@ func TestNewServer(t *testing.T) {
 	s := HttpServer()
 
 	s.Router.Use(middleware.Favicon, middleware.RequestLog, middleware.Recover)
-	s.Router.GET("/check", func(context *gin.Context) {
+	s.Router.Any("/check", func(context *gin.Context) {
 		response.WrapContext(context).Success("hello")
 	})
 
-	s.Router.GET("/error", func(context *gin.Context) {
-		panic("err")
-	})
-	//_, fileStr, _, _ := runtime.Caller(0)
-	//
-	//utils.FatalError("ReadFromFile", config.ReadFromFile(filepath.Dir(fileStr) + "/../config/app.yaml"))
 
-	//_ = event.DefaultDispatcher().Trigger(app.RedisConnectEvent, nil)
 	secure.FatalError("StartHttpServer", s.Start(8080))
 }

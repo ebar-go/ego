@@ -20,14 +20,14 @@ func NewPool() *Pool {
 	}}}
 }
 
-// StringifyResponse return response body as string
-func (p *Pool) StringifyResponse(response *http.Response) (string, error) {
+// ReadResponse read http response
+func (p *Pool) ReadResponse(response *http.Response) ([]byte, error) {
 	if response == nil {
-		return "", fmt.Errorf("response is empty")
+		return nil, fmt.Errorf("response is empty")
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("response status code is:%d", response.StatusCode)
+		return nil, fmt.Errorf("response status code is:%d", response.StatusCode)
 	}
 
 	buffer := p.instance.Get().(*bytes.Buffer)
@@ -41,8 +41,8 @@ func (p *Pool) StringifyResponse(response *http.Response) (string, error) {
 	_, err := io.Copy(buffer, response.Body)
 
 	if err != nil {
-		return "", fmt.Errorf("failed to read respone:%s", err.Error())
+		return nil, fmt.Errorf("failed to read respone:%s", err.Error())
 	}
 
-	return buffer.String(), nil
+	return buffer.Bytes(), nil
 }
