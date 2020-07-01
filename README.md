@@ -103,7 +103,7 @@ app.Config().GetString("someKey")
 app.Config().GetInt("someKey")
 ```
 
-#### 发起http请求
+### 发起http请求
 提供调用方便且具有高扩展性的http请求模块。
 ```go
 import (
@@ -111,31 +111,35 @@ import (
  "fmt"
 )
 func main() {
-address := "http://localhost:8080/check"
-response, err := curl.Get(address) // Get请求
-response, err := curl.Post(address, nil) // Post请求
-response, err := curl.Put(address, nil) // Put请求
-response, err := curl.Patch(address, nil) // Patch请求
-response, err := curl.Delete(address) // Delete请求
-if err != nil {
-  panic(err)
-}
-fmt.Println(response.String()) // 获取string类型的响应内容
-fmt.Println(response.Byte()) // 获取byte类型的响应内容
-// 支持json绑定对象
-respObj := struct {
+    address := "http://localhost:8080/check"
+    response, err := curl.Get(address) // Get请求
+    response, err := curl.Post(address, nil) // Post请求
+    response, err := curl.Put(address, nil) // Put请求
+    response, err := curl.Patch(address, nil) // Patch请求
+    response, err := curl.Delete(address) // Delete请求
+    if err != nil {
+      panic(err)
+    }
+    fmt.Println(response.String()) // 获取string类型的响应内容
+    fmt.Println(response.Byte()) // 获取byte类型的响应内容
+    // 支持json绑定对象
+    respObj := struct {
 		Code int `json:"status_code"`
 		Message string `json:"message"`
 	}{}
-fmt.Println(response.BindJson(&respObj)) 
+    fmt.Println(response.BindJson(&respObj)) 
 }
-// 如果需要自定义请求
-request := NewRequest("xxx", address, nil)
-	if err := request.Err(); err != nil {
-		t.Fatal(request.Err())
-	}
-	request.Header.Set("token", "123")
-	response, err := request.Send()
+
+func CustomHttpRequest()  {
+    // 如果需要自定义请求
+	request := NewRequest("xxx", address, nil)
+ 	if err := request.Err(); err != nil {
+ 		panic(err)
+ 	}
+    // 设置token什么的
+ 	request.Header.Set("token", "123")
+ 	response, err := request.Send() // 发起请求
+}
 ```
 
 #### 中间件
