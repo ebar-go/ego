@@ -39,10 +39,3 @@ func GetTimeStamp() int64 {
 func GetMicroTimeStampStr() string {
 	return fmt.Sprintf("%.6f", float64(GetTime().UnixNano())/1e9)
 }
-
-// GetDateTime
-func GetDateTime(day string) time.Time {
-	completeTime := day + " 00:00:00"
-	dayTime, _ := time.ParseInLocation(TimeFormat, completeTime, GetLocalTimeZone())
-	return dayTime
-}

@@ -1,9 +1,7 @@
 package array
 
 import (
-	"fmt"
 	"strconv"
-	"strings"
 )
 
 // StringSlice
@@ -43,7 +41,10 @@ func (s StringSlice) Unique() []string {
 func (s StringSlice) ToInt() []int {
 	result := make([]int, 0, len(s.items))
 	for _, item := range s.items {
-		i, _ := strconv.Atoi(item)
+		i, err := strconv.Atoi(item)
+		if err != nil {
+			continue
+		}
 		result = append(result, i)
 	}
 	return result
@@ -51,7 +52,7 @@ func (s StringSlice) ToInt() []int {
 
 // Implode
 func (s StringSlice) Implode(separator string) string {
-	return strings.Replace(strings.Trim(fmt.Sprint(s.items), "[]"), " ", separator, -1)
+	return Implode(s.items, separator)
 }
 
 // Items

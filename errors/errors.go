@@ -30,6 +30,15 @@ func Format(code int, format string, v ...interface{}) *Error {
 	return New(code, fmt.Sprintf(format, v...))
 }
 
+// With
+func With(msg string, err error) *Error {
+	if e, ok := err.(*Error); ok {
+		e.Message = fmt.Sprintf("%s:%s", msg, e.Message)
+		return e
+	}
+	return InternalServer(fmt.Sprintf("%s:%s", msg, err.Error()))
+}
+
 // Parse tries to parse a JSON string into an error. If that
 // fails, it will set the given string as the error detail.
 func Parse(errStr string) *Error {

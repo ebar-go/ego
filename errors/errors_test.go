@@ -2,7 +2,6 @@ package errors
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -24,4 +23,9 @@ func TestParse(t *testing.T) {
 
 	errParse := Parse(err.Error())
 	assert.Error(t, errParse)
+}
+
+func TestWith(t *testing.T) {
+	err := With("some failed", fmt.Errorf("test"))
+	fmt.Println(err.Error())
 }

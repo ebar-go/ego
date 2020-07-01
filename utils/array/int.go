@@ -1,9 +1,7 @@
 package array
 
 import (
-	"fmt"
 	"strconv"
-	"strings"
 )
 
 // IntSlice
@@ -50,7 +48,7 @@ func (s IntSlice) ToString() []string {
 
 // Implode
 func (s IntSlice) Implode(separator string) string {
-	return strings.Replace(strings.Trim(fmt.Sprint(s.items), "[]"), " ", separator, -1)
+	return Implode(s.items, separator)
 }
 
 // Items

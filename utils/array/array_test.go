@@ -1,6 +1,7 @@
 package array
 
 import (
+	"fmt"
 	"github.com/magiconair/properties/assert"
 	"testing"
 )
@@ -37,4 +38,14 @@ func TestString(t *testing.T) {
 	a.Push("2")
 	assert.Equal(t, a.Length(), len(s)+1)
 	assert.Equal(t, a.Unique(), s)
+}
+
+func TestExplode(t *testing.T) {
+	str := Implode( getIntItems(), ",")
+	fmt.Println(str)
+
+	items := Explode(str, ",")
+	fmt.Println(items)
+	assert.Equal(t, getIntItems(), items.ToInt())
+	assert.Equal(t, str, items.Implode(","))
 }
