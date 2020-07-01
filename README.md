@@ -134,7 +134,7 @@ func main() {
 
 func CustomHttpRequest()  {
     // 如果需要自定义请求
-	request := NewRequest("xxx", address, nil)
+	request := NewRequest("POST", address, nil)
  	if err := request.Err(); err != nil {
  		panic(err)
  	}
