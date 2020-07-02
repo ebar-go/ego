@@ -49,17 +49,17 @@ LP+kNrupW4Eue8riBhHpfvE=
 `)
 
 func TestRsaEncrypt(t *testing.T) {
-	str := "Hello hero"
+	str := "Hello xxx"
 	encrypt, err := RsaEncrypt(publicKey, []byte(str))
 	base64Encode := Base64Encode(encrypt)
 	fmt.Println(err, base64Encode)
 
-	decrypt, err := RsaDecryptPkcs8(privateKey, encrypt)
+	decrypt, err := RsaDecrypt(privateKey, Base64Decode(base64Encode))
 	fmt.Println(string(decrypt), err)
 }
 
 func TestRsaDecrypt(t *testing.T) {
 	encrypt := "duMC1gD8VgX7AuGktqVH28F4vwBej2f2S5AVOxkdxuZyUnVjuoysDqvjj7MH602uIsvPaN3JpWVbKWBAh8/aBaAXLcy1K9mgN/q/ih5YBnwE304n/lFdvndo6V0qAZAeACxLot7xHq1/QcaoKD0K7RZE2kpHT2uYNYqPvvzz/ILC+iebbO3MPM6XfF1X4CgcgAf0N6nnASZATu5ik3HcCQ1gagllk5THWzi4BJRsKob0ncU5SLtJktK6r7qsOqP7RtuE1/OzT9sU6oNQkUgpndVkscXXnXeHzaMSZzorlxd9FLjYkZICCPRVCehXp3FSthbcnXl2tv1TxnRJ8AGp8g=="
-	decrypt, err := RsaDecryptPkcs8(privateKey, Base64Decode(encrypt))
+	decrypt, err := RsaDecrypt(privateKey, Base64Decode(encrypt))
 	fmt.Println(string(decrypt), err)
 }

@@ -34,6 +34,7 @@ func (c *Client) Connect() error  {
 	if err == nil {
 		log.Println("Connect Etcd success:", c.conf.Endpoints)
 	}
+
 	return err
 }
 
