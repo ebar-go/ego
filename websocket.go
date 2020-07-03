@@ -113,6 +113,10 @@ type websocketConn struct {
 	websocketServer *websocketServer
 }
 
+func (c *websocketConn) GetID() string {
+	 return c.ID
+}
+
 
 // close
 func (c *websocketConn) close() {
