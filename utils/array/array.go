@@ -1,35 +1,23 @@
 package array
 
-import "strconv"
+import (
+	"fmt"
+	"strings"
+)
 
-// UniqueInt remove duplicate elements
-func UniqueInt(items []int) []int {
-	result := make([]int, 0, len(items))
-	temp := map[int]struct{}{}
-	for _, item := range items {
-		if _, ok := temp[item]; !ok {
-			temp[item] = struct{}{}
-			result = append(result, item)
-		}
-	}
-	return result
+// Array interface
+type Array interface {
+	Implode(separator string) string
+	Length() int
 }
 
-// Int2String return strings slice
-func Int2String(items []int) []string {
-	result := make([]string, 0, len(items))
-	for _, item := range items {
-		result = append(result, strconv.Itoa(item))
-	}
-	return result
+
+// Implode concat items by the given separator
+func Implode( items interface{}, separator string) string {
+	return strings.Replace(strings.Trim(fmt.Sprint(items), "[]"), " ", separator, -1)
 }
 
-// Int2Interface return interface slice
-func Int2Interface(items []int) []interface{} {
-	var interfaceSlice = make([]interface{}, len(items))
-	for i, d := range items {
-		interfaceSlice[i] = d
-	}
-
-	return interfaceSlice
+// Explode split string with separator
+func Explode(str, separator string) StringSlice {
+	return String(strings.Split(str, separator))
 }

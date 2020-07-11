@@ -12,23 +12,31 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-const(
-	MysqlConnectFailedCode = 1001
-	RedisConnectFailedCode = 1002
-)
-
 // Error string
 func (e *Error) Error() string {
-	s, _ := json.Encode(e)
-	return s
+	return e.Message
 }
 
 // New
-func New( code int, message string) *Error {
+func New(code int, message string) *Error {
 	return &Error{
 		Code:    code,
 		Message: message,
 	}
+}
+
+// Format 格式化输出
+func Format(code int, format string, v ...interface{}) *Error {
+	return New(code, fmt.Sprintf(format, v...))
+}
+
+// With
+func With(msg string, err error) *Error {
+	if e, ok := err.(*Error); ok {
+		e.Message = fmt.Sprintf("%s:%s", msg, e.Message)
+		return e
+	}
+	return InternalServer(fmt.Sprintf("%s:%s", msg, err.Error()))
 }
 
 // Parse tries to parse a JSON string into an error. If that
@@ -72,14 +80,3 @@ func Timeout(format string, v ...interface{}) *Error {
 func InternalServer(format string, v ...interface{}) *Error {
 	return New(http.StatusInternalServerError, fmt.Sprintf(format, v...))
 }
-
-// MysqlConnectFailed
-func MysqlConnectFailed(format string, v ...interface{}) *Error {
-	return New(MysqlConnectFailedCode, fmt.Sprintf(format, v...))
-}
-
-// RedisConnectFailed
-func RedisConnectFailed(format string, v ...interface{}) *Error {
-	return New(RedisConnectFailedCode, fmt.Sprintf(format, v...))
-}
-

@@ -1,8 +1,8 @@
 package date
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
 const (
@@ -12,8 +12,12 @@ const (
 
 // GetTime return current local time
 func GetTime() time.Time {
-	var cstZone = time.FixedZone("CST", 8*3600) // UTC+8
-	return time.Now().In(cstZone)
+	return time.Now().In(GetLocalTimeZone())
+}
+
+// GetLocalTimeZone
+func GetLocalTimeZone() *time.Location {
+	return time.FixedZone("CST", 8*3600) // UTC+8
 }
 
 // GetDateStr return current date string,eg: 2019-12-30
@@ -35,4 +39,3 @@ func GetTimeStamp() int64 {
 func GetMicroTimeStampStr() string {
 	return fmt.Sprintf("%.6f", float64(GetTime().UnixNano())/1e9)
 }
-

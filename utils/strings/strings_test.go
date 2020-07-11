@@ -6,17 +6,17 @@ import (
 )
 
 type Item struct {
-	Data interface{}
+	Data   interface{}
 	Expect string
 }
 
 var items = []Item{
 	{
-		Data:   []int{1,2,3},
+		Data:   []int{1, 2, 3},
 		Expect: "1,2,3",
 	},
 	{
-		Data:   []string{"hello","world"},
+		Data:   []string{"hello", "world"},
 		Expect: "hello,world",
 	},
 	{

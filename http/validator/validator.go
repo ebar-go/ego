@@ -1,19 +1,20 @@
 package validator
 
 import (
-	ut "github.com/go-playground/universal-translator"
-	"reflect"
-	"sync"
-	"github.com/go-playground/validator/v10"
 	"errors"
 	"github.com/go-playground/locales/zh"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 	zh_translations "github.com/go-playground/validator/v10/translations/zh"
+	"reflect"
+	"sync"
 )
 
 // trans use single pattern
-var trans = GetZhTranslator()
+var trans = zht()
 
-func GetZhTranslator() ut.Translator {
+// zht return a simple chinese translator
+func zht() ut.Translator {
 	//中文翻译器
 	zh_ch := zh.New()
 	uni := ut.New(zh_ch)
@@ -21,7 +22,7 @@ func GetZhTranslator() ut.Translator {
 	return trans
 }
 
-// Validator 自定义验证器
+// Validator
 type Validator struct {
 	once     sync.Once
 	validate *validator.Validate
@@ -38,7 +39,7 @@ func getKindOf(data interface{}) reflect.Kind {
 	return valueType
 }
 
-// ValidateStruct 验证
+// ValidateStruct validate struct
 func (v *Validator) ValidateStruct(obj interface{}) error {
 
 	if getKindOf(obj) == reflect.Struct {
@@ -56,24 +57,24 @@ func (v *Validator) ValidateStruct(obj interface{}) error {
 	return nil
 }
 
-// Engine 获取一个实例
+// Engine
 func (v *Validator) Engine() interface{} {
 	v.lazyInit()
 	return v.validate
 }
 
-// lazyInit 懒加载
+// lazyInit
 func (v *Validator) lazyInit() {
 	v.once.Do(func() {
 		v.validate = validator.New()
 		v.validate.SetTagName("binding")
 
-		// 自定义名称字段
+		// define filed name
 		v.validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 			return fld.Tag.Get("comment")
 		})
 
-		// 使用中文
+		// use zh-CN
 		_ = zh_translations.RegisterDefaultTranslations(v.validate, trans)
 	})
 }

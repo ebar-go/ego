@@ -2,33 +2,19 @@ package middleware
 
 import (
 	"errors"
-	"github.com/ebar-go/ego/component/auth"
-	"github.com/ebar-go/ego/config"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/gin-gonic/gin"
 	"strings"
-)
-
-const (
-	ClaimsKey = "jwt_claims"
 )
 
 var (
 	TokenNotExist = errors.New("token not exist")
 )
 
-// GetCurrentClaims 获取解析jwt后的信息
-func GetCurrentClaims(ctx *gin.Context) interface{} {
-	claims, exist := ctx.Get(ClaimsKey)
-	if !exist {
-		return nil
-	}
-
-	return claims
-}
-
 // validateToken 验证token
-func validateToken(ctx *gin.Context) error {
+func validateToken(ctx *gin.Context, claims jwt.Claims) error {
 	// 获取token
 	tokenStr := ctx.GetHeader("Authorization")
 	kv := strings.Split(tokenStr, " ")
@@ -36,25 +22,27 @@ func validateToken(ctx *gin.Context) error {
 		return TokenNotExist
 	}
 
-	claims, err := auth.New(config.Server().JwtSignKey).ParseToken(kv[1])
-	if err != nil {
+	// parse claims
+	if  err := app.Jwt().ParseTokenWithClaims(kv[1], claims);err != nil {
 		return err
 	}
 
 	// token存入context
-	ctx.Set(ClaimsKey, claims)
+	ctx.Set(app.Jwt().ClaimsKey, claims)
 	return nil
 }
 
 // JWT gin的jwt中间件
-func JWT(ctx *gin.Context) {
-	// 解析token
-	if err := validateToken(ctx); err != nil {
-		response.WrapContext(ctx).Error(401, err.Error())
+func JWT(claims jwt.Claims) gin.HandlerFunc  {
+	return func(ctx *gin.Context) {
+		// 解析token
+		if err := validateToken(ctx, claims); err != nil {
+			response.WrapContext(ctx).Error(401, err.Error())
 
-		ctx.Abort()
-		return
+			ctx.Abort()
+			return
+		}
+
+		ctx.Next()
 	}
-
-	ctx.Next()
 }

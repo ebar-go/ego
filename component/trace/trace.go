@@ -11,12 +11,16 @@ var (
 	rwm      sync.RWMutex
 )
 
-func NewId() string {
-	return "TraceId" + strings.UUID()
+const(
+	prefix = "trace:"
+)
+
+func Id() string {
+	return prefix + strings.UUID()
 }
 
 // SetTraceId
-func SetTraceId(id string) {
+func Set(id string) {
 	goID := getGoroutineId()
 	rwm.Lock()
 	defer rwm.Unlock()
@@ -24,8 +28,8 @@ func SetTraceId(id string) {
 	traceIds[goID] = id
 }
 
-// GetTraceId
-func GetTraceId() string {
+// Get
+func Get() string {
 	goID := getGoroutineId()
 	rwm.RLock()
 	defer rwm.RUnlock()
@@ -33,8 +37,8 @@ func GetTraceId() string {
 	return traceIds[goID]
 }
 
-// DeleteTraceId
-func DeleteTraceId() {
+// GC
+func GC() {
 	goID := getGoroutineId()
 	rwm.Lock()
 	defer rwm.Unlock()

@@ -1,6 +1,7 @@
 package conv
 
 import (
+	"github.com/magiconair/properties/assert"
 	"reflect"
 	"testing"
 )
@@ -20,16 +21,16 @@ func TestMap2Struct(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:"success",
+			name: "success",
 			args: args{
-				mapInstance: map[string]interface{}{"hello":"world"},
+				mapInstance: map[string]interface{}{"hello": "world"},
 				obj:         &target{},
 			},
 			wantErr: false,
-		},{
-			name:"failed",
+		}, {
+			name: "failed",
 			args: args{
-				mapInstance: map[string]interface{}{"hello":1},
+				mapInstance: map[string]interface{}{"hello": 1},
 				obj:         &target{},
 			},
 			wantErr: true,
@@ -39,30 +40,6 @@ func TestMap2Struct(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if err := Map2Struct(tt.args.mapInstance, tt.args.obj); (err != nil) != tt.wantErr {
 				t.Errorf("Map2Struct() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestString2Int(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args args
-		want int
-	}{
-		{
-			name:"success",
-			args:args{s:"1"},
-			want: 1,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := String2Int(tt.args.s); got != tt.want {
-				t.Errorf("String2Int() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -83,9 +60,9 @@ func TestStruct2Map(t *testing.T) {
 		want map[string]interface{}
 	}{
 		{
-			name:"success",
-			args:args{obj:target{Hello:"world"}},
-			want: map[string]interface{}{"Hello":"world"},
+			name: "success",
+			args: args{obj: target{Hello: "world"}},
+			want: map[string]interface{}{"Hello": "world"},
 		},
 	}
 	for _, tt := range tests {
@@ -118,8 +95,8 @@ func TestTransformInterface(t *testing.T) {
 	}{
 		{
 			name: "success",
-			args:args{
-				source: sourceTarget{Hello:"1"},
+			args: args{
+				source: sourceTarget{Hello: "1"},
 				target: &target{},
 			},
 			wantErr: false,
@@ -134,3 +111,13 @@ func TestTransformInterface(t *testing.T) {
 	}
 }
 
+func TestStr2Byte(t *testing.T) {
+	s := "hello,world"
+	assert.Equal(t, []byte(s), Str2Byte(s))
+}
+
+func TestByte2Str(t *testing.T) {
+	s := "hello,world"
+	b := Str2Byte(s)
+	assert.Equal(t, s, Byte2Str(b))
+}

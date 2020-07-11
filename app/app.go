@@ -1,86 +1,120 @@
 package app
 
 import (
+	"github.com/ebar-go/ego/component/auth"
+	"github.com/ebar-go/ego/component/buffer"
+	"github.com/ebar-go/ego/component/config"
+	"github.com/ebar-go/ego/component/etcd"
 	"github.com/ebar-go/ego/component/log"
-	"github.com/ebar-go/ego/component/mns"
-	"github.com/ebar-go/ego/config"
-	"github.com/ebar-go/ws"
-	"github.com/ebar-go/event"
-	"github.com/go-redis/redis"
+	"github.com/ebar-go/ego/component/mysql"
+	"github.com/ebar-go/ego/component/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"go.uber.org/dig"
+	"net/http"
 )
 
-var (
-	Container = NewContainer()
-)
+var container *dig.Container
 
-// NewContainer return an empty container
-func NewContainer() *dig.Container {
-	return dig.New()
+func init()  {
+	container = dig.New()
+	// 注入配置文件
+	_ = container.Provide(config.New)
+	// 注入http客户端
+	_ = container.Provide(newHttpClient)
+	// 注入日志管理器
+	_ = container.Provide(newLogger)
+	// 注入jwt组件
+	_ = container.Provide(newJwt)
+	// 注入bufferPool
+	_ = container.Provide(buffer.NewPool)
+	// 注入redis组件
+	_ = container.Provide(newRedis)
+	// 注入DB组件
+	_ = container.Provide(newDB)
+	// 注入etcd主键
+	_ = container.Provide(newEtcd)
 }
 
-// LogManager return log manager
-func LogManager() (manager log.Manager) {
-	_ = Container.Invoke(func(m log.Manager) {
-		manager = m
+// Container 容器
+func Container() *dig.Container {
+	return container
+}
+
+// Config 配置文件
+func Config() (conf *config.Config)  {
+	_ = container.Invoke(func(c *config.Config) {
+		conf = c
 	})
-
-	return
-}
-
-// WebSocket return ws manager
-func WebSocket() (manager ws.Manager) {
-	if err := Container.Invoke(func(m ws.Manager) {
-		manager = m
-	}); err != nil {
-		manager = ws.New()
-		_ = Container.Provide(func() ws.Manager{
-			return manager
-		})
-	}
 	return
 }
 
 // Redis get redis connection
-func Redis() (connection *redis.Client) {
-	_ = Container.Invoke(func(conn *redis.Client) {
-		connection = conn
-	})
-	return
-}
-
-// Mysql return mysql connection
-func Mysql() (connection *gorm.DB) {
-	_ = Container.Invoke(func(conn *gorm.DB) {
-		connection = conn
-	})
-	return
-}
-
-// Mns return ali yun mns client
-func Mns() (client mns.Client) {
-	if err :=  Container.Invoke(func(cli mns.Client) {
+func Redis() (client *redis.Client) {
+	_ = container.Invoke(func(cli *redis.Client) {
 		client = cli
-	}); err != nil {
-		mnsConfig := config.Mns()
-		client = mns.NewClient(
-			mnsConfig.Url,
-			mnsConfig.AccessKeyId,
-			mnsConfig.AccessKeySecret,
-			LogManager())
-		_ = Container.Provide(func() (mns.Client) {
-			return client
-		})
-	}
+	})
 	return
 }
 
-// EventDispatcher get event dispatcher instance
-func EventDispatcher() (dispatcher event.Dispatcher) {
-	_ = Container.Invoke(func(d event.Dispatcher) {
-		dispatcher = d
+// InitDB 初始化DB
+func InitDB() error  {
+	 return  container.Invoke(func(gm *mysql.GroupManager) error {
+		return gm.Connect()
+	})
+}
+
+// DB 返回数据库连接
+func DB() *gorm.DB {
+	return GetDB("default")
+}
+
+// GetDB 通过名称获取数据库连接
+func GetDB(name string) (conn *gorm.DB) {
+	_ = container.Invoke(func(gm *mysql.GroupManager) {
+		conn = gm.GetConnection(name)
+	})
+	return
+}
+
+// Http client
+func Http() (client *http.Client) {
+	_ = container.Invoke(func(instance *http.Client) {
+		client = instance
+	})
+	return
+}
+
+
+// Logger 日志管理器
+func Logger() (logger *log.Logger) {
+	_ = container.Invoke(func(instance *log.Logger) {
+		logger = instance
+	})
+	return
+}
+
+// Jwt jwt组件
+func Jwt() (jwt *auth.JwtAuth) {
+	_ = container.Invoke(func(instance *auth.JwtAuth) {
+		jwt = instance
+	})
+	return
+}
+
+
+// BufferPool buffer池
+func BufferPool() (pool *buffer.Pool) {
+	_ = container.Invoke(func(instance *buffer.Pool) {
+		pool = instance
+	})
+	return
+}
+
+// Etcd
+func Etcd() (client *etcd.Client)  {
+	_ = container.Invoke(func(instance *etcd.Client) {
+		client = instance
 	})
 	return
 }

@@ -5,32 +5,17 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"path/filepath"
 	"runtime"
 )
 
-// FatalError
-func FatalError(msg string, err error) {
-	if err != nil {
-
-		panic(errors.New(fmt.Sprintf("%s Error: %v\n", msg, err)))
-	}
-
-	log.Printf("%s Success\n", msg)
-}
-
 // LogError
-func LogError(msg string, err error)  {
+func LogError(msg string, err error) {
 	if err == nil {
 		log.Printf("%s Success\n", msg)
-	}else {
+	} else {
 		log.Printf("%s Error: %v\n", msg, err)
-	}
-}
-
-// SecurePanic only panic when err not nil
-func SecurePanic(err error)  {
-	if err != nil {
-		panic(err)
 	}
 }
 
@@ -90,3 +75,47 @@ func Trace() []string {
 	return trace
 }
 
+// GetCurrentPath return compiled executable file absolute path
+func GetCurrentPath() string {
+	path, _ := filepath.Abs(os.Args[0])
+	return path
+}
+
+// GetCurrentDir return compiled executable file directory
+func GetCurrentDir() string {
+	return filepath.Dir(GetCurrentPath())
+}
+
+//Exist check the given path exists
+func PathExist(path string) bool {
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
+// Mkdir Create the DIRECTORY(ies), if they do not already exist
+// parents no error if existing, make parent directories as needed
+func Mkdir(dir string, parents bool) error {
+	if PathExist(dir) {
+		return nil
+	}
+
+	if parents {
+		return os.MkdirAll(dir, os.ModePerm)
+	}
+
+	return os.Mkdir(dir, os.ModePerm)
+}
+
+// SplitPathExt return filename and ext of path
+func SplitPathExt(path string) (string, string) {
+	for i := len(path) - 1; i >= 0 && path[i] != '/'; i-- {
+		if path[i] == '.' {
+			return path[:i], path[i:]
+		}
+	}
+	return path, ""
+}
