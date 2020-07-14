@@ -6,6 +6,16 @@ import (
 	"net/http"
 )
 
+// WsServer
+type WsServer interface{
+	Register(conn *websocketConn, handler Handler)
+	Unregister(id string)
+	Start()
+	Broadcast(message []byte, ignore *websocketConn)
+	Send(message []byte, c *websocketConn)
+	UpgradeConn(w http.ResponseWriter, r *http.Request) (*websocketConn, error)
+}
+
 // Handler define message processor
 type Handler func(message []byte)
 
@@ -101,6 +111,10 @@ type websocketConn struct {
 
 	// connection websocketServer
 	websocketServer *websocketServer
+}
+
+func (c *websocketConn) GetID() string {
+	 return c.ID
 }
 
 
