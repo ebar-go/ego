@@ -6,12 +6,14 @@ import (
 	"time"
 )
 
+// GroupManager manage mysql connections
 type GroupManager struct {
 	connections map[string]*gorm.DB
 	options map[string]Config
 	dialect string
 }
 
+// New
 func New(options map[string]Config) *GroupManager  {
 	return &GroupManager{connections: make(map[string]*gorm.DB), dialect:"mysql", options:options}
 }
