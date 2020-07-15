@@ -6,7 +6,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
-	"github.com/ebar-go/ego/utils/number"
+	"github.com/ebar-go/egu"
 	"time"
 )
 
@@ -70,7 +70,7 @@ func (adapter ReadWriteAdapter) Slave() *sql.DB {
 
 	index := 1
 	if adapter.count > 2 {
-		index = number.RandInt(1, int(adapter.count))
+		index = egu.RandInt(1, int(adapter.count))
 	}
 	return adapter.pdbs[index]
 }

@@ -3,7 +3,7 @@ package response
 import (
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/http/pagination"
-	"github.com/ebar-go/ego/utils/strings"
+	"github.com/ebar-go/egu"
 )
 
 const(
@@ -37,7 +37,7 @@ func (r *response) Reset() {
 	r.Data = nil
 	r.Meta = Meta{
 		Trace: Trace{
-			RequestId: prefix + strings.UUID(),
+			RequestId: prefix + egu.UUID(),
 			TraceId:   trace.Get(),
 		},
 	}

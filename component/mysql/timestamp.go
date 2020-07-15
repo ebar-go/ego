@@ -3,7 +3,7 @@ package mysql
 import (
 	"database/sql/driver"
 	"fmt"
-	"github.com/ebar-go/ego/utils/date"
+	"github.com/ebar-go/egu"
 	"time"
 )
 
@@ -14,7 +14,7 @@ type Timestamp struct {
 
 // MarshalJSON 解析
 func (t Timestamp) MarshalJSON() ([]byte, error) {
-	formatted := fmt.Sprintf("\"%s\"", t.Format(date.TimeFormat))
+	formatted := fmt.Sprintf("\"%s\"", t.Format(egu.TimeFormat))
 	return []byte(formatted), nil
 }
 

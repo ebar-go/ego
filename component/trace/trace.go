@@ -1,7 +1,7 @@
 package trace
 
 import (
-	"github.com/ebar-go/ego/utils/strings"
+	"github.com/ebar-go/egu"
 	"github.com/petermattis/goid"
 	"sync"
 )
@@ -16,7 +16,7 @@ const(
 )
 
 func Id() string {
-	return prefix + strings.UUID()
+	return prefix + egu.UUID()
 }
 
 // SetTraceId

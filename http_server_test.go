@@ -2,7 +2,7 @@ package ego
 
 import (
 	"github.com/ebar-go/ego/http/response"
-	"github.com/ebar-go/ego/utils/secure"
+	"github.com/ebar-go/egu"
 	"github.com/gin-gonic/gin"
 	"testing"
 )
@@ -16,5 +16,5 @@ func TestNewServer(t *testing.T) {
 	})
 
 
-	secure.FatalError("StartHttpServer", s.Start(8081))
+	egu.FatalError("StartHttpServer", s.Start(8081))
 }

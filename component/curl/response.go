@@ -1,8 +1,9 @@
 package curl
 
 import (
-	"github.com/ebar-go/ego/utils/conv"
-	"github.com/ebar-go/ego/utils/json"
+	"bytes"
+	"github.com/ebar-go/egu"
+	"io"
 )
 
 // response http response wrapper
@@ -12,7 +13,7 @@ type response struct {
 
 // String return response as string
 func (wrap *response) String() (string) {
-	return conv.Byte2Str(wrap.body)
+	return egu.Byte2Str(wrap.body)
 }
 
 
@@ -23,5 +24,10 @@ func (wrap *response) Byte() ([]byte) {
 
 // BindJson bind json object with pointer
 func (wrap *response) BindJson(object interface{}) error {
-	return json.Decode(wrap.body, object)
+	return egu.JsonDecode(wrap.body, object)
+}
+
+// Reader
+func (wrap *response) Reader() io.Reader {
+	return bytes.NewReader(wrap.body)
 }

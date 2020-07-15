@@ -1,4 +1,4 @@
-package middleware
+package handler
 
 import (
 	"github.com/gin-gonic/gin"
@@ -12,6 +12,6 @@ const (
 )
 
 // Swagger
-func Swagger() gin.HandlerFunc {
+func SwaggerHandler() gin.HandlerFunc {
 	return ginSwagger.DisablingWrapHandler(swaggerFiles.Handler, disableEnv)
 }

@@ -2,7 +2,6 @@ package errors
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego/utils/json"
 	"net/http"
 )
 
@@ -39,17 +38,6 @@ func With(msg string, err error) *Error {
 	return InternalServer(fmt.Sprintf("%s:%s", msg, err.Error()))
 }
 
-// Parse tries to parse a JSON string into an error. If that
-// fails, it will set the given string as the error detail.
-func Parse(errStr string) *Error {
-	e := new(Error)
-
-	if err := json.Decode([]byte(errStr), e); err != nil {
-		e.Code = http.StatusInternalServerError
-		e.Message = err.Error()
-	}
-	return e
-}
 
 // Unauthorized generates a 401 error.
 func Unauthorized(format string, v ...interface{}) *Error {

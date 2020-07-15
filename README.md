@@ -21,15 +21,9 @@ go get -u github.com/ebar-go/ego
 
 ## 模块
 ### http服务
-```go
+```
 package main
-import (
-"fmt"
-"github.com/ebar-go/ego"
-"github.com/gin-gonic/gin"
-"github.com/ebar-go/ego/utils/secure"
-"time"
-)
+
 func main() {
     server := ego.HttpServer()
     // 添加路由
@@ -39,7 +33,7 @@ func main() {
     // 默认启动8080
     // 也可以通过传参指定端口启动,如: server.Start(8081)
     // 如果不传参，则读取配置文件中的 server.port配置项
-    secure.Panic(server.Start())
+    egu.SecurePanic(server.Start())
 }
 // 支持平滑重启
 func init() {
@@ -56,14 +50,9 @@ func init() {
 
 ### websocket服务
 支持与http服务共存的websocket服务   
-```go
+```
 package main
-import (
-"github.com/ebar-go/ego"
-"github.com/ebar-go/ego/utils/secure"
-"github.com/gin-gonic/gin"
-"github.com/ebar-go/ego/http/response"
-)
+
 func main() {
     s := ego.HttpServer()
     ws := ego.WebsocketServer()
@@ -75,7 +64,7 @@ func main() {
 		// get websocket conn
 		conn, err := ws.UpgradeConn(ctx.Writer, ctx.Request)
 		if err != nil {
-			secure.Panic(err.Error())
+			egu.SecurePanic(err.Error())
 		}
 
 		ws.Register(conn, func(message []byte){
@@ -90,12 +79,11 @@ func main() {
 
 	go ws.Start()
 
-	secure.FatalError("StartHttpServer", s.Start())
+	egu.FatalError("StartHttpServer", s.Start())
 }
 ```
 
 ### 配置
-集成[https://github.com/spf13/viper](https://github.com/spf13/viper)
 ```go
 // 加载配置文件
 app.Config().LoadFile("app.yaml")

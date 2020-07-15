@@ -2,12 +2,12 @@ package app
 
 import (
 	"github.com/ebar-go/ego/component/auth"
-	"github.com/ebar-go/ego/component/buffer"
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/etcd"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
+	"github.com/ebar-go/egu"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"go.uber.org/dig"
@@ -27,13 +27,15 @@ func init()  {
 	// 注入jwt组件
 	_ = container.Provide(newJwt)
 	// 注入bufferPool
-	_ = container.Provide(buffer.NewPool)
+	_ = container.Provide(egu.NewBufferPool)
 	// 注入redis组件
 	_ = container.Provide(newRedis)
 	// 注入DB组件
 	_ = container.Provide(newDB)
 	// 注入etcd主键
 	_ = container.Provide(newEtcd)
+
+
 }
 
 // Container 容器
@@ -102,19 +104,17 @@ func Jwt() (jwt *auth.JwtAuth) {
 	return
 }
 
-
-// BufferPool buffer池
-func BufferPool() (pool *buffer.Pool) {
-	_ = container.Invoke(func(instance *buffer.Pool) {
-		pool = instance
-	})
-	return
-}
-
 // Etcd
 func Etcd() (client *etcd.Client)  {
 	_ = container.Invoke(func(instance *etcd.Client) {
 		client = instance
+	})
+	return
+}
+
+func BufferPool() (pool *egu.BufferPool) {
+	_ = container.Invoke(func(instance *egu.BufferPool) {
+		pool = instance
 	})
 	return
 }

@@ -5,7 +5,7 @@ import (
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/errors"
 	"github.com/ebar-go/ego/http/response"
-	"github.com/ebar-go/ego/utils"
+	"github.com/ebar-go/egu"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,10 +18,14 @@ func Recover(ctx *gin.Context) {
 				response.WrapContext(ctx).Error(err.Code, err.Message)
 
 			} else {
-				app.Logger().Error("system_error", log.Context{
-					"error": r,
-					"trace": utils.Trace(),
-				})
+
+				if app.Config().Server().Debug {
+					app.Logger().Error("system_error", log.Context{
+						"error": r,
+						"trace": egu.RuntimeCaller(),
+					})
+				}
+
 				response.WrapContext(ctx).Error(500, "System Error")
 			}
 

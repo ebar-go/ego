@@ -3,23 +3,23 @@
 /*
 func init()  {
 	event.Listen(event.AfterDatabaseConnect, func(ev event.Event) {
-		mysql.SetCreateCallback(app.DB())
-		mysql.SetUpdateCallback(app.DB())
+		mysql.RegisterCreateCallback(app.DB())
+		mysql.RegisterUpdateCallback(app.DB())
 	})
 }
  */
 package mysql
 
 import (
-	"github.com/ebar-go/ego/utils/date"
+	"github.com/ebar-go/egu"
 	"github.com/jinzhu/gorm"
 )
 
 
-// SetCreateCallback
-func SetCreateCallback(db *gorm.DB)  {
+// RegisterCreateCallback
+func RegisterCreateCallback(db *gorm.DB)  {
 	db.Callback().Create().Register("update_created_at", func(scope *gorm.Scope) {
-		now := date.GetTimeStamp()
+		now := egu.GetTimeStamp()
 		if scope.HasColumn(ColumnCreatedAt) {
 			_ = scope.SetColumn(ColumnCreatedAt, now)
 		}
@@ -29,11 +29,11 @@ func SetCreateCallback(db *gorm.DB)  {
 	})
 }
 
-// SetUpdateCallback
-func SetUpdateCallback(db *gorm.DB)  {
+// RegisterUpdateCallback
+func RegisterUpdateCallback(db *gorm.DB)  {
 	db.Callback().Update().Register("update_updated_at", func(scope *gorm.Scope) {
 		if scope.HasColumn(ColumnUpdatedAt) {
-			_ = scope.SetColumn(ColumnUpdatedAt, date.GetTimeStamp())
+			_ = scope.SetColumn(ColumnUpdatedAt, egu.GetTimeStamp())
 		}
 	})
 }
