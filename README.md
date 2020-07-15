@@ -2,16 +2,17 @@
 简单易用又强大的微服务golang框架。
 
 ## 特性
-- 提供基础的http,websocket服务。
-- 丰富的中间件(请求日志、JWT认证,跨域,Recover,全局链路)
-- 通过依赖注入的方式，动态加载基础组件。包括配置，日志管理器，Redis,Mysql等
-- 支持基于consul,etcd的服务注册、发现、注销
-- 自定义参数验证器
-- 调用简便且扩展性强的http请求组件
-- 常用字符串、数字、字符串、加密、日期等工具函数
+- http,websocket服务
+- 丰富的中间件：请求日志、JWT认证,跨域,Recover,全局链路
+- 全局服务:日志管理器，Redis,Mysql等
+- 配置项
+- 参数验证器
+- curl组件
+- Swagger
+
+基础工具已迁移到 [github.com/ebar-go/egu](https://github.com/ebar-go/egu)
 
 ## 安装
-
 ```
 go get -u github.com/ebar-go/ego
 ```
