@@ -8,6 +8,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/ebar-go/egu v0.1.1
 	github.com/fastly/go-utils v0.0.0-20180712184237-d95a45783239 // indirect
+	github.com/gin-contrib/pprof v1.3.0 // indirect
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
@@ -22,6 +23,7 @@ require (
 	github.com/magiconair/properties v1.8.1
 	github.com/onsi/ginkgo v1.14.0 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5
+	github.com/robfig/cron v1.2.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.6.1

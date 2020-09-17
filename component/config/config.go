@@ -20,6 +20,9 @@ const (
 	httpRequestTimeoutKey = "server.httpRequestTimeout"
 	jwtSignKey            = "server.jwtSign"
 	debugKey              = "server.debug"
+	pprofKey = "server.pprof"
+	swaggerKey = "server.swagger"
+	taskKey = "server.task"
 	mysqlKey 			  = "mysql"
 
 	redisHostKey        = "redis.host"
@@ -73,6 +76,15 @@ type serverConf struct {
 
 	// 是否开启debug,开启后会显示debug信息
 	Debug bool
+
+	// 是否开启pprof
+	Pprof bool
+
+	// 是否开启swagger文档
+	Swagger bool
+
+	// 是否开启定时任务
+	Task bool
 }
 
 // New 实例
@@ -123,6 +135,9 @@ func (conf *Config) Server() (*serverConf) {
 			TraceHeader:        conf.GetString(traceHeaderKey),
 			HttpRequestTimeOut: conf.GetInt(httpRequestTimeoutKey),
 			Debug:              conf.GetBool(debugKey),
+			Pprof: conf.GetBool(pprofKey),
+			Swagger: conf.GetBool(swaggerKey),
+			Task: conf.GetBool(taskKey),
 		}
 	}
 

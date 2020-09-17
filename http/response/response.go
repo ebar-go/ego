@@ -12,7 +12,7 @@ const(
 
 // Response 数据结构体
 type response struct {
-	StatusCode interface{} `json:"status_code"` // 兼容字符串与int
+	Code interface{} `json:"code"` // 兼容字符串与int
 	Message    string      `json:"message"`
 	Data       interface{} `json:"data"`
 	Meta       Meta        `json:"meta"`
@@ -32,7 +32,7 @@ type Meta struct {
 
 // Reset response
 func (r *response) Reset() {
-	r.StatusCode = 0
+	r.Code = 0
 	r.Message = "success"
 	r.Data = nil
 	r.Meta = Meta{

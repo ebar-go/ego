@@ -7,6 +7,7 @@ import (
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/validator"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"log"
@@ -54,19 +55,17 @@ func HttpServer() *httpServer {
 // Start run http server
 // args must be less than one,
 // eg: Start()
-//	   Start(8080)
-func (server *httpServer) Start(args ...int) error {
+func (server *httpServer) Start() error {
 	// use lock
 	server.mu.Lock()
 
 	// 解析port
-	port := parseArgs(args...)
 
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)
 	server.Router.NoMethod(server.NotFoundHandler)
 
-	completeHost := net.JoinHostPort("", strconv.Itoa(port))
+	completeHost := net.JoinHostPort("", strconv.Itoa(app.Config().Server().Port))
 
 	// before start
 	event.Trigger(event.BeforeHttpStart, nil)
@@ -75,6 +74,15 @@ func (server *httpServer) Start(args ...int) error {
 		Addr:    completeHost,
 		Handler: server.Router,
 	}
+
+	if app.Config().Server().Pprof {
+		pprof.Register(server.Router)
+	}
+
+	if app.Config().Server().Task {
+		go app.Task().Start()
+	}
+
 	go func() {
 		log.Printf("Listening and serving HTTP on %s\n", completeHost)
 
@@ -90,17 +98,6 @@ func (server *httpServer) Start(args ...int) error {
 	server.shutdown(srv)
 
 	return nil
-}
-
-// parseArgs
-func parseArgs(args ...int) int {
-	// 读取第一个参数为port
-	port := app.Config().Server().Port
-	if len(args) == 1 {
-		port = args[0]
-		app.Config().Server().Port = port
-	}
-	return port
 }
 
 //

@@ -10,6 +10,7 @@ import (
 	"github.com/ebar-go/egu"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/robfig/cron"
 	"go.uber.org/dig"
 	"net/http"
 )
@@ -35,6 +36,7 @@ func init()  {
 	// 注入etcd主键
 	_ = container.Provide(newEtcd)
 
+	_ = container.Provide(cron.New)
 
 }
 
@@ -116,5 +118,14 @@ func BufferPool() (pool *egu.BufferPool) {
 	_ = container.Invoke(func(instance *egu.BufferPool) {
 		pool = instance
 	})
+	return
+}
+
+// task manager
+func Task() (manager *cron.Cron) {
+	_ = container.Invoke(func(c *cron.Cron) {
+		manager = c
+	})
+
 	return
 }
