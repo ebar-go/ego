@@ -3,6 +3,7 @@ package curl
 import (
 	"fmt"
 	"github.com/ebar-go/ego/app"
+	"github.com/ebar-go/ego/component/trace"
 	"io"
 	"net/http"
 )
@@ -16,6 +17,7 @@ type request struct {
 func NewRequest(method, url string, body io.Reader) (*request) {
 	req := new(request)
 	request, err := http.NewRequest(method, url, body)
+
 	if err != nil {
 		req.err = err
 	}
@@ -54,7 +56,7 @@ func (req *request) Send() (*response, error) {
 	if req.err != nil {
 		return nil, req.err
 	}
-
+	req.Header.Set(app.Config().Server().TraceHeader, trace.Get())
 	resp, err := app.Http().Do(req.Request)
 	if err != nil {
 		return nil, err

@@ -23,6 +23,8 @@ type Config struct {
 
 	// 最长活跃时间
 	MaxLifeTime int `mapstructure:"maxLifeTime"`
+	// 是否开启debug模式
+	Debug bool `mapstructure:"debug"`
 	// 是否开启严格模式
 	Strict bool `mapstructure:"strict"`
 }

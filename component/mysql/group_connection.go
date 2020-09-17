@@ -46,6 +46,8 @@ func (gm *GroupManager) Connect() error {
 			}
 			return err
 		}
+
+		conn.LogMode(true)
 		log.Println("Connect mysql success:", name)
 		gm.connections[name] = conn
 	}
