@@ -40,6 +40,10 @@ func (gm *GroupManager) Connect() error {
 		}
 
 		if err := adapter.Ping(); err != nil {
+			if !conf.Strict {
+				log.Printf("Connect %s faield:%v", name, err)
+				continue
+			}
 			return err
 		}
 		log.Println("Connect mysql success:", name)

@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"fmt"
+	"github.com/ebar-go/egu"
 	"net"
 	"strconv"
 )
@@ -22,6 +23,8 @@ type Config struct {
 
 	// 最长活跃时间
 	MaxLifeTime int `mapstructure:"maxLifeTime"`
+	// 是否开启严格模式
+	Strict bool `mapstructure:"strict"`
 }
 
 // DataSource 连接配置
@@ -36,6 +39,8 @@ type DataSource struct {
 	Password string `mapstructure:"password"`
 	// 数据库名称
 	Name string `mapstructure:"name"`
+	// 字符集
+	Charset string `mapstructure:"charset"`
 }
 
 
@@ -51,9 +56,12 @@ func (conf Config) DsnItems() []string {
 
 // Dsn return mysql dsn
 func (conf DataSource) dsn() string {
-	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+	// 默认为utf8mb4字符集，支持unicode表情
+	conf.Charset = egu.DefaultString(conf.Charset, "utf8mb4")
+	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=True&loc=Local",
 		conf.User,
 		conf.Password,
 		net.JoinHostPort(conf.Host, strconv.Itoa(conf.Port)),
-		conf.Name)
+		conf.Name,
+		conf.Charset)
 }
