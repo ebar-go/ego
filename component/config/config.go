@@ -5,7 +5,6 @@ import (
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/spf13/viper"
-	"log"
 	"sync"
 	"time"
 )
@@ -23,7 +22,12 @@ const (
 	pprofKey = "server.pprof"
 	swaggerKey = "server.swagger"
 	taskKey = "server.task"
-	mysqlKey 			  = "mysql"
+
+
+	mysqlDsnKey 			  = "mysql.dsn"
+	mysqlMaxIdleConnectionsKey = "mysql.maxIdleConnections"
+	mysqlMaxOpenConnectionsKey = "mysql.maxOpenConnections"
+	mysqlMaxLifeTimeKey = "mysql.maxLifeTime"
 
 	redisHostKey        = "redis.host"
 	redisPortKey        = "redis.port"
@@ -44,7 +48,7 @@ const (
 type Config struct {
 	*viper.Viper
 	server *serverConf
-	mysql map[string]mysql.Config
+	mysql *mysql.Config
 	redis *redis.Config
 	etcd *etcd.Config
 	mu *sync.Mutex
@@ -145,16 +149,16 @@ func (conf *Config) Server() (*serverConf) {
 }
 
 // mysql
-func (conf *Config) Mysql() map[string]mysql.Config {
+func (conf *Config) Mysql() *mysql.Config {
 	if conf.mysql == nil {
 		conf.mu.Lock()
 		defer conf.mu.Unlock()
-		var items map[string]mysql.Config
-		if err := conf.UnmarshalKey(mysqlKey, &items); err != nil {
-			log.Println("Read Mysql Config:", err.Error())
-			return nil
+		conf.mysql = &mysql.Config{
+			MaxIdleConnections: conf.GetInt(mysqlMaxIdleConnectionsKey),
+			MaxOpenConnections: conf.GetInt(mysqlMaxOpenConnectionsKey),
+			MaxLifeTime:        conf.GetInt(mysqlMaxLifeTimeKey),
+			Dsn:                conf.GetString(mysqlDsnKey),
 		}
-		conf.mysql = items
 	}
 
 

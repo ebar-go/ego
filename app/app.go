@@ -8,10 +8,9 @@ import (
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/ebar-go/egu"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/robfig/cron"
 	"go.uber.org/dig"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -29,10 +28,11 @@ func init()  {
 	_ = container.Provide(newJwt)
 	// 注入bufferPool
 	_ = container.Provide(egu.NewBufferPool)
+
+	_ = container.Provide(newDBManager)
+
 	// 注入redis组件
 	_ = container.Provide(newRedis)
-	// 注入DB组件
-	_ = container.Provide(newDB)
 	// 注入etcd主键
 	_ = container.Provide(newEtcd)
 
@@ -61,24 +61,17 @@ func Redis() (client *redis.Client) {
 	return
 }
 
-// InitDB 初始化DB
-func InitDB() error  {
-	 return  container.Invoke(func(gm *mysql.GroupManager) error {
-		return gm.Connect()
+func DBManager() (m *mysql.Manager) {
+	_ = container.Invoke(func(instance *mysql.Manager) {
+		m = instance
 	})
+
+	return
 }
 
 // DB 返回数据库连接
-func DB() *gorm.DB {
-	return GetDB("default")
-}
-
-// GetDB 通过名称获取数据库连接
-func GetDB(name string) (conn *gorm.DB) {
-	_ = container.Invoke(func(gm *mysql.GroupManager) {
-		conn = gm.GetConnection(name)
-	})
-	return
+func DB() (conn *gorm.DB) {
+	return DBManager().DB
 }
 
 // Http client

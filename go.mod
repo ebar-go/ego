@@ -17,7 +17,6 @@ require (
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
-	github.com/jinzhu/gorm v1.9.14
 	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible
 	github.com/lestrrat-go/strftime v1.0.1 // indirect
 	github.com/magiconair/properties v1.8.1
@@ -33,5 +32,8 @@ require (
 	go.etcd.io/etcd v3.3.22+incompatible
 	go.uber.org/dig v1.10.0
 	go.uber.org/zap v1.15.0
+	gorm.io/driver/mysql v1.0.1 // indirect
+	gorm.io/gorm v1.20.1 // indirect
+	gorm.io/plugin/dbresolver v1.0.0 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )

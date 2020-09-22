@@ -43,14 +43,13 @@ func newJwt(conf *config.Config) *auth.JwtAuth {
 	return auth.New(conf.Server().JwtSignKey)
 }
 
-// newDB
-func newDB(conf *config.Config) *mysql.GroupManager{
-	return mysql.New(conf.Mysql())
-}
-
 // newRedis
 func newRedis(conf *config.Config) *redis.Client{
 	return redis.New(conf.Redis())
+}
+
+func newDBManager(conf *config.Config) *mysql.Manager {
+	return mysql.NewManager(conf.Mysql())
 }
 
 func newEtcd(conf *config.Config) *etcd.Client  {
