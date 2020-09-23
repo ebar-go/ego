@@ -61,7 +61,7 @@ func Redis() (client *redis.Client) {
 	return
 }
 
-func DBManager() (m *mysql.Manager) {
+func dbManager() (m *mysql.Manager) {
 	_ = container.Invoke(func(instance *mysql.Manager) {
 		m = instance
 	})
@@ -69,9 +69,13 @@ func DBManager() (m *mysql.Manager) {
 	return
 }
 
+func InitDB() error {
+	return dbManager().Connect()
+}
+
 // DB 返回数据库连接
 func DB() (conn *gorm.DB) {
-	return DBManager().DB
+	return dbManager().DB
 }
 
 // Http client
