@@ -9,7 +9,7 @@ type Model struct {
 
 type Columns map[string]interface{}
 
-const(
+const (
 	ColumnCreatedAt = "created_at"
 	ColumnUpdatedAt = "updated_at"
 )

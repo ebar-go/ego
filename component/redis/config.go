@@ -4,7 +4,6 @@ import (
 	"github.com/go-redis/redis"
 	"net"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -29,7 +28,7 @@ type Config struct {
 	IdleTimeout time.Duration
 
 	// 集群
-	Cluster string
+	Cluster []string
 }
 
 // Options 单机选项
@@ -48,7 +47,7 @@ func (conf *Config) Options() *redis.Options {
 // ClusterOption 集群选项
 func (conf *Config) ClusterOption() *redis.ClusterOptions {
 	return &redis.ClusterOptions{
-		Addrs: strings.Split(conf.Cluster, ","),
+		Addrs:       conf.Cluster,
 		Password:    conf.Auth,
 		PoolSize:    conf.PoolSize,    // Redis连接池大小
 		MaxRetries:  conf.MaxRetries,  // 最大重试次数

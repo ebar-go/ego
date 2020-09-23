@@ -14,7 +14,7 @@ type request struct {
 }
 
 // NewRequest
-func NewRequest(method, url string, body io.Reader) (*request) {
+func NewRequest(method, url string, body io.Reader) *request {
 	req := new(request)
 	request, err := http.NewRequest(method, url, body)
 
@@ -27,27 +27,27 @@ func NewRequest(method, url string, body io.Reader) (*request) {
 }
 
 // Get
-func Get(url string) (*response, error)  {
+func Get(url string) (*response, error) {
 	return NewRequest(http.MethodGet, url, nil).Send()
 }
 
 // Post
-func Post(url string, body io.Reader) (*response, error)  {
+func Post(url string, body io.Reader) (*response, error) {
 	return NewRequest(http.MethodPost, url, body).Send()
 }
 
 // Put
-func Put(url string, body io.Reader) (*response, error)  {
+func Put(url string, body io.Reader) (*response, error) {
 	return NewRequest(http.MethodPut, url, body).Send()
 }
 
 // Patch
-func Patch(url string, body io.Reader) (*response, error)  {
+func Patch(url string, body io.Reader) (*response, error) {
 	return NewRequest(http.MethodPatch, url, body).Send()
 }
 
 // Delete
-func Delete(url string ) (*response, error)  {
+func Delete(url string) (*response, error) {
 	return NewRequest(http.MethodDelete, url, nil).Send()
 }
 
@@ -78,6 +78,6 @@ func (req *request) Send() (*response, error) {
 	return &response{body: bytes}, nil
 }
 
-func (req *request) Err() error  {
+func (req *request) Err() error {
 	return req.err
 }

@@ -1,7 +1,5 @@
 package mysql
 
-
-
 type Config struct {
 	// 最大空闲连接数
 	MaxIdleConnections int

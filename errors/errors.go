@@ -29,16 +29,6 @@ func Sprintf(code int, format string, v ...interface{}) *Error {
 	return New(code, fmt.Sprintf(format, v...))
 }
 
-// With
-func With(msg string, err error) *Error {
-	if e, ok := err.(*Error); ok {
-		e.Message = fmt.Sprintf("%s:%s", msg, e.Message)
-		return e
-	}
-	return InternalServer(fmt.Sprintf("%s:%s", msg, err.Error()))
-}
-
-
 // Unauthorized generates a 401 error.
 func Unauthorized(format string, v ...interface{}) *Error {
 	return New(http.StatusUnauthorized, fmt.Sprintf(format, v...))

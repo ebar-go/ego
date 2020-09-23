@@ -16,7 +16,7 @@ import (
 
 var container *dig.Container
 
-func init()  {
+func init() {
 	container = dig.New()
 	// 注入配置文件
 	_ = container.Provide(config.New)
@@ -46,7 +46,7 @@ func Container() *dig.Container {
 }
 
 // Config 配置文件
-func Config() (conf *config.Config)  {
+func Config() (conf *config.Config) {
 	_ = container.Invoke(func(c *config.Config) {
 		conf = c
 	})
@@ -86,7 +86,6 @@ func Http() (client *http.Client) {
 	return
 }
 
-
 // Logger 日志管理器
 func Logger() (logger *log.Logger) {
 	_ = container.Invoke(func(instance *log.Logger) {
@@ -104,7 +103,7 @@ func Jwt() (jwt *auth.JwtAuth) {
 }
 
 // Etcd
-func Etcd() (client *etcd.Client)  {
+func Etcd() (client *etcd.Client) {
 	_ = container.Invoke(func(instance *etcd.Client) {
 		client = instance
 	})

@@ -15,6 +15,5 @@ func TestNewServer(t *testing.T) {
 		response.WrapContext(context).Success("hello")
 	})
 
-
 	egu.FatalError("StartHttpServer", s.Start(8081))
 }

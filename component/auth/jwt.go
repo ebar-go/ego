@@ -7,15 +7,13 @@ import (
 
 // JwtAuth jwt
 type JwtAuth struct {
-	signKey []byte
+	signKey   []byte
 	ClaimsKey string
 }
-
 
 const (
 	defaultClaimsKey = "jwt_claims"
 )
-
 
 // New return JwtAuth instance
 func New(signKey []byte) *JwtAuth {

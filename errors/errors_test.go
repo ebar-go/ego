@@ -17,7 +17,3 @@ func TestError_Error(t *testing.T) {
 	fmt.Println(err.Error())
 }
 
-func TestWith(t *testing.T) {
-	err := With("some failed", fmt.Errorf("test"))
-	fmt.Println(err.Error())
-}

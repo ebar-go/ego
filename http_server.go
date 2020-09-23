@@ -33,7 +33,7 @@ type httpServer struct {
 	NotFoundHandler func(ctx *gin.Context)
 }
 
-func init()  {
+func init() {
 	event.Listen(event.BeforeHttpStart, func(ev event.Event) {
 		binding.Validator = new(validator.Validator)
 	})

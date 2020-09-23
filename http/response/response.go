@@ -6,16 +6,16 @@ import (
 	"github.com/ebar-go/egu"
 )
 
-const(
+const (
 	prefix = "request:"
 )
 
 // Response 数据结构体
 type response struct {
-	Code interface{} `json:"code"` // 兼容字符串与int
-	Message    string      `json:"message"`
-	Data       interface{} `json:"data"`
-	Meta       Meta        `json:"meta"`
+	Code    interface{} `json:"code"` // 兼容字符串与int
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+	Meta    Meta        `json:"meta"`
 }
 
 // Trace 跟踪信息

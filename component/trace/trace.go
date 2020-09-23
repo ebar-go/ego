@@ -11,7 +11,7 @@ var (
 	rwm      sync.RWMutex
 )
 
-const(
+const (
 	prefix = "trace:"
 )
 

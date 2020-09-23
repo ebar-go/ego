@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 const (
 	systemNameKey         = "server.systemName"
 	httpPortKey           = "server.httpPort"
@@ -19,15 +18,14 @@ const (
 	httpRequestTimeoutKey = "server.httpRequestTimeout"
 	jwtSignKey            = "server.jwtSign"
 	debugKey              = "server.debug"
-	pprofKey = "server.pprof"
-	swaggerKey = "server.swagger"
-	taskKey = "server.task"
+	pprofKey              = "server.pprof"
+	swaggerKey            = "server.swagger"
+	taskKey               = "server.task"
 
-
-	mysqlDsnKey 			  = "mysql.dsn"
+	mysqlDsnKey                = "mysql.dsn"
 	mysqlMaxIdleConnectionsKey = "mysql.maxIdleConnections"
 	mysqlMaxOpenConnectionsKey = "mysql.maxOpenConnections"
-	mysqlMaxLifeTimeKey = "mysql.maxLifeTime"
+	mysqlMaxLifeTimeKey        = "mysql.maxLifeTime"
 
 	redisHostKey        = "redis.host"
 	redisPortKey        = "redis.port"
@@ -35,28 +33,29 @@ const (
 	redisPoolSizeKey    = "redis.poolSize"
 	redisMaxRetriesKey  = "redis.maxRetries"
 	redisIdleTimeoutKey = "redis.idleTimeout"
-	redisCluster = "redis.cluster"
+	redisCluster        = "redis.cluster"
 
 	etcdEndpoints = "etcd.endpoints"
-	etcdTimeout = "etcd.timeout"
+	etcdTimeout   = "etcd.timeout"
+
+	envKey     = "server.environment"
+	envProduct = "product"
 )
-
-
-
 
 // Config 配置
 type Config struct {
 	*viper.Viper
 	server *serverConf
-	mysql *mysql.Config
-	redis *redis.Config
-	etcd *etcd.Config
-	mu *sync.Mutex
+	mysql  *mysql.Config
+	redis  *redis.Config
+	etcd   *etcd.Config
+	mu     *sync.Mutex
 }
-
 
 // serverConf  服务配置
 type serverConf struct {
+	// 运行环境
+	Environment string
 	// 服务名称
 	Name string
 
@@ -92,7 +91,7 @@ type serverConf struct {
 }
 
 // New 实例
-func New() *Config  {
+func New() *Config {
 	conf := new(Config)
 	conf.Viper = viper.New()
 	conf.mu = new(sync.Mutex)
@@ -100,6 +99,9 @@ func New() *Config  {
 	return conf
 }
 
+func (conf *Config) IsProduct() bool {
+	return envProduct == conf.Server().Environment
+}
 
 func (conf *Config) setDefault() {
 	conf.AutomaticEnv()
@@ -125,12 +127,13 @@ func (conf *Config) LoadFile(path string) error {
 }
 
 // Server
-func (conf *Config) Server() (*serverConf) {
+func (conf *Config) Server() *serverConf {
 	if conf.server == nil {
 		// 加锁防止并发
 		conf.mu.Lock()
 		defer conf.mu.Unlock()
 		conf.server = &serverConf{
+			Environment:        conf.GetString(envKey),
 			Name:               conf.GetString(systemNameKey),
 			Port:               conf.GetInt(httpPortKey),
 			MaxResponseLogSize: conf.GetInt(maxResponseLogSizeKey),
@@ -139,9 +142,9 @@ func (conf *Config) Server() (*serverConf) {
 			TraceHeader:        conf.GetString(traceHeaderKey),
 			HttpRequestTimeOut: conf.GetInt(httpRequestTimeoutKey),
 			Debug:              conf.GetBool(debugKey),
-			Pprof: conf.GetBool(pprofKey),
-			Swagger: conf.GetBool(swaggerKey),
-			Task: conf.GetBool(taskKey),
+			Pprof:              conf.GetBool(pprofKey),
+			Swagger:            conf.GetBool(swaggerKey),
+			Task:               conf.GetBool(taskKey),
 		}
 	}
 
@@ -161,12 +164,11 @@ func (conf *Config) Mysql() *mysql.Config {
 		}
 	}
 
-
 	return conf.mysql
 }
 
 // Redis
-func (conf *Config) Redis() (*redis.Config){
+func (conf *Config) Redis() *redis.Config {
 	if conf.redis == nil {
 		conf.mu.Lock()
 		defer conf.mu.Unlock()
@@ -177,7 +179,7 @@ func (conf *Config) Redis() (*redis.Config){
 			PoolSize:    conf.GetInt(redisPoolSizeKey),
 			MaxRetries:  conf.GetInt(redisMaxRetriesKey),
 			IdleTimeout: time.Duration(conf.GetInt(redisIdleTimeoutKey)) * time.Second,
-			Cluster: conf.GetString(redisCluster),
+			Cluster:     conf.GetStringSlice(redisCluster),
 		}
 	}
 	return conf.redis

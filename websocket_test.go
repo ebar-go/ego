@@ -23,8 +23,8 @@ func TestWebsocketServer(t *testing.T) {
 			return
 		}
 
-		ws.Register(conn, func(message []byte){
-			if string(message) == "broadcast" {// 广播
+		ws.Register(conn, func(message []byte) {
+			if string(message) == "broadcast" { // 广播
 				ws.Broadcast([]byte("hello,welcome"), nil)
 				return
 			}

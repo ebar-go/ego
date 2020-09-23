@@ -23,7 +23,7 @@ func validateToken(ctx *gin.Context, claims jwt.Claims) error {
 	}
 
 	// parse claims
-	if  err := app.Jwt().ParseTokenWithClaims(kv[1], claims);err != nil {
+	if err := app.Jwt().ParseTokenWithClaims(kv[1], claims); err != nil {
 		return err
 	}
 
@@ -33,7 +33,7 @@ func validateToken(ctx *gin.Context, claims jwt.Claims) error {
 }
 
 // JWT gin的jwt中间件
-func JWT(claims jwt.Claims) gin.HandlerFunc  {
+func JWT(claims jwt.Claims) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// 解析token
 		if err := validateToken(ctx, claims); err != nil {

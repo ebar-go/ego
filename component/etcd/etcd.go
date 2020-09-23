@@ -17,7 +17,7 @@ import (
 // Client
 type Client struct {
 	instance *client.Client
-	conf *Config
+	conf     *Config
 }
 
 func New(conf *Config) *Client {
@@ -25,10 +25,10 @@ func New(conf *Config) *Client {
 }
 
 // Connect
-func (c *Client) Connect() error  {
+func (c *Client) Connect() error {
 	var err error
 	c.instance, err = client.New(client.Config{
-		Endpoints: c.conf.Endpoints,
+		Endpoints:   c.conf.Endpoints,
 		DialTimeout: time.Second * time.Duration(c.conf.Timeout),
 	})
 	if err == nil {

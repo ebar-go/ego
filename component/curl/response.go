@@ -12,13 +12,12 @@ type response struct {
 }
 
 // String return response as string
-func (wrap *response) String() (string) {
+func (wrap *response) String() string {
 	return egu.Byte2Str(wrap.body)
 }
 
-
 // Byte return response as byte
-func (wrap *response) Byte() ([]byte) {
+func (wrap *response) Byte() []byte {
 	return wrap.body
 }
 

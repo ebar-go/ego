@@ -30,7 +30,7 @@ func newHttpClient(conf *config.Config) *http.Client {
 }
 
 // newLogger
-func newLogger (conf *config.Config) *log.Logger {
+func newLogger(conf *config.Config) *log.Logger {
 	return log.New(conf.Server().LogPath,
 		conf.Server().Debug,
 		map[string]interface{}{
@@ -44,7 +44,7 @@ func newJwt(conf *config.Config) *auth.JwtAuth {
 }
 
 // newRedis
-func newRedis(conf *config.Config) *redis.Client{
+func newRedis(conf *config.Config) *redis.Client {
 	return redis.New(conf.Redis())
 }
 
@@ -52,6 +52,6 @@ func newDBManager(conf *config.Config) *mysql.Manager {
 	return mysql.NewManager(conf.Mysql())
 }
 
-func newEtcd(conf *config.Config) *etcd.Client  {
+func newEtcd(conf *config.Config) *etcd.Client {
 	return etcd.New(conf.Etcd())
 }

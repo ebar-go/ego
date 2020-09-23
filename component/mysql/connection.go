@@ -48,7 +48,7 @@ func Resolver() *dbresolver.DBResolver {
 	return new(dbresolver.DBResolver)
 }
 
-func ResolverConfig(item ResolverItem) dbresolver.Config  {
+func ResolverConfig(item ResolverItem) dbresolver.Config {
 	var sources, replicas []gorm.Dialector
 	for _, source := range item.Sources {
 		sources = append(sources, mysql.Open(source))

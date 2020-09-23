@@ -33,9 +33,9 @@ func (logger *Logger) Error(message string, ctx Context) {
 
 // Logger
 type Logger struct {
-	path string
-	debug bool
-	fields map[string]interface{}
+	path     string
+	debug    bool
+	fields   map[string]interface{}
 	instance *zap.Logger
 }
 
