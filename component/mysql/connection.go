@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
@@ -36,6 +37,7 @@ func (db *Manager) Connect() error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("connect database success\n")
 
 	db.DB = conn
 

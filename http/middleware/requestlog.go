@@ -45,7 +45,11 @@ func RequestLog(c *gin.Context) {
 	items["response_time"] = egu.GetMicroTimeStampStr()
 	items["response_body"] = getResponseBody(blw.body.String())
 	items["time_used"] = fmt.Sprintf("%v", time.Since(t))
-	items["header"] = c.Request.Header
+
+	if app.Config().Server().Debug {
+		items["header"] = c.Request.Header
+	}
+
 	items["trace_id"] = trace.Get()
 
 	// use goroutine

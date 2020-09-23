@@ -13,19 +13,16 @@ import (
 func Recover(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
+			app.Logger().Debug("recover", log.Context{
+				"error": r,
+				"trace": egu.RuntimeCaller(),
+			})
+
 			err, ok := r.(*errors.Error)
 			if ok {
 				response.WrapContext(ctx).Error(err.Code, err.Message)
 
 			} else {
-
-				if app.Config().Server().Debug {
-					app.Logger().Error("system_error", log.Context{
-						"error": r,
-						"trace": egu.RuntimeCaller(),
-					})
-				}
-
 				response.WrapContext(ctx).Error(500, "System Error")
 			}
 

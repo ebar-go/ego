@@ -24,8 +24,8 @@ func New(code int, message string) *Error {
 	}
 }
 
-// Format 格式化输出
-func Format(code int, format string, v ...interface{}) *Error {
+// Sprintf 格式化输出
+func Sprintf(code int, format string, v ...interface{}) *Error {
 	return New(code, fmt.Sprintf(format, v...))
 }
 
