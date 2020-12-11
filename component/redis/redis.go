@@ -12,9 +12,8 @@ type Client struct {
 }
 
 func New(conf *Config) *Client {
-	return &Client{conf:conf}
+	return &Client{conf: conf}
 }
-
 
 // Connect 单点连接
 func (client *Client) Connect() error {

@@ -38,7 +38,7 @@ func TestDelete(t *testing.T) {
 	fmt.Println(response.String())
 }
 
-func TestResponse(t *testing.T)  {
+func TestResponse(t *testing.T) {
 
 	request := NewRequest("xxx", address, nil)
 	if err := request.Err(); err != nil {
@@ -55,7 +55,7 @@ func TestResponse(t *testing.T)  {
 	fmt.Println(string(response.Byte()))
 
 	respObj := struct {
-		Code int `json:"status_code"`
+		Code    int    `json:"status_code"`
 		Message string `json:"message"`
 	}{}
 	assert.Nil(t, response.BindJson(&respObj))

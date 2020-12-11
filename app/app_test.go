@@ -10,12 +10,12 @@ type Obj struct {
 }
 
 func NewObj() (*Obj, error) {
-	return &Obj{Number:1}, fmt.Errorf("xxx")
+	return &Obj{Number: 1}, fmt.Errorf("xxx")
 }
 
-func TestProvide(t *testing.T)  {
+func TestProvide(t *testing.T) {
 	err := Container().Provide(NewObj)
-	fmt.Println("err:",err)
+	fmt.Println("err:", err)
 
 	// 当构造函数NewObj返回err时，provide不会立刻报错，而是再invoke得时候报错
 	err1 := Container().Invoke(func(obj *Obj) {

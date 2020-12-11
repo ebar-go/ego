@@ -1,7 +1,7 @@
 package pagination
 
 import (
-	"github.com/ebar-go/ego/utils/number"
+	"github.com/ebar-go/egu"
 	"math"
 )
 
@@ -49,7 +49,7 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
 		pagination.CurrentPage = defaultCurrentPage
 	}
 
-	pagination.TotalPages = number.Div(totalCount, pagination.Limit)
+	pagination.TotalPages = egu.Div(totalCount, pagination.Limit)
 	if pagination.CurrentPage < pagination.TotalPages {
 		pagination.CurrentCount = pagination.Limit
 	} else if pagination.CurrentPage > pagination.TotalPages {
@@ -83,7 +83,7 @@ func PaginateSlice(items []interface{}, currentPage, limit int) (paginate Pagina
 	paginate.TotalPages = int(math.Ceil(float64(paginate.TotalCount) / float64(paginate.Limit))) //page总数
 
 	low := paginate.GetOffset()
-	high := number.Min(paginate.TotalCount, low+paginate.Limit)
+	high := egu.Min(paginate.TotalCount, low+paginate.Limit)
 
 	if low < high {
 		paginate.CurrentCount = high - low

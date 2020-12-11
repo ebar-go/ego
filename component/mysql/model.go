@@ -6,3 +6,10 @@ type Model struct {
 	CreatedAt int `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt int `gorm:"column:updated_at" json:"updated_at"`
 }
+
+type Columns map[string]interface{}
+
+const (
+	ColumnCreatedAt = "created_at"
+	ColumnUpdatedAt = "updated_at"
+)

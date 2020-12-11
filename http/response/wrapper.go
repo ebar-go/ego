@@ -34,7 +34,7 @@ func (w *wrapper) Success(data interface{}) {
 // Error 输出错误响应
 func (w *wrapper) Error(code int, message string) {
 	r := rp.Get()
-	r.StatusCode = code
+	r.Code = code
 	r.Message = message
 
 	w.output(r)

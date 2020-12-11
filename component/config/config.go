@@ -5,11 +5,9 @@ import (
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/spf13/viper"
-	"log"
 	"sync"
 	"time"
 )
-
 
 const (
 	systemNameKey         = "server.systemName"
@@ -20,7 +18,14 @@ const (
 	httpRequestTimeoutKey = "server.httpRequestTimeout"
 	jwtSignKey            = "server.jwtSign"
 	debugKey              = "server.debug"
-	mysqlKey 			  = "mysql"
+	pprofKey              = "server.pprof"
+	swaggerKey            = "server.swagger"
+	taskKey               = "server.task"
+
+	mysqlDsnKey                = "mysql.dsn"
+	mysqlMaxIdleConnectionsKey = "mysql.maxIdleConnections"
+	mysqlMaxOpenConnectionsKey = "mysql.maxOpenConnections"
+	mysqlMaxLifeTimeKey        = "mysql.maxLifeTime"
 
 	redisHostKey        = "redis.host"
 	redisPortKey        = "redis.port"
@@ -28,28 +33,29 @@ const (
 	redisPoolSizeKey    = "redis.poolSize"
 	redisMaxRetriesKey  = "redis.maxRetries"
 	redisIdleTimeoutKey = "redis.idleTimeout"
-	redisCluster = "redis.cluster"
+	redisCluster        = "redis.cluster"
 
 	etcdEndpoints = "etcd.endpoints"
-	etcdTimeout = "etcd.timeout"
+	etcdTimeout   = "etcd.timeout"
+
+	envKey     = "server.environment"
+	envProduct = "product"
 )
-
-
-
 
 // Config 配置
 type Config struct {
 	*viper.Viper
 	server *serverConf
-	mysql map[string]mysql.Config
-	redis *redis.Config
-	etcd *etcd.Config
-	mu *sync.Mutex
+	mysql  *mysql.Config
+	redis  *redis.Config
+	etcd   *etcd.Config
+	mu     *sync.Mutex
 }
-
 
 // serverConf  服务配置
 type serverConf struct {
+	// 运行环境
+	Environment string
 	// 服务名称
 	Name string
 
@@ -73,10 +79,19 @@ type serverConf struct {
 
 	// 是否开启debug,开启后会显示debug信息
 	Debug bool
+
+	// 是否开启pprof
+	Pprof bool
+
+	// 是否开启swagger文档
+	Swagger bool
+
+	// 是否开启定时任务
+	Task bool
 }
 
 // New 实例
-func New() *Config  {
+func New() *Config {
 	conf := new(Config)
 	conf.Viper = viper.New()
 	conf.mu = new(sync.Mutex)
@@ -84,6 +99,9 @@ func New() *Config  {
 	return conf
 }
 
+func (conf *Config) IsProduct() bool {
+	return envProduct == conf.Server().Environment
+}
 
 func (conf *Config) setDefault() {
 	conf.AutomaticEnv()
@@ -109,12 +127,13 @@ func (conf *Config) LoadFile(path string) error {
 }
 
 // Server
-func (conf *Config) Server() (*serverConf) {
+func (conf *Config) Server() *serverConf {
 	if conf.server == nil {
 		// 加锁防止并发
 		conf.mu.Lock()
 		defer conf.mu.Unlock()
 		conf.server = &serverConf{
+			Environment:        conf.GetString(envKey),
 			Name:               conf.GetString(systemNameKey),
 			Port:               conf.GetInt(httpPortKey),
 			MaxResponseLogSize: conf.GetInt(maxResponseLogSizeKey),
@@ -123,6 +142,9 @@ func (conf *Config) Server() (*serverConf) {
 			TraceHeader:        conf.GetString(traceHeaderKey),
 			HttpRequestTimeOut: conf.GetInt(httpRequestTimeoutKey),
 			Debug:              conf.GetBool(debugKey),
+			Pprof:              conf.GetBool(pprofKey),
+			Swagger:            conf.GetBool(swaggerKey),
+			Task:               conf.GetBool(taskKey),
 		}
 	}
 
@@ -130,24 +152,23 @@ func (conf *Config) Server() (*serverConf) {
 }
 
 // mysql
-func (conf *Config) Mysql() map[string]mysql.Config {
+func (conf *Config) Mysql() *mysql.Config {
 	if conf.mysql == nil {
 		conf.mu.Lock()
 		defer conf.mu.Unlock()
-		var items map[string]mysql.Config
-		if err := conf.UnmarshalKey(mysqlKey, &items); err != nil {
-			log.Println("Read Mysql Config:", err.Error())
-			return nil
+		conf.mysql = &mysql.Config{
+			MaxIdleConnections: conf.GetInt(mysqlMaxIdleConnectionsKey),
+			MaxOpenConnections: conf.GetInt(mysqlMaxOpenConnectionsKey),
+			MaxLifeTime:        conf.GetInt(mysqlMaxLifeTimeKey),
+			Dsn:                conf.GetString(mysqlDsnKey),
 		}
-		conf.mysql = items
 	}
-
 
 	return conf.mysql
 }
 
 // Redis
-func (conf *Config) Redis() (*redis.Config){
+func (conf *Config) Redis() *redis.Config {
 	if conf.redis == nil {
 		conf.mu.Lock()
 		defer conf.mu.Unlock()
@@ -158,7 +179,7 @@ func (conf *Config) Redis() (*redis.Config){
 			PoolSize:    conf.GetInt(redisPoolSizeKey),
 			MaxRetries:  conf.GetInt(redisMaxRetriesKey),
 			IdleTimeout: time.Duration(conf.GetInt(redisIdleTimeoutKey)) * time.Second,
-			Cluster: conf.GetString(redisCluster),
+			Cluster:     conf.GetStringSlice(redisCluster),
 		}
 	}
 	return conf.redis

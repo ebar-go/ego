@@ -7,7 +7,7 @@ import (
 )
 
 // WsServer
-type WsServer interface{
+type WsServer interface {
 	Register(conn *websocketConn, handler Handler)
 	Unregister(id string)
 	Start()
@@ -76,7 +76,6 @@ func (websocketServer *websocketServer) Broadcast(message []byte, ignore *websoc
 	}
 }
 
-
 // Send push message to client
 func (websocketServer *websocketServer) Send(message []byte, c *websocketConn) {
 	_ = c.conn.WriteMessage(websocket.TextMessage, message)
@@ -92,9 +91,9 @@ func (websocketServer *websocketServer) UpgradeConn(w http.ResponseWriter, r *ht
 		return nil, err
 	}
 
-	return  &websocketConn{
-		ID:      uuid.NewV4().String(),
-		conn:    conn,
+	return &websocketConn{
+		ID:   uuid.NewV4().String(),
+		conn: conn,
 	}, nil
 }
 
@@ -114,9 +113,8 @@ type websocketConn struct {
 }
 
 func (c *websocketConn) GetID() string {
-	 return c.ID
+	return c.ID
 }
-
 
 // close
 func (c *websocketConn) close() {
@@ -140,5 +138,3 @@ func (c *websocketConn) listen() {
 
 	}
 }
-
-

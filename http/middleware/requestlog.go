@@ -6,9 +6,7 @@ import (
 	"github.com/ebar-go/ego/app"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/utils/conv"
-	"github.com/ebar-go/ego/utils/date"
-	"github.com/ebar-go/ego/utils/number"
+	"github.com/ebar-go/egu"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -30,7 +28,7 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 // RequestLog gin的请求日志中间件
 func RequestLog(c *gin.Context) {
 	t := time.Now()
-	requestTime := date.GetMicroTimeStampStr()
+	requestTime := egu.GetMicroTimeStampStr()
 	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 	c.Writer = blw
 
@@ -44,20 +42,26 @@ func RequestLog(c *gin.Context) {
 	items["refer_request_host"] = c.ClientIP()
 	items["request_body"] = getRequestBody(c)
 	items["request_time"] = requestTime
-	items["response_time"] = date.GetMicroTimeStampStr()
+	items["response_time"] = egu.GetMicroTimeStampStr()
 	items["response_body"] = getResponseBody(blw.body.String())
 	items["time_used"] = fmt.Sprintf("%v", time.Since(t))
-	items["header"] = c.Request.Header
+
+	if app.Config().Server().Debug {
+		items["header"] = c.Request.Header
+	}
+
 	items["trace_id"] = trace.Get()
-	app.Logger().Info("REQUEST INFO", items)
+
+	// use goroutine
+	go app.Logger().Info("REQUEST INFO", items)
 }
 
 // getResponseBody
 func getResponseBody(s string) string {
-	maxResponseSize := number.Min(len(s), app.Config().Server().MaxResponseLogSize)
+	maxResponseSize := egu.Min(len(s), app.Config().Server().MaxResponseLogSize)
 	res := make([]byte, maxResponseSize)
 	copy(res, s[:maxResponseSize])
-	return conv.Byte2Str(res)
+	return egu.Byte2Str(res)
 }
 
 // GetRequestBody 获取请求参数

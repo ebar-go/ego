@@ -10,5 +10,5 @@ package etcd
 
 type Config struct {
 	Endpoints []string
-	Timeout int
+	Timeout   int
 }

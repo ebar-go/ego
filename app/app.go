@@ -2,21 +2,21 @@ package app
 
 import (
 	"github.com/ebar-go/ego/component/auth"
-	"github.com/ebar-go/ego/component/buffer"
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/etcd"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/ebar-go/egu"
+	"github.com/robfig/cron"
 	"go.uber.org/dig"
+	"gorm.io/gorm"
 	"net/http"
 )
 
 var container *dig.Container
 
-func init()  {
+func init() {
 	container = dig.New()
 	// 注入配置文件
 	_ = container.Provide(config.New)
@@ -27,13 +27,17 @@ func init()  {
 	// 注入jwt组件
 	_ = container.Provide(newJwt)
 	// 注入bufferPool
-	_ = container.Provide(buffer.NewPool)
+	_ = container.Provide(egu.NewBufferPool)
+
+	_ = container.Provide(newDBManager)
+
 	// 注入redis组件
 	_ = container.Provide(newRedis)
-	// 注入DB组件
-	_ = container.Provide(newDB)
 	// 注入etcd主键
 	_ = container.Provide(newEtcd)
+
+	_ = container.Provide(cron.New)
+
 }
 
 // Container 容器
@@ -42,7 +46,7 @@ func Container() *dig.Container {
 }
 
 // Config 配置文件
-func Config() (conf *config.Config)  {
+func Config() (conf *config.Config) {
 	_ = container.Invoke(func(c *config.Config) {
 		conf = c
 	})
@@ -57,24 +61,21 @@ func Redis() (client *redis.Client) {
 	return
 }
 
-// InitDB 初始化DB
-func InitDB() error  {
-	 return  container.Invoke(func(gm *mysql.GroupManager) error {
-		return gm.Connect()
+func dbManager() (m *mysql.Manager) {
+	_ = container.Invoke(func(instance *mysql.Manager) {
+		m = instance
 	})
+
+	return
+}
+
+func InitDB() error {
+	return dbManager().Connect()
 }
 
 // DB 返回数据库连接
-func DB() *gorm.DB {
-	return GetDB("default")
-}
-
-// GetDB 通过名称获取数据库连接
-func GetDB(name string) (conn *gorm.DB) {
-	_ = container.Invoke(func(gm *mysql.GroupManager) {
-		conn = gm.GetConnection(name)
-	})
-	return
+func DB() (conn *gorm.DB) {
+	return dbManager().DB
 }
 
 // Http client
@@ -84,7 +85,6 @@ func Http() (client *http.Client) {
 	})
 	return
 }
-
 
 // Logger 日志管理器
 func Logger() (logger *log.Logger) {
@@ -102,19 +102,26 @@ func Jwt() (jwt *auth.JwtAuth) {
 	return
 }
 
+// Etcd
+func Etcd() (client *etcd.Client) {
+	_ = container.Invoke(func(instance *etcd.Client) {
+		client = instance
+	})
+	return
+}
 
-// BufferPool buffer池
-func BufferPool() (pool *buffer.Pool) {
-	_ = container.Invoke(func(instance *buffer.Pool) {
+func BufferPool() (pool *egu.BufferPool) {
+	_ = container.Invoke(func(instance *egu.BufferPool) {
 		pool = instance
 	})
 	return
 }
 
-// Etcd
-func Etcd() (client *etcd.Client)  {
-	_ = container.Invoke(func(instance *etcd.Client) {
-		client = instance
+// task manager
+func Task() (manager *cron.Cron) {
+	_ = container.Invoke(func(c *cron.Cron) {
+		manager = c
 	})
+
 	return
 }
