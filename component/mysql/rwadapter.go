@@ -6,7 +6,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
-	"github.com/ebar-go/egu"
+	"github.com/zutim/egu"
 	"time"
 )
 

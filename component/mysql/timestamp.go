@@ -3,7 +3,7 @@ package mysql
 import (
 	"database/sql/driver"
 	"fmt"
-	"github.com/ebar-go/egu"
+	"github.com/zutim/egu"
 	"time"
 )
 
