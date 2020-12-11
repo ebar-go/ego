@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"github.com/ebar-go/ego/app"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/zutim/ego/app"
 )
 
 const (

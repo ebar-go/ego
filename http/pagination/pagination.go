@@ -1,7 +1,7 @@
 package pagination
 
 import (
-	"github.com/ebar-go/egu"
+	"github.com/zutim/egu"
 	"math"
 )
 

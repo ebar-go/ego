@@ -1,9 +1,9 @@
 package response
 
 import (
-	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/ego/http/pagination"
-	"github.com/ebar-go/egu"
+	"github.com/zutim/ego/component/trace"
+	"github.com/zutim/ego/http/pagination"
+	"github.com/zutim/egu"
 )
 
 const (

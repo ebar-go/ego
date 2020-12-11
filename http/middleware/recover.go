@@ -1,12 +1,11 @@
 package middleware
 
 import (
-	"github.com/ebar-go/ego/app"
-	"github.com/ebar-go/ego/component/log"
-	"github.com/ebar-go/ego/errors"
-	"github.com/ebar-go/ego/http/response"
-	"github.com/ebar-go/egu"
 	"github.com/gin-gonic/gin"
+	"github.com/zutim/ego/app"
+	"github.com/zutim/ego/component/log"
+	"github.com/zutim/ego/http/response"
+	"github.com/zutim/egu"
 )
 
 // Recover

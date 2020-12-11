@@ -2,11 +2,6 @@ package ego
 
 import (
 	"context"
-	"github.com/ebar-go/ego/app"
-	"github.com/ebar-go/ego/component/event"
-	"github.com/ebar-go/ego/http/handler"
-	"github.com/ebar-go/ego/http/middleware"
-	"github.com/ebar-go/ego/http/validator"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"

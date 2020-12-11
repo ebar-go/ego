@@ -3,9 +3,9 @@ package middleware
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/ebar-go/ego/app"
-	"github.com/ebar-go/ego/http/response"
 	"github.com/gin-gonic/gin"
+	"github.com/zutim/ego/app"
+	"github.com/zutim/ego/http/response"
 	"strings"
 )
 

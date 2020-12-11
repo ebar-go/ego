@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/ebar-go/ego/component/trace"
+	"github.com/zutim/ego/component/trace"
 	"go.uber.org/zap"
 )
 

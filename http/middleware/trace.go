@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"github.com/ebar-go/ego/app"
-	"github.com/ebar-go/ego/component/event"
-	"github.com/ebar-go/ego/component/trace"
 	"github.com/gin-gonic/gin"
+	"github.com/zutim/ego/app"
+	"github.com/zutim/ego/component/event"
+	"github.com/zutim/ego/component/trace"
 	"strings"
 )
 

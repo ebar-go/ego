@@ -2,8 +2,8 @@ package curl
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego/app"
-	"github.com/ebar-go/ego/component/trace"
+	"github.com/zutim/ego/app"
+	"github.com/zutim/ego/component/trace"
 	"io"
 	"net/http"
 )

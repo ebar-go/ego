@@ -2,7 +2,7 @@ package curl
 
 import (
 	"bytes"
-	"github.com/ebar-go/egu"
+	"github.com/zutim/egu"
 	"io"
 )
 

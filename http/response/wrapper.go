@@ -3,8 +3,8 @@
 package response
 
 import (
-	"github.com/ebar-go/ego/http/pagination"
 	"github.com/gin-gonic/gin"
+	"github.com/zutim/ego/http/pagination"
 	"reflect"
 )
 

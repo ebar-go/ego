@@ -1,9 +1,9 @@
 package ego
 
 import (
-	"github.com/ebar-go/ego/http/response"
-	"github.com/ebar-go/egu"
 	"github.com/gin-gonic/gin"
+	"github.com/zutim/ego/http/response"
+	"github.com/zutim/egu"
 	"testing"
 )
 

@@ -1,10 +1,10 @@
 package config
 
 import (
-	"github.com/ebar-go/ego/component/etcd"
-	"github.com/ebar-go/ego/component/mysql"
-	"github.com/ebar-go/ego/component/redis"
 	"github.com/spf13/viper"
+	"github.com/zutim/ego/component/etcd"
+	"github.com/zutim/ego/component/mysql"
+	"github.com/zutim/ego/component/redis"
 	"sync"
 	"time"
 )

@@ -1,14 +1,12 @@
 package app
 
 import (
-	"github.com/ebar-go/ego/component/auth"
-	"github.com/ebar-go/ego/component/config"
-	"github.com/ebar-go/ego/component/etcd"
-	"github.com/ebar-go/ego/component/log"
-	"github.com/ebar-go/ego/component/mysql"
-	"github.com/ebar-go/ego/component/redis"
-	"github.com/ebar-go/egu"
 	"github.com/robfig/cron"
+	"github.com/zutim/ego/component/auth"
+	"github.com/zutim/ego/component/config"
+	"github.com/zutim/ego/component/etcd"
+	"github.com/zutim/ego/component/mysql"
+	"github.com/zutim/egu"
 	"go.uber.org/dig"
 	"gorm.io/gorm"
 	"net/http"
