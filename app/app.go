@@ -5,6 +5,7 @@ import (
 	"github.com/zutim/ego/component/auth"
 	"github.com/zutim/ego/component/config"
 	"github.com/zutim/ego/component/etcd"
+	"github.com/zutim/ego/component/log"
 	"github.com/zutim/ego/component/mysql"
 	"github.com/zutim/ego/component/redis"
 	"github.com/zutim/egu"
