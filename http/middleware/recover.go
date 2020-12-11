@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/zutim/ego/app"
 	"github.com/zutim/ego/component/log"
+	"github.com/zutim/ego/errors"
 	"github.com/zutim/ego/http/response"
 	"github.com/zutim/egu"
 )
