@@ -1,4 +1,4 @@
-module github.com/ebar-go/ego
+module github.com/zutim/ego
 
 go 1.14
 
