@@ -34,9 +34,7 @@ type httpServer struct {
 }
 
 func init() {
-	event.Listen(event.BeforeHttpStart, func(ev event.Event) {
-		binding.Validator = new(validator.Validator)
-	})
+	binding.Validator = new(validator.Validator)
 }
 
 // HttpServer 获取httpServer示例
@@ -53,13 +51,9 @@ func HttpServer() *httpServer {
 }
 
 // Start run http server
-// args must be less than one,
-// eg: Start()
 func (server *httpServer) Start() error {
 	// use lock
 	server.mu.Lock()
-
-	// 解析port
 
 	// 404
 	server.Router.NoRoute(server.NotFoundHandler)

@@ -21,7 +21,6 @@ func Recover(ctx *gin.Context) {
 			err, ok := r.(*errors.Error)
 			if ok {
 				response.WrapContext(ctx).Error(err.Code, err.Message)
-
 			} else {
 				response.WrapContext(ctx).Error(500, "System Error")
 			}

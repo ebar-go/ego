@@ -4,6 +4,7 @@ import (
 	"github.com/ebar-go/ego/component/etcd"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
+	"github.com/ebar-go/ego/http/server"
 	"github.com/spf13/viper"
 	"sync"
 	"time"
@@ -39,56 +40,24 @@ const (
 	etcdTimeout   = "etcd.timeout"
 
 	envKey     = "server.environment"
+
+)
+
+const(
 	envProduct = "product"
+	envDevelop = "develop"
 )
 
 // Config 配置
 type Config struct {
 	*viper.Viper
-	server *serverConf
+	server *server.Config
 	mysql  *mysql.Config
 	redis  *redis.Config
 	etcd   *etcd.Config
 	mu     *sync.Mutex
 }
 
-// serverConf  服务配置
-type serverConf struct {
-	// 运行环境
-	Environment string
-	// 服务名称
-	Name string
-
-	// 服务端口号
-	Port int
-
-	// 响应日志最大长度
-	MaxResponseLogSize int
-
-	// 日志路径
-	LogPath string
-
-	// jwt的key
-	JwtSignKey []byte
-
-	// trace header key
-	TraceHeader string
-
-	// http request timeout
-	HttpRequestTimeOut int
-
-	// 是否开启debug,开启后会显示debug信息
-	Debug bool
-
-	// 是否开启pprof
-	Pprof bool
-
-	// 是否开启swagger文档
-	Swagger bool
-
-	// 是否开启定时任务
-	Task bool
-}
 
 // New 实例
 func New() *Config {
@@ -99,9 +68,19 @@ func New() *Config {
 	return conf
 }
 
-func (conf *Config) IsProduct() bool {
-	return envProduct == conf.Server().Environment
+
+// LoadFile 加载配置文件
+func (conf *Config) LoadFile(path ...string) error {
+	for _, p := range path {
+		conf.SetConfigFile(p)
+		if err := conf.MergeInConfig(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
+
 
 func (conf *Config) setDefault() {
 	conf.AutomaticEnv()
@@ -111,28 +90,16 @@ func (conf *Config) setDefault() {
 	conf.SetDefault(logPathKey, "/tmp/app.log")
 	conf.SetDefault(traceHeaderKey, "gateway-trace")
 	conf.SetDefault(httpRequestTimeoutKey, 3)
-
-	conf.SetDefault(redisHostKey, "127.0.0.1")
-	conf.SetDefault(redisPortKey, 6379)
-	conf.SetDefault(redisPoolSizeKey, 100)
-	conf.SetDefault(redisMaxRetriesKey, 3)
-	conf.SetDefault(redisIdleTimeoutKey, 5)
 }
 
-// LoadFile 加载配置文件
-func (conf *Config) LoadFile(path string) error {
-	conf.SetConfigFile(path)
-
-	return conf.ReadInConfig()
-}
 
 // Server
-func (conf *Config) Server() *serverConf {
+func (conf *Config) Server() *server.Config {
 	if conf.server == nil {
 		// 加锁防止并发
 		conf.mu.Lock()
 		defer conf.mu.Unlock()
-		conf.server = &serverConf{
+		conf.server = &server.Config{
 			Environment:        conf.GetString(envKey),
 			Name:               conf.GetString(systemNameKey),
 			Port:               conf.GetInt(httpPortKey),
@@ -197,4 +164,15 @@ func (conf *Config) Etcd() *etcd.Config {
 		}
 	}
 	return conf.etcd
+}
+
+
+// IsProduct 是否为生产环境
+func (conf *Config) IsProduct() bool {
+	return envProduct == conf.Server().Environment
+}
+
+// IsDevelop 是否为测试环境
+func (conf *Config) IsDevelop() bool {
+	return envDevelop == conf.Server().Environment
 }
