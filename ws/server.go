@@ -27,7 +27,7 @@ func New() Server {
 
 // Register register conn
 func (srv *server) Register(conn *Connection) {
-	go conn.listen()
+	go conn.listen(srv.unregister)
 	srv.register <- conn
 }
 
@@ -36,8 +36,7 @@ func (srv *server) Unregister(id string) {
 	conn, ok := srv.connections[id]
 
 	if ok {
-		conn.close()
-		srv.unregister <- conn
+		conn.close(srv.unregister)
 	}
 }
 

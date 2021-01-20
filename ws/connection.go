@@ -42,13 +42,16 @@ func (conn *Connection) Handle(handler Handler) {
 }
 
 // close
-func (c *Connection) close() {
+func (c *Connection) close(unregister chan *Connection) {
 	_ = c.sockConn.Close()
+	unregister <- c
 }
 
 // Listen listen connection
-func (c *Connection) listen() {
-	defer c.close()
+func (c *Connection) listen(unregister chan *Connection) {
+	defer func() {
+		c.close(unregister)
+	}()
 
 	for {
 		_, message, err := c.sockConn.ReadMessage()
