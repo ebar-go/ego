@@ -7,7 +7,6 @@ import (
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
-	"github.com/ebar-go/egu"
 	"github.com/robfig/cron"
 	"go.uber.org/dig"
 	"gorm.io/gorm"
@@ -26,8 +25,6 @@ func init() {
 	_ = container.Provide(newLogger)
 	// 注入jwt组件
 	_ = container.Provide(newJwt)
-	// 注入bufferPool
-	_ = container.Provide(egu.NewBufferPool)
 
 	_ = container.Provide(newDBManager)
 
@@ -106,13 +103,6 @@ func Jwt() (jwt *auth.JwtAuth) {
 func Etcd() (client *etcd.Client) {
 	_ = container.Invoke(func(instance *etcd.Client) {
 		client = instance
-	})
-	return
-}
-
-func BufferPool() (pool *egu.BufferPool) {
-	_ = container.Invoke(func(instance *egu.BufferPool) {
-		pool = instance
 	})
 	return
 }

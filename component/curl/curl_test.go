@@ -62,3 +62,12 @@ func TestResponse(t *testing.T) {
 	fmt.Println(respObj.Message)
 
 }
+
+func TestPostFile(t *testing.T) {
+	params := map[string]string{"name":"aa"}
+	files := map[string]string{"file":"/usr/local/aa.file"}
+
+	resp, err := PostFile(address, params , files, nil)
+	assert.Nil(t, err)
+	fmt.Print(resp.String())
+}
