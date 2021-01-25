@@ -59,7 +59,7 @@ func Delete(url string) (*response, error) {
 }
 
 // PostFile 上传文件
-func PostFile(url string, files map[string]string, params map[string]string, headers map[string]string) (*response, error) {
+func PostFile(url string, files map[string]string, params map[string]string) (*response, error) {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	// 添加form参数
@@ -96,10 +96,7 @@ func PostFile(url string, files map[string]string, params map[string]string, hea
 	if req.err != nil {
 		return nil, req.err
 	}
-	// 设置header
-	for name, item := range headers {
-		req.Header.Set(name, item)
-	}
+
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	return req.Send()
