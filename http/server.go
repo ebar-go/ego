@@ -1,6 +1,5 @@
 package http
 
-
 import (
 	"context"
 	"github.com/ebar-go/ego/app"
@@ -8,7 +7,6 @@ import (
 	"github.com/ebar-go/ego/http/handler"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/validator"
-	"github.com/ebar-go/egu"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -28,31 +26,53 @@ type Server struct {
 	// 并发锁,可导出结构体采用私有变量，而不采用内嵌的方式
 	mu sync.Mutex
 
+	router *gin.Engine
+
 	// gin的路由
-	Router *gin.Engine
-
-	// not found handler
-	NotFoundHandler func(ctx *gin.Context)
-
-	// 自定义端口号
-	Port int
-}
-
-func init() {
-	binding.Validator = new(validator.Validator)
+	options *options
 }
 
 // HttpServer 获取Server示例
-func New() *Server {
+func New(opts ...Option) *Server {
+	defaultOption := &options{
+		port:           app.Config().Server().Port,
+		notFoundHandler: handler.NotFoundHandler,
+	}
+
+	for _, opt := range opts {
+		opt.apply(defaultOption)
+	}
 	router := gin.Default()
 
 	// use global trace middleware
 	router.Use(middleware.Trace)
 
 	return &Server{
-		Router:          router,
-		NotFoundHandler: handler.NotFoundHandler,
+		options: defaultOption,
+		router: router,
 	}
+}
+
+func (server *Server) beforeStart()  {
+	binding.Validator = new(validator.Validator)
+	// before start
+	event.Trigger(event.BeforeHttpStart, nil)
+	// 404
+	server.router.NoRoute(server.options.notFoundHandler)
+	server.router.NoMethod(server.options.notFoundHandler)
+
+	if app.Config().Server().Pprof {
+		pprof.Register(server.router)
+	}
+
+	if app.Config().Server().Task {
+		go app.Task().Start()
+	}
+}
+
+// RouteLoader 加载路由
+func (server *Server) RouteLoader(loader func (router *gin.Engine)) {
+	loader(server.router)
 }
 
 // Start run http server
@@ -60,27 +80,13 @@ func (server *Server) Start() error {
 	// use lock
 	server.mu.Lock()
 
-	// 404
-	server.Router.NoRoute(server.NotFoundHandler)
-	server.Router.NoMethod(server.NotFoundHandler)
+	server.beforeStart()
 
-	port := egu.DefaultInt(server.Port, app.Config().Server().Port)
-	completeHost := net.JoinHostPort("", strconv.Itoa(port))
-
-	// before start
-	event.Trigger(event.BeforeHttpStart, nil)
+	completeHost := net.JoinHostPort("", strconv.Itoa(server.options.port))
 
 	srv := &http.Server{
 		Addr:    completeHost,
-		Handler: server.Router,
-	}
-
-	if app.Config().Server().Pprof {
-		pprof.Register(server.Router)
-	}
-
-	if app.Config().Server().Task {
-		go app.Task().Start()
+		Handler: server.router,
 	}
 
 	go func() {
@@ -100,7 +106,7 @@ func (server *Server) Start() error {
 	return nil
 }
 
-//
+// shutdown
 func (server *Server) shutdown(srv *http.Server) {
 	// wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 10 seconds.
