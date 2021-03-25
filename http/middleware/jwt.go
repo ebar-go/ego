@@ -27,16 +27,16 @@ func validateToken(ctx *gin.Context, claims jwt.Claims) error {
 		return err
 	}
 
-	// token存入context
-	ctx.Set(app.Jwt().ClaimsKey, claims)
+	// 令牌信息存入context
+	ctx.Set("claims", claims)
 	return nil
 }
 
 // JWT gin的jwt中间件
-func JWT(claims jwt.Claims) gin.HandlerFunc {
+func JWT() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// 解析token
-		if err := validateToken(ctx, claims); err != nil {
+		if err := validateToken(ctx, new(jwt.StandardClaims)); err != nil {
 			response.WrapContext(ctx).Error(401, err.Error())
 
 			ctx.Abort()

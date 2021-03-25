@@ -5,20 +5,21 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+type Jwt interface {
+	GenerateToken(claims jwt.Claims) (string, error)
+	ParseToken(token string) (jwt.Claims, error)
+	ParseTokenWithClaims(token string, claims jwt.Claims) error
+}
+
 // JwtAuth jwt
 type JwtAuth struct {
-	signKey   []byte
-	ClaimsKey string
+	key   []byte
 }
 
 const (
 	defaultClaimsKey = "jwt_claims"
 )
 
-// New return JwtAuth instance
-func New(signKey []byte) *JwtAuth {
-	return &JwtAuth{signKey: signKey, ClaimsKey: defaultClaimsKey}
-}
 
 var (
 	TokenValidateFailed = errors.New("token validate failed")
@@ -27,13 +28,13 @@ var (
 // CreateToken 生成token
 func (jwtAuth JwtAuth) GenerateToken(claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtAuth.signKey)
+	return token.SignedString(jwtAuth.key)
 }
 
 // ParseToken parse token
 func (jwtAuth JwtAuth) ParseToken(token string) (jwt.Claims, error) {
 	tokenClaims, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		return jwtAuth.signKey, nil
+		return jwtAuth.key, nil
 	})
 
 	if err != nil {
@@ -50,7 +51,7 @@ func (jwtAuth JwtAuth) ParseToken(token string) (jwt.Claims, error) {
 // ParseToken parse token
 func (jwtAuth JwtAuth) ParseTokenWithClaims(token string, claims jwt.Claims) error {
 	tokenClaims, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtAuth.signKey, nil
+		return jwtAuth.key, nil
 	})
 
 	if err != nil {
@@ -63,4 +64,9 @@ func (jwtAuth JwtAuth) ParseTokenWithClaims(token string, claims jwt.Claims) err
 
 	claims = tokenClaims.Claims
 	return nil
+}
+
+// New return JwtAuth instance
+func New(key []byte) *JwtAuth {
+	return &JwtAuth{key: key}
 }

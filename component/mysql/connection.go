@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+
 type Manager struct {
 	*gorm.DB
 
