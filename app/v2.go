@@ -39,6 +39,11 @@ func (app *App) Run() error {
 	}
 
 	// redis配置
+	if err := app.container.Provide(func (config *config.Config) *redis.Config{
+		return &redis.Config{}
+	}); err != nil {
+		log.Printf("inject database config: %v\n", err)
+	}
 
 	// redis服务
 	if err := app.container.Provide(redis.Connect); err != nil {
