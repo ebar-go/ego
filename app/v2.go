@@ -4,13 +4,19 @@ import (
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
+	"github.com/ebar-go/ego/http"
 	"github.com/ebar-go/ego/http/server"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/dig"
 	"log"
 )
 
 type App struct {
 	container *dig.Container
+}
+
+func New() *App {
+	return &App{container: dig.New()}
 }
 
 func (app *App) Container() *dig.Container {
@@ -50,6 +56,34 @@ func (app *App) Run() error {
 		return err
 	}
 
+	// http server
+	if err := app.container.Provide(http.New); err != nil {
+		return err
+	}
+
+	// router
+	if err := app.container.Provide(func(server *http.Server) *gin.Engine{
+		return server.Router()
+	}); err != nil {
+		return err
+	}
 	return nil
 }
+
+func (app *App) ServeHttp() error {
+	return app.container.Invoke(func(server *http.Server) error {
+		return server.Start()
+	})
+}
+
+func (app *App) LoadConfig(path ...string) error {
+	return app.container.Invoke(func(config *config.Config) error{
+		return config.LoadFile(path...)
+	})
+}
+
+func (app *App) ServeRpc() error {
+	return nil
+}
+
 
