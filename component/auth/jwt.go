@@ -16,11 +16,6 @@ type JwtAuth struct {
 	key   []byte
 }
 
-const (
-	defaultClaimsKey = "jwt_claims"
-)
-
-
 var (
 	TokenValidateFailed = errors.New("token validate failed")
 )
@@ -67,6 +62,6 @@ func (jwtAuth JwtAuth) ParseTokenWithClaims(token string, claims jwt.Claims) err
 }
 
 // New return JwtAuth instance
-func New(key []byte) *JwtAuth {
+func NewJwt(key []byte) *JwtAuth {
 	return &JwtAuth{key: key}
 }

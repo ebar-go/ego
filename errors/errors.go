@@ -24,20 +24,6 @@ func New(code int, message string) *Error {
 	}
 }
 
-
-// With prefix
-func (e *Error) With(prefix string) *Error {
-	e.Message = fmt.Sprintf("%s: %s", prefix, e.Message)
-	return e
-}
-
-
-// Append
-func (e *Error) Append(message string) *Error {
-	e.Message = fmt.Sprintf("%s: %s", e.Message, message)
-	return e
-}
-
 // Sprintf 格式化输出
 func Sprintf(code int, format string, v ...interface{}) *Error {
 	return New(code, fmt.Sprintf(format, v...))

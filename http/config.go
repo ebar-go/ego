@@ -1,4 +1,4 @@
-package server
+package http
 
 
 // Conf  服务配置
@@ -27,4 +27,21 @@ type Config struct {
 	Swagger bool
 	// 是否开启定时任务
 	Task bool
+}
+
+
+const(
+	envProduct = "product"
+	envDevelop = "develop"
+)
+
+
+// IsProduct 是否为生产环境
+func (conf *Config) IsProduct() bool {
+	return envProduct == conf.Environment
+}
+
+// IsDevelop 是否为测试环境
+func (conf *Config) IsDevelop() bool {
+	return envDevelop == conf.Environment
 }

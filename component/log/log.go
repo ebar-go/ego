@@ -45,13 +45,13 @@ func New(logPath string, debug bool, fields map[string]interface{}) *Logger {
 	logger.path = logPath
 	logger.debug = debug
 	logger.fields = fields
-	logger.init()
+	logger.lazyInit()
 
 	return logger
 
 }
 
-func (logger *Logger) init() {
+func (logger *Logger) lazyInit() {
 	level := zap.InfoLevel
 	if logger.debug {
 		level = zap.DebugLevel

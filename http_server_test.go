@@ -2,6 +2,10 @@ package ego
 
 import (
 	"fmt"
+	"github.com/ebar-go/ego/component/auth"
+	"github.com/ebar-go/ego/component/log"
+	"github.com/ebar-go/ego/component/mysql"
+	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/ebar-go/egu"
 	"github.com/gin-gonic/gin"
@@ -9,14 +13,24 @@ import (
 )
 
 type IUserService interface {
+}
 
+type IUserRepo interface {
+}
+
+type userRepo struct {
+	db mysql.Database
+}
+
+func NewUserRepo(db mysql.Database) IUserRepo {
+	return &userRepo{db}
 }
 
 type userService struct {
-	userRepo struct{}
+	userRepo IUserRepo
 }
 
-func NewUserService(userRepo struct{}) IUserService {
+func NewUserService(userRepo IUserRepo) IUserService {
 	return &userService{userRepo: userRepo}
 }
 
@@ -45,8 +59,19 @@ func TestNewServer(t *testing.T) {
 
 	egu.SecurePanic(app.LoadConfig("/usr/local/app.yaml"))
 
-	err := app.Container().Invoke(func(router *gin.Engine, userHandler IUserHandler) {
+	app.Container().Provide(NewUserRepo)
+	app.Container().Provide(NewUserService)
+	app.Container().Provide(NewUserHandler)
+
+	err := app.Container().Invoke(func(router *gin.Engine,
+		logger *log.Logger,
+		jwtAuth auth.Jwt,
+		userHandler IUserHandler,
+	) {
+		router.Use(middleware.CORS, middleware.Recover(logger))
 		router.GET("index", userHandler.Index)
+		router.GET("home", middleware.JWT(jwtAuth))
+
 	})
 	egu.SecurePanic(err)
 

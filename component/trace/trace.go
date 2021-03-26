@@ -49,3 +49,11 @@ func GC() {
 func getGoroutineId() int64 {
 	return goid.Get()
 }
+
+func Go(f func())  {
+	go func(traceId string) {
+		Set(traceId)
+		defer GC()
+		f()
+	}(Get())
+}

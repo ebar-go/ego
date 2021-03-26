@@ -2,13 +2,16 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/http/middleware"
-	"github.com/ebar-go/ego/http/server"
+	"github.com/ebar-go/ego/http/response"
 	"github.com/ebar-go/ego/http/validator"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
 	"net"
 	"net/http"
@@ -21,16 +24,22 @@ import (
 
 // Server Web服务管理器
 type Server struct {
+	// gin engine
 	router *gin.Engine
-	conf *server.Config
+	// server config
+	conf *Config
 }
 
 // HttpServer 获取Server示例
-func New(conf *server.Config) *Server {
+func New(conf *Config) *Server {
 	router := gin.Default()
 
 	// use global trace middleware
-	router.Use(middleware.Trace)
+	router.Use(middleware.Trace(conf.TraceHeader))
+
+	// 404
+	router.NoRoute(notFoundHandler)
+	router.NoMethod(notFoundHandler)
 
 	return &Server{
 		conf: conf,
@@ -42,14 +51,6 @@ func (server *Server) Router() *gin.Engine {
 	return server.router
 }
 
-// 404
-func (server *Server) NoRoute(handler gin.HandlerFunc) {
-
-	server.router.NoRoute(handler)
-	server.router.NoMethod(handler)
-
-}
-
 func (server *Server) beforeStart()  {
 	binding.Validator = new(validator.Validator)
 	// before start
@@ -58,12 +59,14 @@ func (server *Server) beforeStart()  {
 	if server.conf.Pprof {
 		pprof.Register(server.router)
 	}
+
+	if server.conf.Swagger {
+		ginSwagger.WrapHandler(swaggerFiles.Handler)
+	}
 }
 
 // Start run http server
 func (server *Server) Start() error {
-
-
 	server.beforeStart()
 
 	completeHost := net.JoinHostPort("", strconv.Itoa(server.conf.Port))
@@ -109,5 +112,12 @@ func (server *Server) listen(srv *http.Server) {
 		log.Fatal("Server Shutdown:", err)
 	}
 	log.Println("Server exiting")
+}
+
+
+// notFoundHandler 404
+func notFoundHandler(ctx *gin.Context) {
+	response.WrapContext(ctx).Error(404,
+		fmt.Sprintf("404 Not Found: %s", ctx.Request.RequestURI))
 }
 

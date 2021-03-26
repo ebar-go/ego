@@ -1,11 +1,13 @@
 package app
 
 import (
+	"fmt"
+	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/config"
+	"github.com/ebar-go/ego/component/etcd"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/ebar-go/ego/http"
-	"github.com/ebar-go/ego/http/server"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/dig"
 	"log"
@@ -16,27 +18,41 @@ type App struct {
 }
 
 func New() *App {
-	return &App{container: dig.New()}
+	app := &App{container: dig.New()}
+	if err := app.inject(); err != nil {
+		log.Fatalf("%v\n", err)
+	}
+	return app
 }
 
 func (app *App) Container() *dig.Container {
 	return app.container
 }
 
-func (app *App) Run() error {
+func (app *App) inject() error {
 	if err := app.container.Provide(config.New); err != nil {
 		log.Printf("inject config: %v\n", err)
 	}
 
-	if err := app.container.Provide(server.NewConfig); err != nil {
+	if err := app.container.Provide(newHttpConfig); err != nil {
 		log.Printf("inject server config: %v\n", err)
 	}
 
 	// 数据库配置
-	if err := app.container.Provide(func (config *config.Config) *mysql.Config{
-		return &mysql.Config{}
-	}); err != nil {
+	if err := app.container.Provide(newDatabaseConfig); err != nil {
 		log.Printf("inject database config: %v\n", err)
+	}
+
+
+
+	// redis配置
+	if err := app.container.Provide(newRedisConfig); err != nil {
+		log.Printf("inject database config: %v\n", err)
+	}
+
+	// etcd config
+	if err := app.container.Provide(newEtcdConfig); err != nil {
+		log.Printf("inject etcd config: %v\n", err)
 	}
 
 	// 连接数据库
@@ -44,16 +60,9 @@ func (app *App) Run() error {
 		log.Printf("inject database: %v\n", err)
 	}
 
-	// redis配置
-	if err := app.container.Provide(func (config *config.Config) *redis.Config{
-		return &redis.Config{}
-	}); err != nil {
-		log.Printf("inject database config: %v\n", err)
-	}
-
 	// redis服务
 	if err := app.container.Provide(redis.Connect); err != nil {
-		return err
+		return fmt.Errorf("connect redis: %v", err)
 	}
 
 	// http server
@@ -66,6 +75,18 @@ func (app *App) Run() error {
 		return server.Router()
 	}); err != nil {
 		return err
+	}
+
+	// jwt
+	if err := app.container.Provide(func(config *http.Config) auth.Jwt{
+		return auth.NewJwt(config.JwtSignKey)
+	}); err != nil {
+		log.Printf("inject jwt: %v\n", err)
+	}
+
+	// etcd
+	if err  := app.container.Provide(etcd.New); err != nil {
+		log.Printf("inject etcd: %v\n", err)
 	}
 	return nil
 }

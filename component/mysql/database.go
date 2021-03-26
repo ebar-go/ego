@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
 	"log"
 	"time"
 )
@@ -42,4 +43,25 @@ func Connect(conf *Config) (Database, error)  {
 
 	db := &database{db: conn}
 	return db, nil
+}
+
+
+func Resolver() *dbresolver.DBResolver {
+	return new(dbresolver.DBResolver)
+}
+
+func ResolverConfig(item ResolverItem) dbresolver.Config {
+	var sources, replicas []gorm.Dialector
+	for _, source := range item.Sources {
+		sources = append(sources, mysql.Open(source))
+	}
+
+	for _, replica := range item.Replicas {
+		replicas = append(replicas, mysql.Open(replica))
+	}
+
+	return dbresolver.Config{
+		Sources:  sources,
+		Replicas: replicas,
+	}
 }
