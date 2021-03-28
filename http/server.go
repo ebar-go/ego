@@ -16,10 +16,7 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
 	"time"
 )
 
@@ -29,12 +26,12 @@ type Server struct {
 	router *gin.Engine
 	// server config
 	conf *config.Config
-
+	// httpServer
 	instance *http.Server
 }
 
-// HttpServer 获取Server示例
-func New(conf *config.Config) *Server {
+// NewServer 获取Server示例
+func NewServer(conf *config.Config) *Server {
 	router := gin.New()
 
 	// use global trace middleware
@@ -75,7 +72,7 @@ func (server *Server) beforeStart()  {
 	}
 }
 
-// Serve run http server
+// Run run http server
 func (server *Server) Serve() {
 	server.beforeStart()
 
@@ -101,6 +98,7 @@ func (server *Server) Serve() {
 	server.instance = srv
 }
 
+// Close 平滑重启
 func (server *Server) Close() {
 	if server.instance == nil {
 		return
@@ -112,28 +110,6 @@ func (server *Server) Close() {
 	}
 	log.Println("Server exiting")
 }
-
-// shutdown
-func (server *Server) listen(srv *http.Server) {
-	// wait for interrupt signal to gracefully shutdown the server with
-	// a timeout of 10 seconds.
-	quit := make(chan os.Signal, 1)
-	// kill (no param) default send syscall.SIGTERM
-	// kill -2 is syscall.SIGINT
-	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("Shutdown Server ...")
-	event.Trigger(event.BeforeHttpShutdown, nil)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown:", err)
-	}
-	log.Println("Server exiting")
-}
-
 
 // notFoundHandler 404
 func notFoundHandler(ctx *gin.Context) {

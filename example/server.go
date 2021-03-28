@@ -34,12 +34,14 @@ func main() {
 		})
 
 	})
+
 	egu.SecurePanic(err)
 
-	app.ListenHTTP()
-	app.ListenCron()
+	app.ServeHTTP()
 
-	app.Serve()
+	app.Run()
+
+
 }
 
 

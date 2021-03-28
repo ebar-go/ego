@@ -17,23 +17,26 @@ import (
 	"syscall"
 )
 
+// App 应用
 type App struct {
 	container *dig.Container
 }
 
+// New 实例化
 func New() *App {
 	app := &App{container: dig.New()}
-	if err := app.inject(); err != nil {
+	if err := app.injectComponents(); err != nil {
 		log.Fatalf("%v\n", err)
 	}
 	return app
 }
-
+// Container 容器
 func (app *App) Container() *dig.Container {
 	return app.container
 }
-
-func (app *App) inject() error {
+// injectComponents 注入组件
+func (app *App) injectComponents() error {
+	// 注入配置项组件
 	if err := app.container.Provide(config.New); err != nil {
 		log.Printf("inject config: %v\n", err)
 	}
@@ -53,6 +56,7 @@ func (app *App) inject() error {
 		log.Printf("inject etcd config: %v\n", err)
 	}
 
+	// 日志
 	if err := app.container.Provide(newLogger); err != nil {
 		log.Printf("inject logger: %v\n", err)
 	}
@@ -68,7 +72,7 @@ func (app *App) inject() error {
 	}
 
 	// http server
-	if err := app.container.Provide(http.New); err != nil {
+	if err := app.container.Provide(http.NewServer); err != nil {
 		return err
 	}
 
@@ -96,6 +100,7 @@ func (app *App) inject() error {
 	return nil
 }
 
+// LoadConfig 加载配置文件
 func (app *App) LoadConfig(path ...string) error {
 	return app.container.Invoke(func(config *config.Config) error{
 		return config.LoadFile(path...)
@@ -103,30 +108,32 @@ func (app *App) LoadConfig(path ...string) error {
 }
 
 
-func (app *App) ListenHTTP() {
+func (app *App) ServeHTTP() {
 	_ =  app.container.Invoke(func(server *http.Server) {
 		server.Serve()
 	})
 }
 
 
-func (app *App) ListenRPC() error {
+func (app *App) serveRPC() error {
 	return nil
 }
 
-func (app *App) ListenWS() error {
+func (app *App) serveWS() error {
 	return nil
 }
 
-func (app *App) ListenCron() {
+func (app *App) LoadTask(loader func (c *cron.Cron)) {
 	_ = app.container.Invoke(func(c *cron.Cron, conf *config.Config) {
+		loader(c)
+
 		if conf.Task {
 			c.Start()
 		}
 	})
 }
 
-func (app *App) Serve() {
+func (app *App) Run() {
 	// wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 10 seconds.
 	quit := make(chan os.Signal, 1)

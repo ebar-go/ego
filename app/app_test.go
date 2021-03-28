@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"go.uber.org/dig"
 	"testing"
 )
@@ -27,8 +26,3 @@ func TestProvide(t *testing.T) {
 	fmt.Println("err1:", err1)
 }
 
-func TestApp_Run(t *testing.T) {
-	app := &App{container: dig.New()}
-	err := app.Run()
-	assert.Nil(t, err)
-}
