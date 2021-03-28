@@ -64,6 +64,19 @@ func initRouter(router *gin.Engine,logger *log.Logger,)  {
 	})
 }
 ```
+
+- 通过`go run main.go`启动服务
+```
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:   export GIN_MODE=release
+ - using code:  gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /index                    --> main.initRouter.func1 (6 handlers)
+2021-03-29 00:23:01.786178 I | Listening and serving HTTP on :8085
+```
+
+访问`localhost:8085/index`验证结果。
+
 ## 文档
 详细文档地址：[https://ebar-go.github.io](https://ebar-go.github.io)
 
