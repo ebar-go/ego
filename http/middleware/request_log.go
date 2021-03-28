@@ -25,7 +25,7 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 }
 
 // RequestLog gin的请求日志中间件
-func RequestLog(logger *log.Logger, maxResponseSize int) gin.HandlerFunc{
+func RequestLog(logger *log.Logger) gin.HandlerFunc{
 	return func(ctx *gin.Context) {
 		t := time.Now()
 		requestTime := egu.GetMicroTimeStampStr()
@@ -43,7 +43,7 @@ func RequestLog(logger *log.Logger, maxResponseSize int) gin.HandlerFunc{
 		items["request_body"] = getRequestBody(ctx)
 		items["request_time"] = requestTime
 		items["response_time"] = egu.GetMicroTimeStampStr()
-		items["response_body"] = getResponseBody(blw.body.String(), maxResponseSize)
+		items["response_body"] = blw.body.String()
 		items["time_used"] = fmt.Sprintf("%v", time.Since(t))
 
 		// use goroutine
@@ -52,14 +52,6 @@ func RequestLog(logger *log.Logger, maxResponseSize int) gin.HandlerFunc{
 		})
 	}
 	
-}
-
-// getResponseBody
-func getResponseBody(s string, maxLogSize int) string {
-	maxResponseSize := egu.Min(len(s), maxLogSize)
-	res := make([]byte, maxResponseSize)
-	copy(res, s[:maxResponseSize])
-	return egu.Byte2Str(res)
 }
 
 // GetRequestBody 获取请求参数

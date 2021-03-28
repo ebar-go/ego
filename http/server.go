@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
+	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/response"
@@ -27,15 +28,22 @@ type Server struct {
 	// gin engine
 	router *gin.Engine
 	// server config
-	conf *Config
+	conf *config.Config
 }
 
 // HttpServer 获取Server示例
-func New(conf *Config) *Server {
-	router := gin.Default()
+func New(conf *config.Config) *Server {
+	router := gin.New()
 
 	// use global trace middleware
 	router.Use(middleware.Trace(conf.TraceHeader))
+	router.Use(func(ctx *gin.Context) {
+		if ctx.Request.RequestURI == "/favicon.ico" {
+			ctx.AbortWithStatus(200)
+			return
+		}
+		ctx.Next()
+	})
 
 	// 404
 	router.NoRoute(notFoundHandler)
@@ -65,8 +73,8 @@ func (server *Server) beforeStart()  {
 	}
 }
 
-// Start run http server
-func (server *Server) Start() error {
+// Serve run http server
+func (server *Server) Serve() error {
 	server.beforeStart()
 
 	completeHost := net.JoinHostPort("", strconv.Itoa(server.conf.Port))

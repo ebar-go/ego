@@ -34,16 +34,10 @@ func (app *App) inject() error {
 		log.Printf("inject config: %v\n", err)
 	}
 
-	if err := app.container.Provide(newHttpConfig); err != nil {
-		log.Printf("inject server config: %v\n", err)
-	}
-
 	// 数据库配置
 	if err := app.container.Provide(newDatabaseConfig); err != nil {
 		log.Printf("inject database config: %v\n", err)
 	}
-
-
 
 	// redis配置
 	if err := app.container.Provide(newRedisConfig); err != nil {
@@ -53,6 +47,10 @@ func (app *App) inject() error {
 	// etcd config
 	if err := app.container.Provide(newEtcdConfig); err != nil {
 		log.Printf("inject etcd config: %v\n", err)
+	}
+
+	if err := app.container.Provide(newLogger); err != nil {
+		log.Printf("inject logger: %v\n", err)
 	}
 
 	// 连接数据库
@@ -78,7 +76,7 @@ func (app *App) inject() error {
 	}
 
 	// jwt
-	if err := app.container.Provide(func(config *http.Config) auth.Jwt{
+	if err := app.container.Provide(func(config *config.Config) auth.Jwt{
 		return auth.NewJwt(config.JwtSignKey)
 	}); err != nil {
 		log.Printf("inject jwt: %v\n", err)
@@ -93,7 +91,7 @@ func (app *App) inject() error {
 
 func (app *App) ServeHttp() error {
 	return app.container.Invoke(func(server *http.Server) error {
-		return server.Start()
+		return server.Serve()
 	})
 }
 
@@ -104,6 +102,10 @@ func (app *App) LoadConfig(path ...string) error {
 }
 
 func (app *App) ServeRpc() error {
+	return nil
+}
+
+func (app *App) ServerWebsocket() error {
 	return nil
 }
 
