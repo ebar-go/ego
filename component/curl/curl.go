@@ -175,9 +175,3 @@ func (c *curl) Send(request *http.Request) (Response, error) {
 	}
 	return &response{body: body}, nil
 }
-
-var _default = New()
-
-func Default() Curl {
-	return _default
-}

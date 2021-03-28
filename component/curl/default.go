@@ -5,6 +5,13 @@ import (
 	"net/http"
 )
 
+
+var _default = New()
+
+func Default() Curl {
+	return _default
+}
+
 func Get(url string) (Response, error) {
 	return Default().Get(url)
 }

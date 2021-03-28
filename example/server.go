@@ -36,7 +36,10 @@ func main() {
 	})
 	egu.SecurePanic(err)
 
-	egu.SecurePanic(app.ServeHttp())
+	app.ListenHTTP()
+	app.ListenCron()
+
+	app.Serve()
 }
 
 

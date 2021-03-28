@@ -34,8 +34,6 @@ type Config struct {
 	JwtSignKey []byte
 	// trace header key
 	TraceHeader string
-	// http request timeout
-	HttpRequestTimeOut int
 	// 是否开启debug,开启后会显示debug信息
 	Debug bool
 	// 是否开启pprof
@@ -55,12 +53,13 @@ func New() *Config {
 }
 
 func (conf *Config) setDefaults() {
+	conf.Name = "app"
 	conf.SetDefault(systemNameKey, "app")
+
+	conf.Port = 8080
 	conf.SetDefault(httpPortKey, 8080)
-	conf.SetDefault(maxResponseLogSizeKey, 2000)
-	conf.SetDefault(logPathKey, "/tmp/app.log")
+
 	conf.SetDefault(traceHeaderKey, "gateway-trace")
-	conf.SetDefault(httpRequestTimeoutKey, 3)
 }
 
 // LoadFile 加载配置文件
@@ -78,7 +77,6 @@ func (conf *Config) LoadFile(path ...string) error {
 	conf.LogPath = conf.GetString(logPathKey)
 	conf.JwtSignKey = []byte(conf.GetString(jwtSignKey))
 	conf.TraceHeader = conf.GetString(traceHeaderKey)
-	conf.HttpRequestTimeOut = conf.GetInt(httpRequestTimeoutKey)
 	conf.Debug = conf.GetBool(debugKey)
 	conf.Pprof = conf.GetBool(pprofKey)
 	conf.Swagger = conf.GetBool(swaggerKey)

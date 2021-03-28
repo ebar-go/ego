@@ -29,6 +29,8 @@ type Server struct {
 	router *gin.Engine
 	// server config
 	conf *config.Config
+
+	instance *http.Server
 }
 
 // HttpServer 获取Server示例
@@ -74,7 +76,7 @@ func (server *Server) beforeStart()  {
 }
 
 // Serve run http server
-func (server *Server) Serve() error {
+func (server *Server) Serve() {
 	server.beforeStart()
 
 	completeHost := net.JoinHostPort("", strconv.Itoa(server.conf.Port))
@@ -89,16 +91,26 @@ func (server *Server) Serve() error {
 
 		// service connections
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen:%s\n", err)
+			log.Fatalf("%v\n", err)
 		}
 
 		// after start
 		event.Trigger(event.AfterHttpStart, nil)
 	}()
 
-	server.listen(srv)
+	server.instance = srv
+}
 
-	return nil
+func (server *Server) Close() {
+	if server.instance == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := server.instance.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown:", err)
+	}
+	log.Println("Server exiting")
 }
 
 // shutdown

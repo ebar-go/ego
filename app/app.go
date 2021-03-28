@@ -9,8 +9,12 @@ import (
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/ebar-go/ego/http"
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron"
 	"go.uber.org/dig"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type App struct {
@@ -86,13 +90,10 @@ func (app *App) inject() error {
 	if err  := app.container.Provide(etcd.New); err != nil {
 		log.Printf("inject etcd: %v\n", err)
 	}
-	return nil
-}
 
-func (app *App) ServeHttp() error {
-	return app.container.Invoke(func(server *http.Server) error {
-		return server.Serve()
-	})
+	// 定时任务
+	_ = app.container.Provide(cron.New)
+	return nil
 }
 
 func (app *App) LoadConfig(path ...string) error {
@@ -101,12 +102,43 @@ func (app *App) LoadConfig(path ...string) error {
 	})
 }
 
-func (app *App) ServeRpc() error {
+
+func (app *App) ListenHTTP() {
+	_ =  app.container.Invoke(func(server *http.Server) {
+		server.Serve()
+	})
+}
+
+
+func (app *App) ListenRPC() error {
 	return nil
 }
 
-func (app *App) ServerWebsocket() error {
+func (app *App) ListenWS() error {
 	return nil
 }
 
+func (app *App) ListenCron() {
+	_ = app.container.Invoke(func(c *cron.Cron, conf *config.Config) {
+		if conf.Task {
+			c.Start()
+		}
+	})
+}
+
+func (app *App) Serve() {
+	// wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 10 seconds.
+	quit := make(chan os.Signal, 1)
+	// kill (no param) default send syscall.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
+
+	_ = app.container.Invoke(func(server *http.Server) {
+		server.Close()
+	})
+}
 
