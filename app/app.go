@@ -107,7 +107,7 @@ func (app *App) LoadConfig(path ...string) error {
 	})
 }
 
-
+// ServeHTTP 启动http服务
 func (app *App) ServeHTTP() {
 	_ =  app.container.Invoke(func(server *http.Server) {
 		server.Serve()
@@ -123,6 +123,7 @@ func (app *App) serveWS() error {
 	return nil
 }
 
+// 加载task
 func (app *App) LoadTask(loader func (c *cron.Cron)) {
 	_ = app.container.Invoke(func(c *cron.Cron, conf *config.Config) {
 		loader(c)
@@ -133,6 +134,7 @@ func (app *App) LoadTask(loader func (c *cron.Cron)) {
 	})
 }
 
+// 启动应用
 func (app *App) Run() {
 	// wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 10 seconds.
@@ -144,8 +146,14 @@ func (app *App) Run() {
 	<-quit
 	log.Println("Shutdown Server ...")
 
+	// close http
 	_ = app.container.Invoke(func(server *http.Server) {
 		server.Close()
+	})
+
+	// clise task
+	_ = app.container.Invoke(func(c *cron.Cron) {
+		c.Stop()
 	})
 }
 
