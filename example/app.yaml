@@ -1,8 +1,3 @@
 server:
   name: demo
   httpPort: 8085
-
-mysql:
-  dsn: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
-  maxOpenConnections: 50
-  maxIdleConnections: 5
