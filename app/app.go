@@ -66,6 +66,14 @@ func (app *App) LoadConfig(path ...string) error {
 		return config.LoadFile(path...)
 	})
 }
+// LoadRouter 加载路由
+func (app *App) LoadRouter(loader interface{}) error {
+	return app.container.Invoke(loader)
+}
+// LoadTask 加载定时任务
+func (app *App) LoadTask(loader func(cron *cron.Cron)) error {
+	return app.container.Invoke(loader)
+}
 
 // ServeHTTP 启动http服务
 func (app *App) ServeHTTP() {
