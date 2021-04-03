@@ -1,22 +1,8 @@
 package config
 
 import (
+	"github.com/ebar-go/egu"
 	"github.com/spf13/viper"
-)
-
-const (
-	systemNameKey         = "server.systemName"
-	httpPortKey           = "server.httpPort"
-	maxResponseLogSizeKey = "server.maxResponseLogSize"
-	logPathKey            = "server.logPath"
-	traceHeaderKey        = "server.traceHeader"
-	httpRequestTimeoutKey = "server.httpRequestTimeout"
-	jwtSignKey            = "server.jwtSign"
-	debugKey              = "server.debug"
-	pprofKey              = "server.pprof"
-	swaggerKey            = "server.swagger"
-	taskKey               = "server.task"
-	envKey                = "server.environment"
 )
 
 // Config 配置
@@ -24,43 +10,17 @@ type Config struct {
 	*viper.Viper
 	// 运行环境
 	Environment string
-	// 服务名称
+	// 应用名称
 	Name string
-	// 服务端口号,
-	Port int
-	// 日志路径
-	LogPath string
-	// jwt的key
-	JwtSignKey []byte
-	// trace header key
-	TraceHeader string
-	// 是否开启debug,开启后会显示debug信息
-	Debug bool
-	// 是否开启pprof
-	Pprof bool
-	// 是否开启swagger文档
-	Swagger bool
-	// 是否开启定时任务
-	Task bool
 }
 
 // New 实例
 func New() *Config {
-	conf := new(Config)
+	conf := &Config{Name: "app", Environment: envDevelop}
 	conf.Viper = viper.New()
-	conf.setDefaults()
 	return conf
 }
 
-func (conf *Config) setDefaults() {
-	conf.Name = "app"
-	conf.SetDefault(systemNameKey, "app")
-
-	conf.Port = 8080
-	conf.SetDefault(httpPortKey, 8080)
-
-	conf.SetDefault(traceHeaderKey, "gateway-trace")
-}
 
 // LoadFile 加载配置文件
 func (conf *Config) LoadFile(path ...string) error {
@@ -71,18 +31,20 @@ func (conf *Config) LoadFile(path ...string) error {
 		}
 	}
 
-	conf.Environment = conf.GetString(envKey)
-	conf.Name = conf.GetString(systemNameKey)
-	conf.Port = conf.GetInt(httpPortKey)
-	conf.LogPath = conf.GetString(logPathKey)
-	conf.JwtSignKey = []byte(conf.GetString(jwtSignKey))
-	conf.TraceHeader = conf.GetString(traceHeaderKey)
-	conf.Debug = conf.GetBool(debugKey)
-	conf.Pprof = conf.GetBool(pprofKey)
-	conf.Swagger = conf.GetBool(swaggerKey)
-	conf.Task = conf.GetBool(taskKey)
+	conf.Environment = conf.GetString("server.name")
+	conf.Name = conf.GetString("server.environment")
 
 	return nil
+}
+
+// GetDefaultInt get int with default value
+func (conf *Config) GetDefaultInt(key string, dn int) int {
+	return egu.DefaultInt(conf.GetInt(key), dn)
+}
+
+// GetDefaultString get string with default value
+func (conf *Config) GetDefaultString(key string, ds string) string{
+	return egu.DefaultString(conf.GetString(key), ds)
 }
 
 const (

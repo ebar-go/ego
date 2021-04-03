@@ -21,6 +21,10 @@ func (d *database) GetInstance() *gorm.DB {
 	return d.db
 }
 
+func (d *database) GetConnection(name string) *gorm.DB {
+	return d.GetInstance().Clauses(dbresolver.Use(name))
+}
+
 func Connect(conf *Config) (Database, error)  {
 	sqlDB, err := sql.Open("mysql", conf.Dsn)
 	if err != nil {

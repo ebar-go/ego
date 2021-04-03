@@ -1,14 +1,13 @@
 package app
 
 import (
-	"fmt"
 	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/etcd"
+	selflog "github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/ebar-go/ego/http"
-	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron"
 	"go.uber.org/dig"
 	"log"
@@ -24,80 +23,41 @@ type App struct {
 
 // New 实例化
 func New() *App {
-	app := &App{container: dig.New()}
-	if err := app.injectComponents(); err != nil {
-		log.Fatalf("%v\n", err)
-	}
-	return app
+	return  &App{container: buildContainer()}
 }
 // Container 容器
 func (app *App) Container() *dig.Container {
 	return app.container
 }
 // injectComponents 注入组件
-func (app *App) injectComponents() error {
+func buildContainer() *dig.Container {
+	container := dig.New()
 	// 注入配置项组件
-	if err := app.container.Provide(config.New); err != nil {
-		log.Printf("inject config: %v\n", err)
-	}
-
-	// 数据库配置
-	if err := app.container.Provide(newDatabaseConfig); err != nil {
-		log.Printf("inject database config: %v\n", err)
-	}
-
-	// redis配置
-	if err := app.container.Provide(newRedisConfig); err != nil {
-		log.Printf("inject database config: %v\n", err)
-	}
-
-	// etcd config
-	if err := app.container.Provide(newEtcdConfig); err != nil {
-		log.Printf("inject etcd config: %v\n", err)
-	}
+	config.Inject(container)
 
 	// 日志
-	if err := app.container.Provide(newLogger); err != nil {
-		log.Printf("inject logger: %v\n", err)
-	}
+	_ = container.Provide(selflog.New)
 
 	// 连接数据库
-	if err := app.container.Provide(mysql.Connect); err != nil {
-		log.Printf("inject database: %v\n", err)
-	}
+	_ = container.Provide(mysql.Connect)
 
 	// redis服务
-	if err := app.container.Provide(redis.Connect); err != nil {
-		return fmt.Errorf("connect redis: %v", err)
-	}
+	_ = container.Provide(redis.Connect)
 
 	// http server
-	if err := app.container.Provide(http.NewServer); err != nil {
-		return err
-	}
-
-	// router
-	if err := app.container.Provide(func(server *http.Server) *gin.Engine{
-		return server.Router()
-	}); err != nil {
-		return err
-	}
+	http.Inject(container)
 
 	// jwt
-	if err := app.container.Provide(func(config *config.Config) auth.Jwt{
+	_ = container.Provide(func(config *http.Config) auth.Jwt{
 		return auth.NewJwt(config.JwtSignKey)
-	}); err != nil {
-		log.Printf("inject jwt: %v\n", err)
-	}
+	})
 
 	// etcd
-	if err  := app.container.Provide(etcd.New); err != nil {
-		log.Printf("inject etcd: %v\n", err)
-	}
+	_ = container.Provide(etcd.New)
 
 	// 定时任务
-	_ = app.container.Provide(cron.New)
-	return nil
+	_ = container.Provide(cron.New)
+	return container
 }
 
 // LoadConfig 加载配置文件
@@ -123,17 +83,6 @@ func (app *App) serveWS() error {
 	return nil
 }
 
-// 加载task
-func (app *App) LoadTask(loader func (c *cron.Cron)) {
-	_ = app.container.Invoke(func(c *cron.Cron, conf *config.Config) {
-		loader(c)
-
-		if conf.Task {
-			c.Start()
-		}
-	})
-}
-
 // 启动应用
 func (app *App) Run() {
 	// wait for interrupt signal to gracefully shutdown the server with
@@ -151,7 +100,7 @@ func (app *App) Run() {
 		server.Close()
 	})
 
-	// clise task
+	// close task
 	_ = app.container.Invoke(func(c *cron.Cron) {
 		c.Stop()
 	})

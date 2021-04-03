@@ -40,19 +40,20 @@ func (logger *Logger) Error(message string, ctx Context) {
 
 // Logger
 type Logger struct {
-	path     string
-	debug    bool
+	conf *Config
 	fields   map[string]interface{}
 	instance *zap.Logger
 }
 
+func (logger *Logger) SetFields(fields map[string]interface{}) {
+	logger.fields = fields
+}
 
 
 // getInstance init logger instance
-func New(debug bool, fields map[string]interface{}) *Logger {
+func New(conf *Config) *Logger {
 	logger := new(Logger)
-	logger.debug = debug
-	logger.fields = fields
+	logger.conf = conf
 	logger.lazyInit()
 
 	return logger
@@ -61,7 +62,7 @@ func New(debug bool, fields map[string]interface{}) *Logger {
 
 func (logger *Logger) lazyInit() {
 	level := zap.InfoLevel
-	if logger.debug {
+	if logger.conf.Debug {
 		level = zap.DebugLevel
 	}
 
@@ -69,7 +70,7 @@ func (logger *Logger) lazyInit() {
 	for idx, val := range logger.fields {
 		fields = append(fields, zap.Any(idx, val))
 	}
-	logger.instance = newZap(logger.path, level, fields...)
+	logger.instance = newZap(logger.conf.Path, level, fields...)
 }
 
 

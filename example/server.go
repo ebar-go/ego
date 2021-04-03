@@ -17,7 +17,7 @@ func main() {
 	egu.SecurePanic(app.LoadConfig("./app.yaml"))
 
 	// 初始化路由
-	egu.SecurePanic(app.Container().Invoke(initRouter))
+	egu.SecurePanic(app.Container().Invoke(routeLoader))
 
 	// 启动http服务
 	app.ServeHTTP()
@@ -26,7 +26,7 @@ func main() {
 	app.Run()
 }
 
-func initRouter(router *gin.Engine,logger *log.Logger,)  {
+func routeLoader(router *gin.Engine,logger *log.Logger,)  {
 	// 引入跨域、recover、请求日志三个中间件
 	router.Use(middleware.CORS, middleware.Recover, middleware.RequestLog(logger))
 	router.GET("index", func(ctx *gin.Context) {

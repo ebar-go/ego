@@ -1,3 +1,5 @@
 server:
   name: demo
-  httpPort: 8085
+
+http:
+  port: 8085

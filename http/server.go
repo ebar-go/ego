@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/http/middleware"
 	"github.com/ebar-go/ego/http/response"
@@ -25,13 +24,14 @@ type Server struct {
 	// gin engine
 	router *gin.Engine
 	// server config
-	conf *config.Config
+	conf *Config
 	// httpServer
 	instance *http.Server
 }
 
+
 // NewServer 获取Server示例
-func NewServer(conf *config.Config) *Server {
+func NewServer(conf *Config) *Server {
 	router := gin.New()
 
 	// use global trace middleware
@@ -52,10 +52,6 @@ func NewServer(conf *config.Config) *Server {
 		conf: conf,
 		router: router,
 	}
-}
-
-func (server *Server) Router() *gin.Engine {
-	return server.router
 }
 
 func (server *Server) beforeStart()  {
