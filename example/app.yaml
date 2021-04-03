@@ -1,5 +1,4 @@
 server:
   name: demo
-
 http:
   port: 8085

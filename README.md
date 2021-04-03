@@ -2,9 +2,10 @@
 简单易用又强大的微服务golang框架。
 
 ## 特性
-- http,websocket服务
+- http服务
+- 定时任务
 - 丰富的中间件：请求日志、JWT认证,跨域,Recover,全局链路
-- 全局服务:日志管理器，Redis,Mysql等
+- 集成Redis,Mysql,Jwt,Etcd客户端等基础组件
 - 配置项
 - 参数验证器
 - curl组件
@@ -20,13 +21,13 @@ go get -u github.com/ebar-go/ego
 ```yaml
 server:
   name: demo
-  httpPort: 8085
+http:
+  port: 8085
 ```
 
 - main.go
 ```go
 package main
-
 import (
 	"github.com/ebar-go/ego"
 	"github.com/ebar-go/ego/component/log"
@@ -35,25 +36,20 @@ import (
 	"github.com/ebar-go/egu"
 	"github.com/gin-gonic/gin"
 )
-
 func main() {
 	// 初始化应用
 	app := ego.App()
-
 	// 加载配置文件
 	egu.SecurePanic(app.LoadConfig("./app.yaml"))
-
 	// 初始化路由
-	egu.SecurePanic(app.Container().Invoke(initRouter))
-
+	egu.SecurePanic(app.Container().Invoke(routeLoader))
 	// 启动http服务
 	app.ServeHTTP()
-
 	// 启动应用
 	app.Run()
 }
-
-func initRouter(router *gin.Engine,logger *log.Logger,)  {
+// routerLoader 加载路由
+func routeLoader(router *gin.Engine,logger *log.Logger,)  {
 	// 引入跨域、recover、请求日志三个中间件
 	router.Use(middleware.CORS, middleware.Recover, middleware.RequestLog(logger))
 	router.GET("index", func(ctx *gin.Context) {
