@@ -29,7 +29,7 @@ func New() *App {
 func (app *App) Container() *dig.Container {
 	return app.container
 }
-// injectComponents 注入组件
+// buildContainer 构造容器
 func buildContainer() *dig.Container {
 	container := dig.New()
 	// 注入配置项组件
@@ -81,6 +81,13 @@ func (app *App) serveRPC() error {
 
 func (app *App) serveWS() error {
 	return nil
+}
+
+// StartCron 开启定时任务
+func (app *App) StartCron() error {
+	return app.container.Invoke(func(cron *cron.Cron){
+		cron.Start()
+	})
 }
 
 // 启动应用

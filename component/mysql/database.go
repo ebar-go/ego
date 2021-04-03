@@ -17,10 +17,12 @@ type database struct {
 	db *gorm.DB
 }
 
+// GetInstance 获取默认连接
 func (d *database) GetInstance() *gorm.DB {
 	return d.db
 }
 
+// GetConnection 获取连接
 func (d *database) GetConnection(name string) *gorm.DB {
 	return d.GetInstance().Clauses(dbresolver.Use(name))
 }

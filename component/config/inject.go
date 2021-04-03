@@ -20,13 +20,13 @@ import (
 
 func Inject(container *dig.Container) {
 	_ = container.Provide(New)
-	_ = container.Provide(newHttpConfig)
-	_ = container.Provide(newLogConfig)
-	_ = container.Provide(newDatabaseConfig)
-	_ = container.Provide(newRedisConfig)
-	_ = container.Provide(newEtcdConfig)
+	_ = container.Provide(httpConfig)
+	_ = container.Provide(logConfig)
+	_ = container.Provide(mysqlConfig)
+	_ = container.Provide(redisConfig)
+	_ = container.Provide(etcdConfig)
 }
-func newHttpConfig(conf *Config) *http.Config {
+func httpConfig(conf *Config) *http.Config {
 	return &http.Config{
 		Port:        conf.GetDefaultInt("http.port", 8080),
 		JwtSignKey:  []byte(conf.GetString("http.jwtSign")),
@@ -36,14 +36,14 @@ func newHttpConfig(conf *Config) *http.Config {
 	}
 }
 
-func newLogConfig(conf *Config) *log.Config {
+func logConfig(conf *Config) *log.Config {
 	return &log.Config{
 		Path:  conf.GetDefaultString("log.path", "path"),
 		Debug: conf.GetBool("log.debug"),
 	}
 }
 
-func newDatabaseConfig(conf *Config) *mysql.Config {
+func mysqlConfig(conf *Config) *mysql.Config {
 	return &mysql.Config{
 		MaxIdleConnections: conf.GetInt("mysql.maxIdleConnections"),
 		MaxOpenConnections: conf.GetInt("mysql.maxOpenConnections"),
@@ -52,7 +52,7 @@ func newDatabaseConfig(conf *Config) *mysql.Config {
 	}
 }
 
-func newRedisConfig(conf *Config) *redis.Config {
+func redisConfig(conf *Config) *redis.Config {
 	return &redis.Config{
 		Host:        conf.GetDefaultString("redis.host", "127.0.0.1"),
 		Port:        conf.GetDefaultInt("redis.port", 6379),
@@ -64,9 +64,9 @@ func newRedisConfig(conf *Config) *redis.Config {
 	}
 }
 
-func newEtcdConfig(conf *Config) *etcd.Config {
+func etcdConfig(conf *Config) *etcd.Config {
 	return &etcd.Config{
 		Endpoints: conf.GetStringSlice("etcd.endpoints"),
-		Timeout:   conf.GetDefaultInt("etcd.timeout", 10),
+		Timeout:   time.Second * time.Duration(conf.GetDefaultInt("etcd.timeout", 10)),
 	}
 }

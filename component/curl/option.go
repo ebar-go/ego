@@ -2,16 +2,19 @@ package curl
 
 import "time"
 
-type options struct {
-	timeout time.Duration
-}
 
 type Option interface {
 	apply(options *options)
 }
 
-type timeoutOption time.Duration
 
+// options 配置项
+type options struct {
+	// 超时
+	timeout time.Duration
+}
+
+type timeoutOption time.Duration
 func (o timeoutOption) apply(options *options) {
 	options.timeout = time.Duration(o)
 }

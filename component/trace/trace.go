@@ -19,6 +19,11 @@ func Id() string {
 	return prefix + egu.UUID()
 }
 
+// Init
+func Init()  {
+	Set(Id())
+}
+
 // SetTraceId
 func Set(id string) {
 	goID := getGoroutineId()

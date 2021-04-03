@@ -6,6 +6,15 @@ import (
 	"io"
 )
 
+// Response
+type Response interface {
+	String() string
+	Byte() []byte
+	BindJson(object interface{}) error
+	Reader() io.Reader
+}
+
+
 // response http response wrapper
 type response struct {
 	body []byte

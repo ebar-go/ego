@@ -8,7 +8,12 @@
 
 package etcd
 
+import "time"
+
+// Config 配置项
 type Config struct {
+	// 节点
 	Endpoints []string
-	Timeout   int
+	// 超时时间
+	Timeout   time.Duration
 }

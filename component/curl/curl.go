@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-
+// Curl
 type Curl interface {
 	Get(url string) (Response, error)
 	Post(url string, body io.Reader) (Response, error)
@@ -24,13 +24,14 @@ type Curl interface {
 	Send(request *http.Request) (Response, error)
 }
 
+// curl instance of Curl interface
 type curl struct {
 	httpClient *http.Client
 	pool *egu.BufferPool
 }
 
 func New(opts ...Option) Curl {
-	options := options{timeout: time.Second * 3}
+	options := options{timeout: time.Second * 30}
 	for _, option := range opts {
 		option.apply(&options)
 	}
@@ -50,13 +51,6 @@ func New(opts ...Option) Curl {
 		},
 		pool:       egu.NewBufferPool(),
 	}
-}
-
-type Response interface {
-	String() string
-	Byte() []byte
-	BindJson(object interface{}) error
-	Reader() io.Reader
 }
 
 

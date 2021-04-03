@@ -1,5 +1,6 @@
 package mysql
 
+// Config 配置
 type Config struct {
 	// 最大空闲连接数
 	MaxIdleConnections int
@@ -14,7 +15,7 @@ type Config struct {
 	Dsn string
 }
 
-//
+// ResolverItem
 type ResolverItem struct {
 	Sources  []string //
 	Replicas []string //

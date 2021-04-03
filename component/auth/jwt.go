@@ -61,7 +61,7 @@ func (jwtAuth JwtAuth) ParseTokenWithClaims(token string, claims jwt.Claims) err
 	return nil
 }
 
-// New return JwtAuth instance
-func NewJwt(key []byte) *JwtAuth {
+// NewJwt return JwtAuth instance
+func NewJwt(key []byte) Jwt {
 	return &JwtAuth{key: key}
 }
