@@ -45,9 +45,9 @@ func logConfig(conf *Config) *log.Config {
 
 func mysqlConfig(conf *Config) *mysql.Config {
 	return &mysql.Config{
-		MaxIdleConnections: conf.GetInt("mysql.maxIdleConnections"),
-		MaxOpenConnections: conf.GetInt("mysql.maxOpenConnections"),
-		MaxLifeTime:        conf.GetInt("mysql.maxLifeTime"),
+		MaxIdleConnections: conf.GetDefaultInt("mysql.maxIdleConnections", 5),
+		MaxOpenConnections: conf.GetDefaultInt("mysql.maxOpenConnections", 50),
+		MaxLifeTime:        conf.GetDefaultInt("mysql.maxLifeTime", 8),
 		Dsn:                conf.GetString("mysql.dsn"),
 	}
 }
