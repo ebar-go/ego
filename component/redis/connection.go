@@ -13,7 +13,7 @@ type conn struct {
 	client redis.UniversalClient
 }
 
-func (c *conn) GetInstance() redis.UniversalClient{
+func (c *conn) GetInstance() redis.UniversalClient {
 	return c.client
 }
 

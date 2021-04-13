@@ -40,7 +40,7 @@ func (logger *Logger) Error(message string, ctx Context) {
 
 // Logger
 type Logger struct {
-	conf *Config
+	conf     *Config
 	fields   map[string]interface{}
 	instance *zap.Logger
 }
@@ -48,7 +48,6 @@ type Logger struct {
 func (logger *Logger) SetFields(fields map[string]interface{}) {
 	logger.fields = fields
 }
-
 
 // getInstance init logger instance
 func New(conf *Config) *Logger {
@@ -72,7 +71,6 @@ func (logger *Logger) lazyInit() {
 	}
 	logger.instance = newZap(logger.conf.Path, level, fields...)
 }
-
 
 // newZap return zap logger instance
 func newZap(filename string, enableLevel zapcore.LevelEnabler, initFields ...zap.Field) *zap.Logger {

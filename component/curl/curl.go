@@ -27,7 +27,7 @@ type Curl interface {
 // curl instance of Curl interface
 type curl struct {
 	httpClient *http.Client
-	pool *egu.BufferPool
+	pool       *egu.BufferPool
 }
 
 func New(opts ...Option) Curl {
@@ -49,10 +49,9 @@ func New(opts ...Option) Curl {
 			Jar:           nil,
 			Timeout:       options.timeout,
 		},
-		pool:       egu.NewBufferPool(),
+		pool: egu.NewBufferPool(),
 	}
 }
-
 
 // Get
 func (c *curl) Get(url string) (Response, error) {
@@ -118,7 +117,7 @@ func (c *curl) PostFile(url string, files map[string]string, params map[string]s
 		_ = file.Close()
 
 		// 写入writer
-		part, err := writer.CreateFormFile(field,filepath.Base(path))
+		part, err := writer.CreateFormFile(field, filepath.Base(path))
 		if err != nil {
 			return nil, fmt.Errorf("Create Form File: %v", err)
 		}
@@ -160,8 +159,6 @@ func (c *curl) Send(request *http.Request) (Response, error) {
 	if resp == nil {
 		return nil, fmt.Errorf("no response")
 	}
-
-
 
 	body, err := c.pool.ReadResponse(resp)
 	if err != nil {

@@ -14,7 +14,6 @@ type Response interface {
 	Reader() io.Reader
 }
 
-
 // response http response wrapper
 type response struct {
 	body []byte

@@ -16,4 +16,3 @@ func TestError_Error(t *testing.T) {
 	assert.Error(t, err)
 	fmt.Println(err.Error())
 }
-

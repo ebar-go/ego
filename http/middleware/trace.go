@@ -22,5 +22,4 @@ func Trace(traceHeader string) gin.HandlerFunc {
 		event.Trigger(event.AfterRoute, nil)
 	}
 
-
 }

@@ -25,7 +25,7 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 }
 
 // RequestLog gin的请求日志中间件
-func RequestLog(logger *log.Logger) gin.HandlerFunc{
+func RequestLog(logger *log.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		t := time.Now()
 		requestTime := egu.GetMicroTimeStampStr()
@@ -51,7 +51,7 @@ func RequestLog(logger *log.Logger) gin.HandlerFunc{
 			logger.Info("request_log", items)
 		})
 	}
-	
+
 }
 
 // GetRequestBody 获取请求参数

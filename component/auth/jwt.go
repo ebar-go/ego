@@ -13,7 +13,7 @@ type Jwt interface {
 
 // JwtAuth jwt
 type JwtAuth struct {
-	key   []byte
+	key []byte
 }
 
 var (

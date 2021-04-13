@@ -10,5 +10,5 @@ func TestConfig_LoadFile(t *testing.T) {
 	err := conf.LoadFile("./example.yaml", "./other.yaml")
 	assert.Nil(t, err)
 	assert.Equal(t, "ego", conf.Get("other.name"))
-	assert.Equal(t,  "test", conf.Get("example.name"))
+	assert.Equal(t, "test", conf.Get("example.name"))
 }

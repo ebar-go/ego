@@ -13,9 +13,9 @@ import (
 	"go.uber.org/dig"
 )
 
-func Inject(container *dig.Container)  {
+func Inject(container *dig.Container) {
 	_ = container.Provide(NewServer)
-	_ = container.Provide(func(server *Server) *gin.Engine{
+	_ = container.Provide(func(server *Server) *gin.Engine {
 		return server.router
 	})
 }

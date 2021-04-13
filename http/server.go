@@ -29,7 +29,6 @@ type Server struct {
 	instance *http.Server
 }
 
-
 // NewServer 获取Server示例
 func NewServer(conf *Config) *Server {
 	router := gin.New()
@@ -49,23 +48,32 @@ func NewServer(conf *Config) *Server {
 	router.NoMethod(notFoundHandler)
 
 	return &Server{
-		conf: conf,
+		conf:   conf,
 		router: router,
 	}
 }
 
-func (server *Server) beforeStart()  {
+func (server *Server) registerPprof() {
+	if server.conf.Pprof {
+		pprof.Register(server.router)
+	}
+}
+
+func (server *Server) handleSwagger() {
+	if server.conf.Swagger {
+		server.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
+}
+
+func (server *Server) beforeStart() {
 	binding.Validator = new(validator.Validator)
 	// before start
 	event.Trigger(event.BeforeHttpStart, nil)
 
-	if server.conf.Pprof {
-		pprof.Register(server.router)
-	}
-
-	if server.conf.Swagger {
-		ginSwagger.WrapHandler(swaggerFiles.Handler)
-	}
+	// register pprof
+	server.registerPprof()
+	// handle swagger api
+	server.handleSwagger()
 }
 
 // Run run http server
@@ -112,4 +120,3 @@ func notFoundHandler(ctx *gin.Context) {
 	response.WrapContext(ctx).Error(404,
 		fmt.Sprintf("404 Not Found: %s", ctx.Request.RequestURI))
 }
-

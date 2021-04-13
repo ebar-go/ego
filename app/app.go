@@ -23,12 +23,14 @@ type App struct {
 
 // New 实例化
 func New() *App {
-	return  &App{container: buildContainer()}
+	return &App{container: buildContainer()}
 }
+
 // Container 容器
 func (app *App) Container() *dig.Container {
 	return app.container
 }
+
 // buildContainer 构造容器
 func buildContainer() *dig.Container {
 	container := dig.New()
@@ -48,7 +50,7 @@ func buildContainer() *dig.Container {
 	http.Inject(container)
 
 	// jwt
-	_ = container.Provide(func(config *http.Config) auth.Jwt{
+	_ = container.Provide(func(config *http.Config) auth.Jwt {
 		return auth.NewJwt(config.JwtSignKey)
 	})
 
@@ -62,14 +64,16 @@ func buildContainer() *dig.Container {
 
 // LoadConfig 加载配置文件
 func (app *App) LoadConfig(path ...string) error {
-	return app.container.Invoke(func(config *config.Config) error{
+	return app.container.Invoke(func(config *config.Config) error {
 		return config.LoadFile(path...)
 	})
 }
+
 // LoadRouter 加载路由
 func (app *App) LoadRouter(loader interface{}) error {
 	return app.container.Invoke(loader)
 }
+
 // LoadTask 加载定时任务
 func (app *App) LoadTask(loader func(cron *cron.Cron)) error {
 	return app.container.Invoke(loader)
@@ -77,11 +81,10 @@ func (app *App) LoadTask(loader func(cron *cron.Cron)) error {
 
 // ServeHTTP 启动http服务
 func (app *App) ServeHTTP() {
-	_ =  app.container.Invoke(func(server *http.Server) {
+	_ = app.container.Invoke(func(server *http.Server) {
 		server.Serve()
 	})
 }
-
 
 func (app *App) serveRPC() error {
 	return nil
@@ -93,7 +96,7 @@ func (app *App) serveWS() error {
 
 // StartCron 开启定时任务
 func (app *App) StartCron() error {
-	return app.container.Invoke(func(cron *cron.Cron){
+	return app.container.Invoke(func(cron *cron.Cron) {
 		cron.Start()
 	})
 }
@@ -120,4 +123,3 @@ func (app *App) Run() {
 		c.Stop()
 	})
 }
-

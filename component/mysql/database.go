@@ -27,7 +27,7 @@ func (d *database) GetConnection(name string) *gorm.DB {
 	return d.GetInstance().Clauses(dbresolver.Use(name))
 }
 
-func Connect(conf *Config) (Database, error)  {
+func Connect(conf *Config) (Database, error) {
 	sqlDB, err := sql.Open("mysql", conf.Dsn)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,6 @@ func Connect(conf *Config) (Database, error)  {
 	db := &database{db: conn}
 	return db, nil
 }
-
 
 func Resolver() *dbresolver.DBResolver {
 	return new(dbresolver.DBResolver)

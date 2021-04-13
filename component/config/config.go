@@ -21,7 +21,6 @@ func New() *Config {
 	return conf
 }
 
-
 // LoadFile 加载配置文件
 func (conf *Config) LoadFile(path ...string) error {
 	for _, p := range path {
@@ -43,7 +42,7 @@ func (conf *Config) GetDefaultInt(key string, dn int) int {
 }
 
 // GetDefaultString get string with default value
-func (conf *Config) GetDefaultString(key string, ds string) string{
+func (conf *Config) GetDefaultString(key string, ds string) string {
 	return egu.DefaultString(conf.GetString(key), ds)
 }
 

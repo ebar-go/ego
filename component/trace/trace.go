@@ -20,7 +20,7 @@ func Id() string {
 }
 
 // Init
-func Init()  {
+func Init() {
 	Set(Id())
 }
 
@@ -55,7 +55,7 @@ func getGoroutineId() int64 {
 	return goid.Get()
 }
 
-func Go(f func())  {
+func Go(f func()) {
 	go func(traceId string) {
 		Set(traceId)
 		defer GC()

@@ -5,7 +5,6 @@ import (
 	"net/http"
 )
 
-
 var _default = New()
 
 func Default() Curl {

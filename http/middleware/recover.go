@@ -9,10 +9,9 @@ import (
 )
 
 // Recover
-func Recover(ctx *gin.Context){
+func Recover(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
-
 
 			err, ok := r.(*errors.Error)
 			if ok {

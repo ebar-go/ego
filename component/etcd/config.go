@@ -15,5 +15,5 @@ type Config struct {
 	// 节点
 	Endpoints []string
 	// 超时时间
-	Timeout   time.Duration
+	Timeout time.Duration
 }
