@@ -21,6 +21,7 @@ require (
 	github.com/lestrrat-go/strftime v1.0.1 // indirect
 	github.com/magiconair/properties v1.8.1
 	github.com/onsi/ginkgo v1.14.0 // indirect
+	github.com/orcaman/concurrent-map v0.0.0-20210106121528-16402b402231
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5
 	github.com/robfig/cron v1.2.0
 	github.com/satori/go.uuid v1.2.0

@@ -88,11 +88,11 @@ func (server *Server) Serve() {
 	}
 
 	go func() {
-		log.Printf("Listening and serving HTTP on %s\n", completeHost)
+		log.Printf("listening and serving HTTP on %s\n", completeHost)
 
 		// service connections
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("%v\n", err)
+			log.Fatalf("unable to serve: %v\n", err)
 		}
 
 		// after start

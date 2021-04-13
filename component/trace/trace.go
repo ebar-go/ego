@@ -1,64 +1,51 @@
+// Trace
+// 基于goroutine的编号，实现共享全局唯一ID,用于串联业务线的上下文
 package trace
 
 import (
-	"github.com/ebar-go/egu"
+	"fmt"
+	cmap "github.com/orcaman/concurrent-map"
 	"github.com/petermattis/goid"
-	"sync"
 )
 
-var (
-	traceIds = map[int64]string{}
-	rwm      sync.RWMutex
-)
-
-const (
-	prefix = "trace:"
-)
-
-func Id() string {
-	return prefix + egu.UUID()
+type Trace struct {
+	// 使用并发map提高性能，原理是采用32个分片来分散
+	ids cmap.ConcurrentMap
 }
 
-// Init
-func Init() {
-	Set(Id())
+func NewTrace() *Trace {
+	return &Trace{ids: cmap.New()}
 }
 
-// SetTraceId
-func Set(id string) {
-	goID := getGoroutineId()
-	rwm.Lock()
-	defer rwm.Unlock()
+// key 使用goroutine的id作为下标
+func (t *Trace) key() string {
+	return fmt.Sprintf("g%d", goid.Get())
+}
 
-	traceIds[goID] = id
+// Set
+func (t *Trace) Set(uuid string) {
+	t.ids.Set(t.key(), uuid)
 }
 
 // Get
-func Get() string {
-	goID := getGoroutineId()
-	rwm.RLock()
-	defer rwm.RUnlock()
-
-	return traceIds[goID]
+func (t *Trace) Get() string {
+	id, exist := t.ids.Get(t.key())
+	if exist {
+		return id.(string)
+	}
+	return ""
 }
 
-// GC
-func GC() {
-	goID := getGoroutineId()
-	rwm.Lock()
-	defer rwm.Unlock()
-
-	delete(traceIds, goID)
+// GC 回收
+func (t *Trace) GC() {
+	t.ids.Remove(t.key())
 }
 
-func getGoroutineId() int64 {
-	return goid.Get()
-}
-
-func Go(f func()) {
+// Go 保持两个goroutine使用同一个traceId连通
+func (t *Trace) Go(fn func()) {
 	go func(traceId string) {
-		Set(traceId)
-		defer GC()
-		f()
-	}(Get())
+		t.Set(traceId)
+		defer t.GC()
+		fn()
+	}(t.Get())
 }

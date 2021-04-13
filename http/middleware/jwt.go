@@ -2,11 +2,24 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/http/response"
 	"github.com/gin-gonic/gin"
 	"strings"
 )
+
+var claimsKey = "claims"
+
+// GetClaims get claims from context
+func GetClaims(ctx *gin.Context) (jwt.MapClaims, bool) {
+	value, exist := ctx.Get(claimsKey)
+	if !exist {
+		return nil, false
+	}
+	return value.(jwt.MapClaims), true
+
+}
 
 // JWT gin的jwt中间件
 func JWT(jwtAuth auth.Jwt) gin.HandlerFunc {
@@ -22,7 +35,7 @@ func JWT(jwtAuth auth.Jwt) gin.HandlerFunc {
 		}
 
 		// 令牌信息存入context
-		ctx.Set("claims", claims)
+		ctx.Set(claimsKey, claims)
 
 		return nil
 	}
