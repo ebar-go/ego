@@ -26,3 +26,8 @@ func TestJwtImpl_ParseToken(t *testing.T) {
 	assert.Nil(t, err)
 	fmt.Println(c)
 }
+
+func TestNewJwt(t *testing.T) {
+	instance := NewJwt([]byte("123456"))
+	assert.Implements(t, new(Jwt), instance)
+}

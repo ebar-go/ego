@@ -41,6 +41,6 @@ func (impl jwtImpl) ParseToken(token string) (jwt.Claims, error) {
 }
 
 // NewJwt return jwtImpl instance
-func NewJwt(key []byte) *jwtImpl {
-	return &jwtImpl{key: key}
+func NewJwt(key []byte) Jwt {
+	return jwtImpl{key: key}
 }
