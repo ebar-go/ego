@@ -13,6 +13,10 @@ type wrapper struct {
 	ctx *gin.Context
 }
 
+type Abort struct {
+
+}
+
 // WrapContext
 func WrapContext(ctx *gin.Context) *wrapper {
 	return &wrapper{ctx: ctx}
@@ -21,6 +25,7 @@ func WrapContext(ctx *gin.Context) *wrapper {
 // output output r
 func (w *wrapper) output(r *response) {
 	w.ctx.JSON(200, r)
+	w.abort()
 }
 
 // Success 输出成功响应
@@ -29,6 +34,11 @@ func (w *wrapper) Success(data interface{}) {
 	r.Data = data
 
 	w.output(r)
+}
+
+// abort 中断
+func (w *wrapper) abort() {
+	panic(&Abort{})
 }
 
 // Error 输出错误响应

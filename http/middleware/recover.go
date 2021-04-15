@@ -13,10 +13,12 @@ func Recover(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 
-			err, ok := r.(*errors.Error)
-			if ok {
+			switch  err := r.(type){
+			case *errors.Error:
 				response.WrapContext(ctx).Error(err.Code, err.Message)
-			} else {
+			case *response.Abort:
+				ctx.Abort()
+			default:
 				log.Println(r)
 				log.Println(string(stack()))
 				response.WrapContext(ctx).Error(500, "System Error")
