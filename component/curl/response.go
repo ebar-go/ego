@@ -2,8 +2,9 @@ package curl
 
 import (
 	"bytes"
-	"github.com/ebar-go/egu"
+	"encoding/json"
 	"io"
+	"unsafe"
 )
 
 // Response
@@ -21,7 +22,7 @@ type response struct {
 
 // String return response as string
 func (wrap *response) String() string {
-	return egu.Byte2Str(wrap.body)
+	return *(*string)(unsafe.Pointer(&wrap.body))
 }
 
 // Byte return response as byte
@@ -31,7 +32,7 @@ func (wrap *response) Byte() []byte {
 
 // BindJson bind json object with pointer
 func (wrap *response) BindJson(object interface{}) error {
-	return egu.JsonDecode(wrap.body, object)
+	return json.Unmarshal(wrap.body, object)
 }
 
 // Reader
