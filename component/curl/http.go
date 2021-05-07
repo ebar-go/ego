@@ -16,10 +16,8 @@ import (
 // httpClientImpl instance of Curl interface
 type httpClientImpl struct {
 	httpClient *http.Client
-	reader       ResponseReader
+	reader     ResponseReader
 }
-
-
 
 // Get send get request
 func (impl *httpClientImpl) Get(url string) (Response, error) {
@@ -110,7 +108,7 @@ func (impl *httpClientImpl) PostFile(url string, files map[string]string, params
 	return impl.Send(request)
 }
 
-// Send send http request 
+// Send send http request
 func (impl *httpClientImpl) Send(request *http.Request) (Response, error) {
 	resp, err := impl.httpClient.Do(request)
 	// close response
@@ -134,7 +132,6 @@ func (impl *httpClientImpl) Send(request *http.Request) (Response, error) {
 	}
 	return &response{body: body}, nil
 }
-
 
 // New return a instance of Curl
 func New(opts ...Option) Curl {

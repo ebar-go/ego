@@ -1,6 +1,5 @@
 package config
 
-
 const (
 	envProduct = "product"
 	envDevelop = "develop"
@@ -15,4 +14,3 @@ func (conf *Config) IsProduct() bool {
 func (conf *Config) IsDevelop() bool {
 	return envDevelop == conf.Environment
 }
-

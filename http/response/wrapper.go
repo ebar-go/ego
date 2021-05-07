@@ -14,7 +14,6 @@ type wrapper struct {
 }
 
 type Abort struct {
-
 }
 
 // WrapContext

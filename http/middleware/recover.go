@@ -13,7 +13,7 @@ func Recover(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 
-			switch  err := r.(type){
+			switch err := r.(type) {
 			case *errors.Error:
 				response.WrapContext(ctx).Error(err.Code, err.Message)
 			case *response.Abort:

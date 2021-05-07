@@ -40,7 +40,6 @@ func newPaginator(currentPage, limit int) Paginator {
 	return paginator
 }
 
-
 // NewPaginator return instance of Paginator
 func NewPaginator(totalCount, currentPage, limit int) Paginator {
 	paginator := newPaginator(currentPage, limit)
@@ -57,7 +56,6 @@ func NewPaginator(totalCount, currentPage, limit int) Paginator {
 
 	return paginator
 }
-
 
 // NewArrayPaginator return instance of Paginator and current page result
 func NewArrayPaginator(items []interface{}, currentPage, limit int) (paginator Paginator, result []interface{}) {

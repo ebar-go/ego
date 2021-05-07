@@ -1,14 +1,15 @@
 package response
 
 import (
+	"fmt"
 	"github.com/ebar-go/ego/component/trace"
 	"github.com/ebar-go/ego/http/pagination"
-	"github.com/ebar-go/egu"
+	uuid "github.com/satori/go.uuid"
 )
 
-const (
-	prefix = "request:"
-)
+func newRequestId() string {
+	return fmt.Sprintf("request:%s", uuid.NewV4().String())
+}
 
 // Response 数据结构体
 type response struct {
@@ -37,7 +38,7 @@ func (r *response) Reset() {
 	r.Data = nil
 	r.Meta = Meta{
 		Trace: Trace{
-			RequestId: prefix + egu.UUID(),
+			RequestId: newRequestId(),
 			TraceId:   trace.Get(),
 		},
 	}

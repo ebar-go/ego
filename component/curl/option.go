@@ -19,6 +19,7 @@ type timeoutOption time.Duration
 func (o timeoutOption) apply(options *options) {
 	options.timeout = time.Duration(o)
 }
+
 // WithTimeout use timeout option
 func WithTimeout(timeout time.Duration) Option {
 	return timeoutOption(timeout)

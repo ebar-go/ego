@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 )
+
 // ResponseReader read http response body
 type ResponseReader interface {
 	Read(response *http.Response) ([]byte, error)
