@@ -3,7 +3,6 @@ module github.com/ebar-go/ego
 go 1.14
 
 require (
-	github.com/coreos/etcd v3.3.22+incompatible // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/ebar-go/egu v0.1.1
@@ -15,7 +14,6 @@ require (
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/google/uuid v1.1.1 // indirect
-	github.com/gorilla/websocket v1.4.2
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869 // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible
 	github.com/lestrrat-go/strftime v1.0.1 // indirect

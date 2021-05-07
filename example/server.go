@@ -24,6 +24,10 @@ func main() {
 			// 输出响应
 			response.WrapContext(ctx).Success(nil)
 		})
+		router.Any("check", func(ctx *gin.Context) {
+			// 输出响应
+			response.WrapContext(ctx).Success(nil)
+		})
 	}))
 	// 启动http服务
 	app.ServeHTTP()

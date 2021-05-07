@@ -1,12 +1,12 @@
 package config
 
 import (
-	"github.com/ebar-go/egu"
 	"github.com/spf13/viper"
 )
 
 // Config 配置
 type Config struct {
+	// viper
 	*viper.Viper
 	// 运行环境
 	Environment string
@@ -21,7 +21,7 @@ func New() *Config {
 	return conf
 }
 
-// LoadFile 加载配置文件
+// LoadFile 加载配置文件,支持多个配置文件
 func (conf *Config) LoadFile(path ...string) error {
 	for _, p := range path {
 		conf.SetConfigFile(p)
@@ -37,26 +37,19 @@ func (conf *Config) LoadFile(path ...string) error {
 }
 
 // GetDefaultInt get int with default value
-func (conf *Config) GetDefaultInt(key string, dn int) int {
-	return egu.DefaultInt(conf.GetInt(key), dn)
+func (conf *Config) GetDefaultInt(key string, defaultVal int) int {
+	val := conf.GetInt(key)
+	if val == 0 {
+		return defaultVal
+	}
+	return val
 }
 
 // GetDefaultString get string with default value
-func (conf *Config) GetDefaultString(key string, ds string) string {
-	return egu.DefaultString(conf.GetString(key), ds)
-}
-
-const (
-	envProduct = "product"
-	envDevelop = "develop"
-)
-
-// IsProduct 是否为生产环境
-func (conf *Config) IsProduct() bool {
-	return envProduct == conf.Environment
-}
-
-// IsDevelop 是否为测试环境
-func (conf *Config) IsDevelop() bool {
-	return envDevelop == conf.Environment
+func (conf *Config) GetDefaultString(key string, defaultVal string) string {
+	val := conf.GetString(key)
+	if val == "" {
+		return defaultVal
+	}
+	return val
 }
