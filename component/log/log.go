@@ -2,7 +2,6 @@ package log
 
 import (
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/egu"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -81,7 +80,7 @@ func newZap(filename string, enableLevel zapcore.LevelEnabler, initFields ...zap
 		TimeKey:     "time",
 
 		EncodeTime: func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-			enc.AppendString(t.Format(egu.TimeFormat))
+			enc.AppendString(t.Format("2006-01-02 15:04:05"))
 		},
 		CallerKey:    "file",
 		EncodeCaller: zapcore.ShortCallerEncoder,
@@ -104,13 +103,9 @@ func newZap(filename string, enableLevel zapcore.LevelEnabler, initFields ...zap
 
 // getRotateWriter
 func getRotateWriter(filename string) io.Writer {
-	// 生成rotate logs的Logger 实际生成的文件名 demo.log.YYmmddHH
-	// 分割文件
-	//prefixName, ext := egu.SplitPathExt(filename)
 	// demo.log是指向最新日志的链接
 	hook, err := rotatelogs.New(
 		filename, // 没有使用go风格反人类的format格式
-		//rotatelogs.WithLinkName(filename),
 		rotatelogs.WithMaxAge(time.Hour*24*30),    // 保存30天
 		rotatelogs.WithRotationTime(time.Hour*24), //切割频率 24小时
 	)

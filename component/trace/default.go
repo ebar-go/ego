@@ -1,6 +1,8 @@
 package trace
 
-import "github.com/ebar-go/egu"
+import (
+	uuid "github.com/satori/go.uuid"
+)
 
 const (
 	prefix = "trace:"
@@ -11,7 +13,7 @@ var (
 )
 
 func Id() string {
-	return prefix + egu.UUID()
+	return prefix + uuid.NewV4().String()
 }
 
 func Set(uuid string) {

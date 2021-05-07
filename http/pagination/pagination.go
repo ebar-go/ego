@@ -9,16 +9,12 @@ import (
 type Paginator struct {
 	// 总条数
 	TotalCount int `json:"total"`
-
 	// 当前页的数据项数量
 	CurrentCount int `json:"count"`
-
 	// 每页行数
 	Limit int `json:"per_page"`
-
 	// 当前页数
 	CurrentPage int `json:"current_page"`
-
 	// 总页数
 	TotalPages int `json:"total_pages"`
 }
@@ -28,13 +24,8 @@ const (
 	defaultCurrentPage = 1
 )
 
-/**
- Paginate paginate by total count
-	- totalCount : length of data
-	- currentPage: current page number
-	- limit: number of per page
-*/
-func Paginate(totalCount, currentPage, limit int) Paginator {
+// NewPaginator return paginator
+func NewPaginator(totalCount, currentPage, limit int) Paginator {
 	pagination := Paginator{
 		TotalCount:  totalCount,
 		CurrentPage: currentPage,
@@ -49,7 +40,7 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
 		pagination.CurrentPage = defaultCurrentPage
 	}
 
-	pagination.TotalPages = egu.Div(totalCount, pagination.Limit)
+	pagination.TotalPages = int(math.Ceil(float64(totalCount) / float64(pagination.Limit)))
 	if pagination.CurrentPage < pagination.TotalPages {
 		pagination.CurrentCount = pagination.Limit
 	} else if pagination.CurrentPage > pagination.TotalPages {
@@ -61,13 +52,9 @@ func Paginate(totalCount, currentPage, limit int) Paginator {
 	return pagination
 }
 
-/**
- * PaginateSlice paginate by slice
- 	- items : data items
-	- currentPage: current page number
-	- limit: number of per page
-*/
-func PaginateSlice(items []interface{}, currentPage, limit int) (paginate Paginator, result []interface{}) {
+
+// NewArrayPaginate paginate by array
+func NewArrayPaginate(items []interface{}, currentPage, limit int) (paginate Paginator, result []interface{}) {
 	paginate.CurrentPage = currentPage
 	paginate.Limit = limit
 	paginate.TotalCount = len(items)

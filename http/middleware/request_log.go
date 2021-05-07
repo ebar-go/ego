@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/trace"
-	"github.com/ebar-go/egu"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -24,11 +23,15 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
+func getMicroTime() string {
+	return fmt.Sprintf("%.6f", float64(time.Now().UnixNano())/1e9)
+}
+
 // RequestLog gin的请求日志中间件
 func RequestLog(logger *log.Logger) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		t := time.Now()
-		requestTime := egu.GetMicroTimeStampStr()
+		requestTime := getMicroTime()
 		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: ctx.Writer}
 		ctx.Writer = blw
 
@@ -42,7 +45,7 @@ func RequestLog(logger *log.Logger) gin.HandlerFunc {
 		items["refer_request_host"] = ctx.ClientIP()
 		items["request_body"] = getRequestBody(ctx)
 		items["request_time"] = requestTime
-		items["response_time"] = egu.GetMicroTimeStampStr()
+		items["response_time"] = getMicroTime()
 		items["response_body"] = blw.body.String()
 		items["time_used"] = fmt.Sprintf("%v", time.Since(t))
 
