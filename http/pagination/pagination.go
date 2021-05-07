@@ -1,7 +1,6 @@
 package pagination
 
 import (
-	"github.com/ebar-go/egu"
 	"math"
 )
 
@@ -24,59 +23,59 @@ const (
 	defaultCurrentPage = 1
 )
 
-// NewPaginator return paginator
-func NewPaginator(totalCount, currentPage, limit int) Paginator {
-	pagination := Paginator{
-		TotalCount:  totalCount,
+func newPaginator(currentPage, limit int) Paginator {
+	paginator := Paginator{
 		CurrentPage: currentPage,
 		Limit:       limit,
 	}
 
-	if pagination.Limit <= 0 {
-		pagination.Limit = defaultLimit
+	if paginator.Limit <= 0 {
+		paginator.Limit = defaultLimit
 	}
 
-	if pagination.CurrentPage <= 0 {
-		pagination.CurrentPage = defaultCurrentPage
+	if paginator.CurrentPage <= 0 {
+		paginator.CurrentPage = defaultCurrentPage
 	}
 
-	pagination.TotalPages = int(math.Ceil(float64(totalCount) / float64(pagination.Limit)))
-	if pagination.CurrentPage < pagination.TotalPages {
-		pagination.CurrentCount = pagination.Limit
-	} else if pagination.CurrentPage > pagination.TotalPages {
-		pagination.CurrentCount = 0
-	} else {
-		pagination.CurrentCount = pagination.TotalCount - pagination.GetOffset()
-	}
-
-	return pagination
+	return paginator
 }
 
 
-// NewArrayPaginate paginate by array
-func NewArrayPaginate(items []interface{}, currentPage, limit int) (paginate Paginator, result []interface{}) {
-	paginate.CurrentPage = currentPage
-	paginate.Limit = limit
-	paginate.TotalCount = len(items)
+// NewPaginator return instance of Paginator
+func NewPaginator(totalCount, currentPage, limit int) Paginator {
+	paginator := newPaginator(currentPage, limit)
+	paginator.TotalCount = totalCount
 
-	if paginate.Limit <= 0 {
-		paginate.Limit = defaultLimit
-	}
-
-	if paginate.CurrentPage <= 0 {
-		paginate.CurrentPage = defaultCurrentPage
-	}
-
-	paginate.TotalPages = int(math.Ceil(float64(paginate.TotalCount) / float64(paginate.Limit))) //page总数
-
-	low := paginate.GetOffset()
-	high := egu.Min(paginate.TotalCount, low+paginate.Limit)
-
-	if low < high {
-		paginate.CurrentCount = high - low
-		result = items[low:high]
+	paginator.TotalPages = int(math.Ceil(float64(totalCount) / float64(paginator.Limit)))
+	if paginator.CurrentPage < paginator.TotalPages {
+		paginator.CurrentCount = paginator.Limit
+	} else if paginator.CurrentPage > paginator.TotalPages {
+		paginator.CurrentCount = 0
 	} else {
-		paginate.CurrentCount = 0
+		paginator.CurrentCount = paginator.TotalCount - paginator.GetOffset()
+	}
+
+	return paginator
+}
+
+
+// NewArrayPaginator return instance of Paginator and current page result
+func NewArrayPaginator(items []interface{}, currentPage, limit int) (paginator Paginator, result []interface{}) {
+	paginator = newPaginator(currentPage, limit)
+	paginator.TotalCount = len(items)
+	paginator.TotalPages = int(math.Ceil(float64(paginator.TotalCount) / float64(paginator.Limit)))
+
+	start := paginator.GetOffset()
+	end := start + paginator.Limit
+	if end > paginator.TotalCount {
+		end = paginator.TotalCount
+	}
+
+	if start < end {
+		paginator.CurrentCount = end - start
+		result = items[start:end]
+	} else {
+		paginator.CurrentCount = 0
 	}
 
 	return
