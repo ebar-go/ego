@@ -4,7 +4,7 @@ import (
 	"github.com/ebar-go/ego/component/auth"
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/etcd"
-	selflog "github.com/ebar-go/ego/component/log"
+	elog "github.com/ebar-go/ego/component/log"
 	"github.com/ebar-go/ego/component/mysql"
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/ebar-go/ego/http"
@@ -38,7 +38,7 @@ func buildContainer() *dig.Container {
 	config.Inject(container)
 
 	// 日志
-	_ = container.Provide(selflog.New)
+	_ = container.Provide(elog.New)
 
 	// 连接数据库
 	_ = container.Provide(mysql.Connect)
