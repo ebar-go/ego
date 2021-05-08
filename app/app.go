@@ -55,7 +55,7 @@ func buildContainer() *dig.Container {
 	})
 
 	// etcd
-	_ = container.Provide(etcd.New)
+	_ = container.Provide(etcd.Connect)
 
 	// 定时任务
 	_ = container.Provide(cron.New)

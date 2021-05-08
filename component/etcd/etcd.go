@@ -19,24 +19,19 @@ type Client struct {
 	conf     *Config
 }
 
-func New(conf *Config) *Client {
-	return &Client{conf: conf}
-}
-
-// Connect
-func (c *Client) Connect() error {
-	var err error
-	c.instance, err = client.New(client.Config{
-		Endpoints:   c.conf.Endpoints,
-		DialTimeout: c.conf.Timeout,
+func Connect(conf *Config) (*Client, error){
+	instance, err := client.New(client.Config{
+		Endpoints:   conf.Endpoints,
+		DialTimeout: conf.Timeout,
 	})
-	if err == nil {
-		log.Println("Connect Etcd success:", c.conf.Endpoints)
+	if err != nil {
+		return nil, err
 	}
 
-	return err
-}
+	log.Println("connect etcd success:", conf.Endpoints)
 
+	return &Client{instance: instance}, nil
+}
 func (c *Client) Instance() *client.Client {
 	return c.instance
 }
