@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"github.com/ebar-go/ego/rebuild/component"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sync"
@@ -47,6 +48,12 @@ func (server *HTTPServer) EnableAvailableHealthCheck() *HTTPServer {
 	server.router.GET("/health", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "OK")
 	})
+	return server
+}
+
+// EnablePprofHandler enables the profiler for the http server
+func (server *HTTPServer) EnablePprofHandler() *HTTPServer {
+	pprof.Register(server.router)
 	return server
 }
 

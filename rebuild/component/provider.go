@@ -71,5 +71,5 @@ func (c *Container) Get(name string) (Component, bool) {
 }
 
 func NewContainer() *Container {
-	return &Container{}
+	return &Container{others: map[string]Component{}}
 }

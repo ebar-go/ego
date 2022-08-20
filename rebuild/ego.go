@@ -20,6 +20,7 @@ func Run(options ServerRunOptions) {
 	app.WithComponent(component.NewCache(), component.NewLogger())
 
 	httpServer := server.NewHTTPServer(options.HttpAddr).
+		EnablePprofHandler().
 		EnableAvailableHealthCheck().
 		RegisterRouteLoader(func(router *gin.Engine) {
 			router.GET("/", func(ctx *gin.Context) {
