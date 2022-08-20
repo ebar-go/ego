@@ -20,12 +20,13 @@ type HTTPServer struct {
 }
 
 func (server *HTTPServer) Serve(stop <-chan struct{}) {
+	component.Provider().Logger().Infof("listening and serving HTTP on %s\n", server.schema.Bind)
+
 	srv := &http.Server{
 		Addr:    server.schema.Bind,
 		Handler: server.router,
 	}
 
-	component.Provider().Logger().Infof("listening and serving HTTP on %s\n", srv.Addr)
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			component.Provider().Logger().Fatalf("unable to serve: %v\n", err)

@@ -6,6 +6,7 @@ import (
 	"github.com/ebar-go/ego/rebuild/component"
 	"github.com/ebar-go/ego/rebuild/server"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
 	"net/http"
 )
 
@@ -27,7 +28,12 @@ func Run(options ServerRunOptions) {
 				ctx.String(http.StatusOK, "home")
 			})
 		})
-	app.WithServer(httpServer)
+
+	grpcServer := server.NewGRPCServer(options.RPCAddr).RegisterService(func(s *grpc.Server) {
+		// pb.pb.RegisterGreeterServer(s, &HelloService{})
+	})
+
+	app.WithServer(httpServer, grpcServer)
 
 	component.Provider().Logger().Info("Application started")
 	app.Run(context.Background().Done())
