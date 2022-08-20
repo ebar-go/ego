@@ -8,6 +8,7 @@ type ComponentProvider interface {
 	Cache() *Cache
 	Config() *Config
 	Curl() *Curl
+	Jwt() *JWT
 	Get(name string) (Component, bool)
 }
 
@@ -36,6 +37,7 @@ type Container struct {
 	logger *Logger
 	config *Config
 	curl   *Curl
+	jwt    *JWT
 	rmu    sync.RWMutex
 	others map[string]Component
 }
@@ -66,6 +68,13 @@ func (c *Container) Curl() *Curl {
 		c.curl = NewCurl()
 	}
 	return c.curl
+}
+
+func (c *Container) JWT() *JWT {
+	if c.jwt == nil {
+		c.jwt = NewJWT()
+	}
+	return c.jwt
 }
 
 func (c *Container) register(component Component) {
