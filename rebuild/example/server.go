@@ -1,4 +1,4 @@
-package rebuild
+package main
 
 import (
 	"github.com/ebar-go/ego/rebuild/application"
@@ -9,17 +9,11 @@ import (
 	"net/http"
 )
 
-type Application interface {
-	WithComponent(component ...component.Component) Application
-	WithServer(server ...server.Server) Application
-	Run()
-}
-
-func Run(options ServerRunOptions) {
+func main() {
 	app := application.NewApplication()
 	app.WithComponent(component.NewCache(), component.NewLogger())
 
-	httpServer := server.NewHTTPServer(options.HttpAddr).
+	httpServer := server.NewHTTPServer(":8080").
 		EnablePprofHandler().
 		EnableAvailableHealthCheck().
 		RegisterRouteLoader(func(router *gin.Engine) {
@@ -28,7 +22,7 @@ func Run(options ServerRunOptions) {
 			})
 		})
 
-	grpcServer := server.NewGRPCServer(options.RPCAddr).RegisterService(func(s *grpc.Server) {
+	grpcServer := server.NewGRPCServer(":8081").RegisterService(func(s *grpc.Server) {
 		// pb.pb.RegisterGreeterServer(s, &HelloService{})
 	})
 

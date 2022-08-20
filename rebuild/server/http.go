@@ -20,7 +20,7 @@ type HTTPServer struct {
 }
 
 func (server *HTTPServer) Serve(stop <-chan struct{}) {
-	component.Provider().Logger().Infof("listening and serving HTTP on %s\n", server.schema.Bind)
+	component.Provider().Logger().Infof("listening and serving HTTP on %s", server.schema.Bind)
 
 	srv := &http.Server{
 		Addr:    server.schema.Bind,
@@ -29,13 +29,19 @@ func (server *HTTPServer) Serve(stop <-chan struct{}) {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			component.Provider().Logger().Fatalf("unable to serve: %v\n", err)
+			component.Provider().Logger().Fatalf("unable to serve: %v", err)
 		}
 	}()
 
 	server.instance = srv
-	<-stop
-	server.Shutdown()
+	for {
+		select {
+		case <-stop:
+			server.Shutdown()
+		default:
+
+		}
+	}
 }
 
 // RegisterRouteLoader registers a route loader

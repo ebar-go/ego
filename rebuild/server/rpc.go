@@ -22,7 +22,7 @@ func (server *RPCServer) RegisterService(register func(s *grpc.Server)) *RPCServ
 
 // Serve start grpc listener
 func (server *RPCServer) Serve(stop <-chan struct{}) {
-	component.Provider().Logger().Infof("listening and serving GRPC on %s\n", server.schema.Bind)
+	component.Provider().Logger().Infof("listening and serving GRPC on %s", server.schema.Bind)
 
 	lis, err := net.Listen("tcp", server.schema.Bind)
 	if err != nil {
@@ -35,12 +35,19 @@ func (server *RPCServer) Serve(stop <-chan struct{}) {
 		}
 	}()
 
-	<-stop
-	server.Shutdown()
+	for {
+		select {
+		case <-stop:
+			server.Shutdown()
+		default:
+
+		}
+	}
 }
 
 func (server *RPCServer) shutdown() {
-
+	server.instance.GracefulStop()
+	component.Provider().Logger().Info("RPCServer shutdown success")
 }
 func (server *RPCServer) Shutdown() {
 	server.closeOnce.Do(server.shutdown)
