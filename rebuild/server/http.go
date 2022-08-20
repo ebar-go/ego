@@ -36,6 +36,20 @@ func (server *HTTPServer) Serve(stop <-chan struct{}) {
 	server.Shutdown()
 }
 
+// RegisterRouteLoader registers a route loader
+func (server *HTTPServer) RegisterRouteLoader(loader func(router *gin.Engine)) *HTTPServer {
+	loader(server.router)
+	return server
+}
+
+// EnableAvailableHealthCheck enables the health check
+func (server *HTTPServer) EnableAvailableHealthCheck() *HTTPServer {
+	server.router.GET("/health", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "OK")
+	})
+	return server
+}
+
 // Shutdown 平滑重启
 func (server *HTTPServer) shutdown() {
 	if server.instance == nil {
