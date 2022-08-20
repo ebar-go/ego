@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/ebar-go/ego/rebuild/component"
+	"github.com/ebar-go/ego/rebuild/runtime"
 	"google.golang.org/grpc"
 	"net"
 	"sync"
@@ -35,22 +36,18 @@ func (server *RPCServer) Serve(stop <-chan struct{}) {
 		}
 	}()
 
-	for {
-		select {
-		case <-stop:
-			server.Shutdown()
-		default:
+	runtime.WaitClose(stop, server.Shutdown)
+}
 
-		}
-	}
+// Shutdown shuts down the server.
+func (server *RPCServer) Shutdown() {
+	server.closeOnce.Do(server.shutdown)
 }
 
 func (server *RPCServer) shutdown() {
+	// stop grpc server gracefully
 	server.instance.GracefulStop()
 	component.Provider().Logger().Info("RPCServer shutdown success")
-}
-func (server *RPCServer) Shutdown() {
-	server.closeOnce.Do(server.shutdown)
 }
 
 func NewGRPCServer(bind string) *RPCServer {

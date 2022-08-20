@@ -33,3 +33,15 @@ func HandleCrash() {
 		log.Println(r)
 	}
 }
+
+// WaitClose is a helper function that waits for the channel to close and invoke the callback
+func WaitClose(stop <-chan struct{}, onClose func()) {
+	for {
+		select {
+		case <-stop:
+			onClose()
+		default:
+
+		}
+	}
+}

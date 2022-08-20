@@ -29,7 +29,7 @@ func Run(options ServerRunOptions) {
 		})
 
 	grpcServer := server.NewGRPCServer(options.RPCAddr).RegisterService(func(s *grpc.Server) {
-		// pb.pb.RegisterGreeterServer(s, &HelloService{})
+		// pb.RegisterGreeterServer(s, &HelloService{})
 	})
 
 	app.WithServer(httpServer, grpcServer)

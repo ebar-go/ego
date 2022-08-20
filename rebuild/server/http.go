@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"github.com/ebar-go/ego/rebuild/component"
+	"github.com/ebar-go/ego/rebuild/runtime"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -22,26 +23,13 @@ type HTTPServer struct {
 func (server *HTTPServer) Serve(stop <-chan struct{}) {
 	component.Provider().Logger().Infof("listening and serving HTTP on %s", server.schema.Bind)
 
-	srv := &http.Server{
-		Addr:    server.schema.Bind,
-		Handler: server.router,
-	}
-
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := server.instance.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			component.Provider().Logger().Fatalf("unable to serve: %v", err)
 		}
 	}()
 
-	server.instance = srv
-	for {
-		select {
-		case <-stop:
-			server.Shutdown()
-		default:
-
-		}
-	}
+	runtime.WaitClose(stop, server.Shutdown)
 }
 
 // RegisterRouteLoader registers a route loader
@@ -64,29 +52,34 @@ func (server *HTTPServer) EnablePprofHandler() *HTTPServer {
 	return server
 }
 
+// Shutdown shuts down the server.
+func (server *HTTPServer) Shutdown() {
+	server.closeOnce.Do(server.shutdown)
+}
+
 // Shutdown 平滑重启
 func (server *HTTPServer) shutdown() {
-	if server.instance == nil {
-		return
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	// stop the server gracefully
 	if err := server.instance.Shutdown(ctx); err != nil {
 		component.Provider().Logger().Fatalf("HTTPServer shutdown failed:", err)
 	}
 	component.Provider().Logger().Info("HTTPServer showdown success")
 }
 
-func (server *HTTPServer) Shutdown() {
-	server.closeOnce.Do(server.shutdown)
-}
-
 func NewHTTPServer(addr string) *HTTPServer {
+	router := gin.Default()
 	return &HTTPServer{
 		schema: Schema{
 			Protocol: "http",
 			Bind:     addr,
 		},
-		router: gin.Default(),
+		router: router,
+		instance: &http.Server{
+			Addr:    addr,
+			Handler: router,
+		},
 	}
 }
