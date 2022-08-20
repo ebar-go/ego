@@ -7,6 +7,7 @@ type ComponentProvider interface {
 	Logger() *Logger
 	Cache() *Cache
 	Config() *Config
+	Curl() *Curl
 	Get(name string) (Component, bool)
 }
 
@@ -34,6 +35,7 @@ type Container struct {
 	cache  *Cache
 	logger *Logger
 	config *Config
+	curl   *Curl
 	rmu    sync.RWMutex
 	others map[string]Component
 }
@@ -57,6 +59,13 @@ func (c *Container) Config() *Config {
 		c.config = NewConfig()
 	}
 	return c.config
+}
+
+func (c *Container) Curl() *Curl {
+	if c.curl == nil {
+		c.curl = NewCurl()
+	}
+	return c.curl
 }
 
 func (c *Container) register(component Component) {
