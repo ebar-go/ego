@@ -5,6 +5,7 @@ import "sync"
 type ComponentProvider interface {
 	Logger() *Logger
 	Cache() *Cache
+	Get(name string) (Component, bool)
 }
 
 var providerInstance struct {
@@ -27,6 +28,8 @@ func Provider() ComponentProvider {
 type Container struct {
 	cache  *Cache
 	logger *Logger
+	rmu    sync.RWMutex
+	others map[string]Component
 }
 
 func (c *Container) Cache() *Cache {
@@ -46,12 +49,25 @@ func (c *Container) Logger() *Logger {
 func (c *Container) register(component Component) {
 	if cache, ok := component.(*Cache); ok {
 		c.cache = cache
+		return
 	}
+
+	c.rmu.Lock()
+	c.others[component.Name()] = component
+	c.rmu.Unlock()
+
 }
 func (c *Container) Register(components ...Component) {
 	for _, component := range components {
 		c.register(component)
 	}
+}
+
+func (c *Container) Get(name string) (Component, bool) {
+	c.rmu.RLock()
+	defer c.rmu.RUnlock()
+	item, ok := c.others[name]
+	return item, ok
 }
 
 func NewContainer() *Container {
