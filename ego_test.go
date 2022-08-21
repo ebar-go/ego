@@ -2,6 +2,7 @@ package ego
 
 import (
 	"github.com/ebar-go/ego/component"
+	"github.com/ebar-go/ego/server"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"net/http"
@@ -16,6 +17,7 @@ func Run(options ServerRunOptions) {
 	aggregator := NewAggregatorServer()
 	aggregator.WithComponent(component.NewCache(), component.NewLogger())
 
+	// http server example
 	httpServer := NewHTTPServer(options.HttpAddr).
 		EnablePprofHandler().
 		EnableAvailableHealthCheck().
@@ -31,11 +33,19 @@ func Run(options ServerRunOptions) {
 			})
 		})
 
+	// grpc server example
 	grpcServer := NewGRPCServer(options.RPCAddr).RegisterService(func(s *grpc.Server) {
 		// pb.RegisterGreeterServer(s, &HelloService{})
 	})
 
-	websocketServer := NewWebsocketServer(options.WebSocketAddr)
+	// websocket server example
+	websocketServer := NewWebsocketServer(options.WebSocketAddr).OnConnect(func(conn server.Conn) {
+		// connected
+	}).OnDisconnect(func(conn server.Conn) {
+		// disconnected
+	}).OnMessage(func(conn server.Conn, msg []byte) {
+		// on request
+	})
 
 	aggregator.WithServer(httpServer, grpcServer, websocketServer)
 

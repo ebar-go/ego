@@ -14,3 +14,5 @@ type Serializer interface {
 	// DecodeAndRelease execute Decode and Release function
 	DecodeAndRelease(container interface{}) error
 }
+
+type SerializerBuilder func() Serializer

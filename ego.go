@@ -5,6 +5,7 @@ import (
 	"github.com/ebar-go/ego/server"
 )
 
+// NewAggregator creates a new Aggregator instance
 func NewAggregatorServer() *aggregator.Aggregator {
 	return aggregator.NewAggregator()
 }

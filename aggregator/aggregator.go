@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Aggregator includes the components and servers
 type Aggregator struct {
 	provider *component.Container
 	servers  []server.Server
