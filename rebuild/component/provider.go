@@ -9,6 +9,7 @@ type ComponentProvider interface {
 	Config() *Config
 	Curl() *Curl
 	Jwt() *JWT
+	Tracer() *Tracer
 	Get(name string) (Component, bool)
 }
 
@@ -38,6 +39,7 @@ type Container struct {
 	config *Config
 	curl   *Curl
 	jwt    *JWT
+	tracer *Tracer
 	rmu    sync.RWMutex
 	others map[string]Component
 }
@@ -70,11 +72,18 @@ func (c *Container) Curl() *Curl {
 	return c.curl
 }
 
-func (c *Container) JWT() *JWT {
+func (c *Container) Jwt() *JWT {
 	if c.jwt == nil {
 		c.jwt = NewJWT()
 	}
 	return c.jwt
+}
+
+func (c *Container) Tracer() *Tracer {
+	if c.tracer == nil {
+		c.tracer = NewTracer()
+	}
+	return c.tracer
 }
 
 func (c *Container) register(component Component) {
