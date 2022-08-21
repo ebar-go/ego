@@ -11,6 +11,8 @@ type ComponentProvider interface {
 	Jwt() *JWT
 	Tracer() *Tracer
 	EventDispatcher() *EventDispatcher
+	Etcd() *Etcd
+	Redis() *Redis
 	Get(name string) (Component, bool)
 }
 
@@ -41,7 +43,9 @@ type Container struct {
 	curl            *Curl
 	jwt             *JWT
 	tracer          *Tracer
+	etcd            *Etcd
 	eventDispatcher *EventDispatcher
+	redis           *Redis
 	rmu             sync.RWMutex
 	others          map[string]Component
 }
@@ -95,6 +99,19 @@ func (c *Container) EventDispatcher() *EventDispatcher {
 	return c.eventDispatcher
 }
 
+func (c *Container) Etcd() *Etcd {
+	if c.etcd == nil {
+		c.etcd = NewEtcd()
+	}
+	return c.etcd
+}
+
+func (c *Container) Redis() *Redis {
+	if c.redis == nil {
+		c.redis = NewRedis()
+	}
+	return c.redis
+}
 func (c *Container) register(component Component) {
 	if cache, ok := component.(*Cache); ok {
 		c.cache = cache
