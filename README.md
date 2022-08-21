@@ -11,71 +11,57 @@
 - curl组件
 - Swagger
 
-## 安装
+## Getting Started
+- Install
 ```
-go get -u github.com/ebar-go/ego
-```
-
-## 示例
-- 配置文件
-```yaml
-server:
-  name: demo
-http:
-  port: 8085
+go get github.com/ebar-go/ego
 ```
 
-- main.go
+- main
 ```go
 package main
+
 import (
 	"github.com/ebar-go/ego"
-	"log"
-	"github.com/ebar-go/ego/http/middleware"
-	"github.com/ebar-go/ego/http/response"
+	"github.com/ebar-go/ego/component"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
+	"net/http"
 )
+
 func main() {
-	// 初始化应用
-	app := ego.App()
-	// 加载配置文件
-	if err := app.LoadConfig("./app.yaml"); err != nil {
-		log.Fatalf("failed to load config: %v\n", err)
-	}
-	// 初始化路由
-	err := app.LoadRouter(func(router *gin.Engine) {
-		// 引入跨域、recover、请求日志三个中间件
-		router.Use(middleware.CORS, middleware.Recover)
-		router.GET("index", func(ctx *gin.Context) {
-			// 输出响应
-			response.WrapContext(ctx).Success(nil)
-		})
-		router.Any("check", func(ctx *gin.Context) {
-			// 输出响应
-			response.WrapContext(ctx).Success(nil)
-		})
-	})
-	if err != nil {
-		log.Fatalf("failed to load router:%v\n", err)
-	}
-	// 启动http服务
-	app.ServeHTTP()
-	// 启动应用
-	app.Run()
+	Run(ego.ServerRunOptions{HttpAddr: ":8080", HttpTraceHeader: "trace", RPCAddr: ":8081"})
 }
-```
 
-- 通过`go run main.go`启动服务
-```
-[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
- - using env:   export GIN_MODE=release
- - using code:  gin.SetMode(gin.ReleaseMode)
+func Run(options ego.ServerRunOptions) {
+	aggregator := ego.NewAggregatorServer()
+	aggregator.WithComponent(component.NewCache(), component.NewLogger())
 
-[GIN-debug] GET    /index                    --> main.initRouter.func1 (6 handlers)
-2021-03-29 00:23:01.786178 I | Listening and serving HTTP on :8085
-```
+	httpServer := ego.NewHTTPServer(options.HttpAddr).
+		EnablePprofHandler().
+		EnableAvailableHealthCheck().
+		EnableSwaggerHandler().
+		EnableCorsMiddleware().
+		EnableTraceMiddleware(options.HttpTraceHeader).
+		WithNotFoundHandler(func(ctx *gin.Context) {
+			ctx.String(http.StatusNotFound, "404 Not Found")
+		}).
+		RegisterRouteLoader(func(router *gin.Engine) {
+			router.GET("/", func(ctx *gin.Context) {
+				ctx.String(http.StatusOK, "home")
+			})
+		})
 
-访问`localhost:8085/index`验证结果。
+	grpcServer := ego.NewGRPCServer(options.RPCAddr).RegisterService(func(s *grpc.Server) {
+		// pb.RegisterGreeterServer(s, &HelloService{})
+	})
+
+	aggregator.WithServer(httpServer, grpcServer)
+
+	aggregator.Run()
+}
+
+```
 
 ## 文档
 详细文档地址：[https://ebar-go.github.io](https://ebar-go.github.io)
