@@ -55,3 +55,15 @@ func RequestLog() gin.HandlerFunc {
 		component.Provider().Logger().Infof("request log: %v", items)
 	}
 }
+
+func Recover() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		defer func() {
+			if r := recover(); r != nil {
+				component.Provider().Logger().Errorf("goroutine crash: %v", r)
+			}
+			ctx.Abort()
+		}()
+		ctx.Next()
+	}
+}

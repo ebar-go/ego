@@ -18,7 +18,7 @@ type Error struct {
 }
 
 func (err Error) Error() string {
-	return err.message
+	return fmt.Sprintf("code=%d message=%s", err.code, err.message)
 }
 
 func (err *Error) WithMessage(message string) *Error {
@@ -48,7 +48,7 @@ func Convert(err error) *Error {
 }
 
 func Sprintf(code int, format string, args ...interface{}) *Error {
-	return &Error{message: fmt.Sprintf(format, args)}
+	return &Error{code: code, message: fmt.Sprintf(format, args...)}
 }
 func Unknown(format string, args ...interface{}) *Error {
 	return Sprintf(unknown, format, args...)

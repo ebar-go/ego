@@ -53,6 +53,12 @@ func (server *HTTPServer) EnableCorsMiddleware() *HTTPServer {
 	return server
 }
 
+// WithDefaultRecoverMiddleware enables default recover middleware
+func (server *HTTPServer) WithDefaultRecoverMiddleware() *HTTPServer {
+	server.router.Use(Recover())
+	return server
+}
+
 // EnableTraceMiddleware enables trace middleware with trace header name
 func (server *HTTPServer) EnableTraceMiddleware(traceHeader string) *HTTPServer {
 	server.router.Use(Trace(traceHeader))

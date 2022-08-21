@@ -2,6 +2,7 @@ package ego
 
 import (
 	"github.com/ebar-go/ego/component"
+	"github.com/ebar-go/ego/errors"
 	"github.com/ebar-go/ego/server"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
@@ -19,6 +20,7 @@ func Run(options ServerRunOptions) {
 
 	// http server example
 	httpServer := NewHTTPServer(options.HttpAddr).
+		WithDefaultRecoverMiddleware().
 		EnableReleaseMode().
 		EnablePprofHandler().
 		EnableAvailableHealthCheck().
@@ -31,6 +33,12 @@ func Run(options ServerRunOptions) {
 		RegisterRouteLoader(func(router *gin.Engine) {
 			router.GET("/", func(ctx *gin.Context) {
 				ctx.String(http.StatusOK, "home")
+			})
+			router.GET("/panic", func(ctx *gin.Context) {
+				if ctx.Query("id") == "" {
+					panic(errors.InvalidParam("invalid params"))
+				}
+				ctx.String(http.StatusOK, "panic")
 			})
 		})
 
