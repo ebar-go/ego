@@ -11,7 +11,6 @@ type ComponentProvider interface {
 	Jwt() *JWT
 	Tracer() *Tracer
 	EventDispatcher() *EventDispatcher
-	Etcd() *Etcd
 	Redis() *Redis
 	Validator() *Validator
 	Get(name string) (Component, bool)
@@ -44,7 +43,6 @@ type Container struct {
 	curl            *Curl
 	jwt             *JWT
 	tracer          *Tracer
-	etcd            *Etcd
 	eventDispatcher *EventDispatcher
 	redis           *Redis
 	validator       *Validator
@@ -99,13 +97,6 @@ func (c *Container) EventDispatcher() *EventDispatcher {
 		c.eventDispatcher = NewEventDispatcher()
 	}
 	return c.eventDispatcher
-}
-
-func (c *Container) Etcd() *Etcd {
-	if c.etcd == nil {
-		c.etcd = NewEtcd()
-	}
-	return c.etcd
 }
 
 func (c *Container) Redis() *Redis {
