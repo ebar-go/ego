@@ -13,6 +13,7 @@ type ComponentProvider interface {
 	EventDispatcher() *EventDispatcher
 	Etcd() *Etcd
 	Redis() *Redis
+	Validator() *Validator
 	Get(name string) (Component, bool)
 }
 
@@ -46,6 +47,7 @@ type Container struct {
 	etcd            *Etcd
 	eventDispatcher *EventDispatcher
 	redis           *Redis
+	validator       *Validator
 	rmu             sync.RWMutex
 	others          map[string]Component
 }
@@ -111,6 +113,13 @@ func (c *Container) Redis() *Redis {
 		c.redis = NewRedis()
 	}
 	return c.redis
+}
+
+func (c *Container) Validator() *Validator {
+	if c.validator == nil {
+		c.validator = NewValidator()
+	}
+	return c.validator
 }
 func (c *Container) register(component Component) {
 	if cache, ok := component.(*Cache); ok {
