@@ -47,6 +47,18 @@ func (server *HTTPServer) WithNotFoundHandler(notFoundHandler ...gin.HandlerFunc
 	return server
 }
 
+// EnableCorsMiddleware enables cors middleware
+func (server *HTTPServer) EnableCorsMiddleware() *HTTPServer {
+	server.router.Use(CORS)
+	return server
+}
+
+// EnableTraceMiddleware enables trace middleware with trace header name
+func (server *HTTPServer) EnableTraceMiddleware(traceHeader string) *HTTPServer {
+	server.router.Use(Trace(traceHeader))
+	return server
+}
+
 // EnableAvailableHealthCheck enables the health check
 func (server *HTTPServer) EnableAvailableHealthCheck() *HTTPServer {
 	server.router.GET("/health", func(ctx *gin.Context) {

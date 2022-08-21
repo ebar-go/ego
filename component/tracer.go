@@ -7,7 +7,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// Tracer generate the uuid for per goroutine
+// Tracer generate the uuid for per goroutine, use to mark user requests.
 type Tracer struct {
 	Named
 	collections cmap.ConcurrentMap

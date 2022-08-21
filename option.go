@@ -1,6 +1,7 @@
 package ego
 
 type ServerRunOptions struct {
-	HttpAddr string
-	RPCAddr  string
+	HttpAddr        string
+	HttpTraceHeader string
+	RPCAddr         string
 }
