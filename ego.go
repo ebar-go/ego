@@ -16,3 +16,7 @@ func NewHTTPServer(addr string) *server.HTTPServer {
 func NewGRPCServer(addr string) *server.RPCServer {
 	return server.NewGRPCServer(addr)
 }
+
+func NewWebsocketServer(addr string) *server.WebSocketServer {
+	return server.NewWebSocketServer(addr)
+}

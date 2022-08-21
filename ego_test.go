@@ -9,7 +9,7 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	Run(ServerRunOptions{HttpAddr: ":8080", HttpTraceHeader: "trace", RPCAddr: ":8081"})
+	Run(ServerRunOptions{HttpAddr: ":8080", HttpTraceHeader: "trace", RPCAddr: ":8081", WebSocketAddr: ":8082"})
 }
 
 func Run(options ServerRunOptions) {
@@ -35,7 +35,9 @@ func Run(options ServerRunOptions) {
 		// pb.RegisterGreeterServer(s, &HelloService{})
 	})
 
-	aggregator.WithServer(httpServer, grpcServer)
+	websocketServer := NewWebsocketServer(options.WebSocketAddr)
+
+	aggregator.WithServer(httpServer, grpcServer, websocketServer)
 
 	aggregator.Run()
 }
