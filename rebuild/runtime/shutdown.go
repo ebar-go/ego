@@ -1,7 +1,6 @@
 package runtime
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -25,12 +24,6 @@ func Shutdown(callback func()) {
 		default:
 			return
 		}
-	}
-}
-
-func HandleCrash() {
-	if r := recover(); r != nil {
-		log.Println(r)
 	}
 }
 

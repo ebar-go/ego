@@ -10,6 +10,7 @@ type ComponentProvider interface {
 	Curl() *Curl
 	Jwt() *JWT
 	Tracer() *Tracer
+	EventDispatcher() *EventDispatcher
 	Get(name string) (Component, bool)
 }
 
@@ -34,14 +35,15 @@ func Provider() ComponentProvider {
 }
 
 type Container struct {
-	cache  *Cache
-	logger *Logger
-	config *Config
-	curl   *Curl
-	jwt    *JWT
-	tracer *Tracer
-	rmu    sync.RWMutex
-	others map[string]Component
+	cache           *Cache
+	logger          *Logger
+	config          *Config
+	curl            *Curl
+	jwt             *JWT
+	tracer          *Tracer
+	eventDispatcher *EventDispatcher
+	rmu             sync.RWMutex
+	others          map[string]Component
 }
 
 func (c *Container) Cache() *Cache {
@@ -84,6 +86,13 @@ func (c *Container) Tracer() *Tracer {
 		c.tracer = NewTracer()
 	}
 	return c.tracer
+}
+
+func (c *Container) EventDispatcher() *EventDispatcher {
+	if c.eventDispatcher == nil {
+		c.eventDispatcher = NewEventDispatcher()
+	}
+	return c.eventDispatcher
 }
 
 func (c *Container) register(component Component) {
