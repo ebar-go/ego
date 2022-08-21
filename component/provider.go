@@ -13,6 +13,7 @@ type ComponentProvider interface {
 	EventDispatcher() *EventDispatcher
 	Redis() *Redis
 	Validator() *Validator
+	Gorm() *Gorm
 	Get(name string) (Component, bool)
 }
 
@@ -46,8 +47,10 @@ type Container struct {
 	eventDispatcher *EventDispatcher
 	redis           *Redis
 	validator       *Validator
-	rmu             sync.RWMutex
-	others          map[string]Component
+	gorm            *Gorm
+
+	rmu    sync.RWMutex
+	others map[string]Component
 }
 
 func (c *Container) Cache() *Cache {
@@ -111,6 +114,13 @@ func (c *Container) Validator() *Validator {
 		c.validator = NewValidator()
 	}
 	return c.validator
+}
+
+func (c *Container) Gorm() *Gorm {
+	if c.gorm == nil {
+		c.gorm = NewGorm()
+	}
+	return c.gorm
 }
 func (c *Container) register(component Component) {
 	if cache, ok := component.(*Cache); ok {
