@@ -9,17 +9,19 @@ type Logger struct {
 	Named
 }
 
+type LogLevel string
+
 const (
-	LevelInfo = iota
-	LevelDebug
-	LevelWarn
-	LevelError
-	LevelFatal
-	LevelPanic
+	LevelInfo  LogLevel = "info"
+	LevelDebug LogLevel = "debug"
+	LevelWarn  LogLevel = "warn"
+	LevelError LogLevel = "error"
+	LevelFatal LogLevel = "fatal"
+	LevelPanic LogLevel = "panic"
 )
 
-func (l *Logger) Log(level int, message string) { log.Println(level, message) }
-func (l *Logger) Logf(level int, format string, a ...interface{}) {
+func (l *Logger) Log(level LogLevel, message string) { log.Println(level, message) }
+func (l *Logger) Logf(level LogLevel, format string, a ...interface{}) {
 	log.Println(level, fmt.Sprintf(format, a...))
 }
 

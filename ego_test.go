@@ -19,6 +19,7 @@ func Run(options ServerRunOptions) {
 
 	// http server example
 	httpServer := NewHTTPServer(options.HttpAddr).
+		EnableReleaseMode().
 		EnablePprofHandler().
 		EnableAvailableHealthCheck().
 		EnableSwaggerHandler().

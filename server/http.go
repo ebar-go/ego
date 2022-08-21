@@ -73,6 +73,12 @@ func (server *HTTPServer) EnablePprofHandler() *HTTPServer {
 	return server
 }
 
+// EnableReleaseMode enables the release mode for the http server,it will hide the route tables
+func (server *HTTPServer) EnableReleaseMode() *HTTPServer {
+	gin.SetMode(gin.ReleaseMode)
+	return server
+}
+
 // EnableSwaggerHandler enables the swagger handler for the http server
 func (server *HTTPServer) EnableSwaggerHandler() *HTTPServer {
 	server.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
