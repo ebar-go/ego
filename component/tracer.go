@@ -40,5 +40,5 @@ func (tracer *Tracer) Release() {
 }
 
 func NewTracer() *Tracer {
-	return &Tracer{Named: "tracer", collections: cmap.New()}
+	return &Tracer{Named: componentTracer, collections: cmap.New()}
 }

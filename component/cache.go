@@ -5,5 +5,5 @@ type Cache struct {
 }
 
 func NewCache() *Cache {
-	return &Cache{Named: Named("cache")}
+	return &Cache{Named: componentCache}
 }

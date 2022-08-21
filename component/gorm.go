@@ -45,5 +45,5 @@ func (g *Gorm) EnableConnectionPool(maxIdleConns int, maxOpenConns int, connMaxL
 }
 
 func NewGorm() *Gorm {
-	return &Gorm{Named: "gorm"}
+	return &Gorm{Named: componentGorm}
 }

@@ -28,6 +28,7 @@ type Listener struct {
 type Handler func(ev Event)
 
 type EventDispatcher struct {
+	Named
 	items map[string][]Listener
 	rmw   sync.RWMutex
 }
@@ -89,5 +90,5 @@ func (instance *EventDispatcher) Trigger(eventName string, params interface{}) {
 }
 
 func NewEventDispatcher() *EventDispatcher {
-	return &EventDispatcher{items: make(map[string][]Listener, 16)}
+	return &EventDispatcher{Named: componentEventDispatcher, items: make(map[string][]Listener, 16)}
 }

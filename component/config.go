@@ -8,5 +8,5 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	return &Config{Named: Named("config"), Viper: viper.New()}
+	return &Config{Named: componentConfig, Viper: viper.New()}
 }

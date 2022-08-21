@@ -147,7 +147,7 @@ func (c *Curl) ReadResponse(resp *http.Response) (serializer2.Serializer, error)
 
 func NewCurl() *Curl {
 	return &Curl{
-		Named:        Named("curl"),
+		Named:        componentCurl,
 		bufferLenght: 512,
 		httpClient: &http.Client{
 			Transport: &http.Transport{ // 配置连接池

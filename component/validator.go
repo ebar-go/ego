@@ -47,5 +47,5 @@ func (v *Validator) lazyInit() {
 }
 
 func NewValidator() *Validator {
-	return &Validator{Named: "validator", validate: validator.New()}
+	return &Validator{Named: componentValidator, validate: validator.New()}
 }

@@ -37,5 +37,5 @@ func (l *Logger) Errorf(format string, args ...interface{}) { l.Logf(LevelError,
 func (l *Logger) Fatalf(format string, args ...interface{}) { l.Logf(LevelFatal, format, args...) }
 
 func NewLogger() *Logger {
-	return &Logger{Named: Named("logger")}
+	return &Logger{Named: componentLogger}
 }

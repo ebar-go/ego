@@ -2,8 +2,21 @@ package component
 
 import "sync"
 
-// ComponentProvider is a component provider
-type ComponentProvider interface {
+const (
+	componentCache           = "cache"
+	componentLogger          = "logger"
+	componentConfig          = "config"
+	componentCurl            = "curl"
+	componentJwt             = "jwt"
+	componentTracer          = "tracer"
+	componentEventDispatcher = "event-dispatcher"
+	componentValidator       = "validator"
+	componentRedis           = "redis"
+	componentGorm            = "gorm"
+)
+
+// IProvider is a component provider
+type IProvider interface {
 	Logger() *Logger
 	Cache() *Cache
 	Config() *Config
@@ -14,23 +27,24 @@ type ComponentProvider interface {
 	Redis() *Redis
 	Validator() *Validator
 	Gorm() *Gorm
+	Register(components ...Component)
 	Get(name string) (Component, bool)
 }
 
 var providerInstance struct {
 	once     sync.Once
-	provider ComponentProvider
+	provider IProvider
 }
 
 // Initialize sets the component provider instance
-func Initialize(provider ComponentProvider) {
+func Initialize(provider IProvider) {
 	providerInstance.once.Do(func() {
 		providerInstance.provider = provider
 	})
 }
 
 // Provider returns the  component provider singleton instance
-func Provider() ComponentProvider {
+func Provider() IProvider {
 	if providerInstance.provider == nil {
 		providerInstance.provider = NewContainer()
 	}
@@ -38,124 +52,105 @@ func Provider() ComponentProvider {
 }
 
 type Container struct {
-	cache           *Cache
-	logger          *Logger
-	config          *Config
-	curl            *Curl
-	jwt             *JWT
-	tracer          *Tracer
-	eventDispatcher *EventDispatcher
-	redis           *Redis
-	validator       *Validator
-	gorm            *Gorm
-
-	rmu    sync.RWMutex
-	others map[string]Component
+	rmu        sync.RWMutex
+	components map[string]Component
 }
 
-func (c *Container) Cache() *Cache {
-	if c.cache == nil {
-		c.cache = NewCache()
+func (c *Container) build(name string) Component {
+	switch name {
+	case componentCache:
+		return NewCache()
+	case componentConfig:
+		return NewConfig()
+	case componentCurl:
+		return NewCurl()
+	case componentGorm:
+		return NewGorm()
+	case componentJwt:
+		return NewJWT()
+	case componentEventDispatcher:
+		return NewEventDispatcher()
+	case componentLogger:
+		return NewLogger()
+	case componentRedis:
+		return NewRedis()
+	case componentTracer:
+		return NewTracer()
+	case componentValidator:
+		return NewValidator()
 	}
-	return c.cache
+	return nil
+}
+
+func (c *Container) GetOrInit(name string) Component {
+	c.rmu.Lock()
+	defer c.rmu.Unlock()
+	component, ok := c.components[name]
+	if ok {
+		return component
+	}
+	component = c.build(name)
+	c.components[name] = component
+	return component
+
+}
+func (c *Container) Cache() *Cache {
+	return c.GetOrInit(componentCache).(*Cache)
 }
 
 func (c *Container) Logger() *Logger {
-	if c.logger == nil {
-		c.logger = NewLogger()
-	}
-	return c.logger
+	return c.GetOrInit(componentLogger).(*Logger)
 }
 
 func (c *Container) Config() *Config {
-	if c.config == nil {
-		c.config = NewConfig()
-	}
-	return c.config
+	return c.GetOrInit(componentConfig).(*Config)
 }
 
 func (c *Container) Curl() *Curl {
-	if c.curl == nil {
-		c.curl = NewCurl()
-	}
-	return c.curl
+	return c.GetOrInit(componentCurl).(*Curl)
 }
 
 func (c *Container) Jwt() *JWT {
-	if c.jwt == nil {
-		c.jwt = NewJWT()
-	}
-	return c.jwt
+	return c.GetOrInit(componentJwt).(*JWT)
 }
 
 func (c *Container) Tracer() *Tracer {
-	if c.tracer == nil {
-		c.tracer = NewTracer()
-	}
-	return c.tracer
+	return c.GetOrInit(componentTracer).(*Tracer)
 }
 
 func (c *Container) EventDispatcher() *EventDispatcher {
-	if c.eventDispatcher == nil {
-		c.eventDispatcher = NewEventDispatcher()
-	}
-	return c.eventDispatcher
+	return c.GetOrInit(componentEventDispatcher).(*EventDispatcher)
 }
 
 func (c *Container) Redis() *Redis {
-	if c.redis == nil {
-		c.redis = NewRedis()
-	}
-	return c.redis
+	return c.GetOrInit(componentRedis).(*Redis)
 }
 
 func (c *Container) Validator() *Validator {
-	if c.validator == nil {
-		c.validator = NewValidator()
-	}
-	return c.validator
+	return c.GetOrInit(componentValidator).(*Validator)
 }
 
 func (c *Container) Gorm() *Gorm {
-	if c.gorm == nil {
-		c.gorm = NewGorm()
-	}
-	return c.gorm
+	return c.GetOrInit(componentGorm).(*Gorm)
 }
 func (c *Container) register(component Component) {
-	if cache, ok := component.(*Cache); ok {
-		c.cache = cache
-		return
-	}
-
-	if config, ok := component.(*Config); ok {
-		c.config = config
-		return
-	}
-
-	if logger, ok := component.(*Logger); ok {
-		c.logger = logger
-		return
-	}
-
-	c.rmu.Lock()
-	c.others[component.Name()] = component
-	c.rmu.Unlock()
-
+	c.components[component.Name()] = component
 }
 func (c *Container) Register(components ...Component) {
+	c.rmu.Lock()
 	for _, component := range components {
 		c.register(component)
 	}
+	c.rmu.Unlock()
 }
 
 func (c *Container) Get(name string) (Component, bool) {
 	c.rmu.RLock()
 	defer c.rmu.RUnlock()
-	item, ok := c.others[name]
+	item, ok := c.components[name]
 	return item, ok
 }
 
 func NewContainer() *Container {
-	return &Container{others: map[string]Component{}}
+	return &Container{components: map[string]Component{}}
 }

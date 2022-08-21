@@ -6,6 +6,7 @@ import (
 )
 
 type Redis struct {
+	Named
 	redis.UniversalClient
 }
 
@@ -21,5 +22,5 @@ func (r *Redis) Connect(options *redis.Options) error {
 }
 
 func NewRedis() *Redis {
-	return &Redis{}
+	return &Redis{Named: componentRedis}
 }
