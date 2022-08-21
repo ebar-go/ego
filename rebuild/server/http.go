@@ -40,6 +40,13 @@ func (server *HTTPServer) RegisterRouteLoader(loader func(router *gin.Engine)) *
 	return server
 }
 
+// WithNotFoundHandler provide the handler for not found routes and methods
+func (server *HTTPServer) WithNotFoundHandler(notFoundHandler ...gin.HandlerFunc) *HTTPServer {
+	server.router.NoRoute(notFoundHandler...)
+	server.router.NoMethod(notFoundHandler...)
+	return server
+}
+
 // EnableAvailableHealthCheck enables the health check
 func (server *HTTPServer) EnableAvailableHealthCheck() *HTTPServer {
 	server.router.GET("/health", func(ctx *gin.Context) {
