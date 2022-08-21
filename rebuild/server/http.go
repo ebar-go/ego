@@ -6,6 +6,8 @@ import (
 	"github.com/ebar-go/ego/rebuild/runtime"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
 	"sync"
 	"time"
@@ -49,6 +51,12 @@ func (server *HTTPServer) EnableAvailableHealthCheck() *HTTPServer {
 // EnablePprofHandler enables the profiler for the http server
 func (server *HTTPServer) EnablePprofHandler() *HTTPServer {
 	pprof.Register(server.router)
+	return server
+}
+
+// EnableSwaggerHandler enables the swagger handler for the http server
+func (server *HTTPServer) EnableSwaggerHandler() *HTTPServer {
+	server.router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	return server
 }
 
