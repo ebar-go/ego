@@ -13,6 +13,7 @@ const (
 	componentValidator       = "validator"
 	componentRedis           = "redis"
 	componentGorm            = "gorm"
+	componentCron            = "cron"
 )
 
 // IProvider is a component provider
@@ -27,6 +28,7 @@ type IProvider interface {
 	Redis() *Redis
 	Validator() *Validator
 	Gorm() *Gorm
+	Cron() *Cron
 	Register(components ...Component)
 	Get(name string) (Component, bool)
 }
@@ -78,6 +80,8 @@ func (c *Container) build(name string) Component {
 		return NewTracer()
 	case componentValidator:
 		return NewValidator()
+	case componentCron:
+		return NewCron()
 	}
 	return nil
 }
@@ -133,9 +137,17 @@ func (c *Container) Validator() *Validator {
 func (c *Container) Gorm() *Gorm {
 	return c.GetOrInit(componentGorm).(*Gorm)
 }
-func (c *Container) register(component Component) {
-	c.components[component.Name()] = component
+
+func (c *Container) Cron() *Cron {
+	return c.GetOrInit(componentCron).(*Cron)
 }
+func (c *Container) Get(name string) (Component, bool) {
+	c.rmu.RLock()
+	defer c.rmu.RUnlock()
+	item, ok := c.components[name]
+	return item, ok
+}
+
 func (c *Container) Register(components ...Component) {
 	c.rmu.Lock()
 	for _, component := range components {
@@ -144,13 +156,9 @@ func (c *Container) Register(components ...Component) {
 	c.rmu.Unlock()
 }
 
-func (c *Container) Get(name string) (Component, bool) {
-	c.rmu.RLock()
-	defer c.rmu.RUnlock()
-	item, ok := c.components[name]
-	return item, ok
+func (c *Container) register(component Component) {
+	c.components[component.Name()] = component
 }
-
 func NewContainer() *Container {
 	return &Container{components: map[string]Component{}}
 }
