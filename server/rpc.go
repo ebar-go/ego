@@ -4,6 +4,7 @@ import (
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 	"net"
 	"sync"
 )
@@ -11,14 +12,40 @@ import (
 type RPCServer struct {
 	schema Schema
 
+	initOnce  sync.Once
 	instance  *grpc.Server
 	closeOnce sync.Once
+	options   []grpc.ServerOption
+}
+
+// WithOptions sets the options for the RPC server.It must be called before RegisterService.
+func (server *RPCServer) WithOptions(opts ...grpc.ServerOption) *RPCServer {
+	server.options = append(server.options, opts...)
+	return server
+}
+
+// WithKeepAliveParams sets the KeepAlive option.It must be called before RegisterService.
+func (server *RPCServer) WithKeepAliveParams(kp keepalive.ServerParameters) *RPCServer {
+	return server.WithOptions(grpc.KeepaliveParams(kp))
+}
+
+// WithChainUnaryInterceptor sets the interceptors.It must be called before RegisterService.
+func (server *RPCServer) WithChainUnaryInterceptor(interceptors ...grpc.UnaryServerInterceptor) *RPCServer {
+	return server.WithOptions(grpc.ChainUnaryInterceptor())
 }
 
 // RegisterService registers grpc service
 func (server *RPCServer) RegisterService(register func(s *grpc.Server)) *RPCServer {
-	register(server.instance)
+	register(server.getInstance())
 	return server
+}
+
+// getInstance returns the singleton instance of the grpc server
+func (server *RPCServer) getInstance() *grpc.Server {
+	server.initOnce.Do(func() {
+		server.instance = grpc.NewServer(server.options...)
+	})
+	return server.instance
 }
 
 // Serve start grpc listener
@@ -31,7 +58,7 @@ func (server *RPCServer) Serve(stop <-chan struct{}) {
 	}
 
 	go func() {
-		if err := server.instance.Serve(lis); err != nil {
+		if err := server.getInstance().Serve(lis); err != nil {
 			component.Provider().Logger().Fatalf("failed to serve: %v", err)
 		}
 	}()
@@ -56,6 +83,5 @@ func NewGRPCServer(bind string) *RPCServer {
 			Protocol: "grpc",
 			Bind:     bind,
 		},
-		instance: grpc.NewServer(),
 	}
 }
