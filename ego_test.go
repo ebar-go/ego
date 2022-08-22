@@ -6,8 +6,10 @@ import (
 	"github.com/ebar-go/ego/server"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestRun(t *testing.T) {
@@ -44,9 +46,17 @@ func Run(options ServerRunOptions) {
 		})
 
 	// grpc server example
-	grpcServer := NewGRPCServer(options.RPCAddr).RegisterService(func(s *grpc.Server) {
-		// pb.RegisterGreeterServer(s, &HelloService{})
-	})
+	grpcServer := NewGRPCServer(options.RPCAddr).
+		WithKeepAliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle:     time.Minute,
+			MaxConnectionAge:      time.Hour,
+			MaxConnectionAgeGrace: time.Hour * 24,
+			Time:                  time.Hour,
+			Timeout:               time.Second * 30,
+		}).
+		RegisterService(func(s *grpc.Server) {
+			// pb.RegisterGreeterServer(s, &HelloService{})
+		})
 
 	// websocket server example
 	websocketServer := NewWebsocketServer(options.WebSocketAddr).OnConnect(func(conn server.Conn) {
