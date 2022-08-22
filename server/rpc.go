@@ -27,7 +27,7 @@ func (server *RPCServer) Serve(stop <-chan struct{}) {
 
 	lis, err := net.Listen("tcp", server.schema.Bind)
 	if err != nil {
-		component.Provider().Logger().Fatalf("failed to listen: %v", err)
+		component.Provider().Logger().Fatalf("failed to listen rpc: %v", err)
 	}
 
 	go func() {

@@ -34,15 +34,21 @@ type WebSocketServer struct {
 	requestHandler    func(conn Conn, msg []byte)
 }
 
-// OnConnect is called when the connection is established
+// OnConnect is set callback when the connection is established
 func (server *WebSocketServer) OnConnect(handler func(conn Conn)) *WebSocketServer {
-	if handler != nil {
-		server.connectHandler = handler
-	}
+	server.connectHandler = handler
 	return server
 }
 
-// OnMessage is called when a message is received.
+// handleConnect is called when the connection is established
+func (server *WebSocketServer) handleConnect(conn Conn) {
+	if server.connectHandler == nil {
+		return
+	}
+	server.connectHandler(conn)
+}
+
+// OnMessage is set callback  when a message is received.
 func (server *WebSocketServer) OnMessage(handler func(conn Conn, msg []byte)) *WebSocketServer {
 	if handler != nil {
 		server.requestHandler = handler
@@ -50,12 +56,18 @@ func (server *WebSocketServer) OnMessage(handler func(conn Conn, msg []byte)) *W
 	return server
 }
 
-// OnDisconnect is called when the client disconnects from the server
+// OnDisconnect is set callback when the client disconnects from the server
 func (server *WebSocketServer) OnDisconnect(handler func(conn Conn)) *WebSocketServer {
-	if handler != nil {
-		server.disconnectHandler = handler
-	}
+	server.disconnectHandler = handler
 	return server
+}
+
+// handleConnect is called when the client disconnects from the server
+func (server *WebSocketServer) handleDisconnect(conn Conn) {
+	if server.disconnectHandler == nil {
+		return
+	}
+	server.disconnectHandler(conn)
 }
 
 // Serve start websocket server
@@ -64,16 +76,17 @@ func (server *WebSocketServer) Serve(stop <-chan struct{}) {
 
 	ln, err := net.Listen("tcp", server.schema.Bind)
 	if err != nil {
-		component.Provider().Logger().Fatalf("failed to listen: %v", err)
+		component.Provider().Logger().Fatalf("failed to listen websocket: %v", err)
 	}
 	server.listener = ln
 
+	// cancel function is used to be called when the server need shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	server.cancel = cancel
 	go func() {
 		for {
 			select {
-			case <-ctx.Done():
+			case <-ctx.Done(): // if cancel is called, goroutine should exit.
 				return
 			default:
 				if err := server.accept(); err != nil {
@@ -111,11 +124,11 @@ func (server *WebSocketServer) accept() error {
 	}
 
 	connection := Conn{conn: conn}
-	server.connectHandler(connection)
+	server.handleConnect(connection)
 
 	go func() {
 		defer func() {
-			server.disconnectHandler(connection)
+			server.handleDisconnect(connection)
 			_ = conn.Close()
 		}()
 
@@ -144,6 +157,9 @@ func NewWebSocketServer(bind string) *WebSocketServer {
 				log.Printf("non-websocket header: %q=%q", key, value)
 				return
 			},
+		},
+		requestHandler: func(conn Conn, msg []byte) {
+			component.Provider().Logger().Infof("received request: %v", string(msg))
 		},
 	}
 }
