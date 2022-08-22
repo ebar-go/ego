@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	serializer2 "github.com/ebar-go/ego/utils/serializer"
+	"github.com/ebar-go/ego/utils/serializer"
 	"io"
 	"mime/multipart"
 	"net"
@@ -22,11 +22,11 @@ var (
 type Curl struct {
 	Named
 	httpClient   *http.Client
-	bufferLenght int
+	bufferLength int
 }
 
 // Get send get request
-func (c *Curl) Get(url string) (serializer2.Serializer, error) {
+func (c *Curl) Get(url string) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (c *Curl) Get(url string) (serializer2.Serializer, error) {
 }
 
 // Post send post request
-func (c *Curl) Post(url string, body io.Reader) (serializer2.Serializer, error) {
+func (c *Curl) Post(url string, body io.Reader) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (c *Curl) Post(url string, body io.Reader) (serializer2.Serializer, error) 
 }
 
 // Put send put request
-func (c *Curl) Put(url string, body io.Reader) (serializer2.Serializer, error) {
+func (c *Curl) Put(url string, body io.Reader) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodPut, url, body)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (c *Curl) Put(url string, body io.Reader) (serializer2.Serializer, error) {
 }
 
 // Delete send delete request
-func (c *Curl) Delete(url string, body io.Reader) (serializer2.Serializer, error) {
+func (c *Curl) Delete(url string, body io.Reader) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodDelete, url, body)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (c *Curl) Delete(url string, body io.Reader) (serializer2.Serializer, error
 }
 
 // PostFile send post request with file
-func (c *Curl) PostFile(url string, files map[string]string, params map[string]string) (serializer2.Serializer, error) {
+func (c *Curl) PostFile(url string, files map[string]string, params map[string]string) (serializer.Serializer, error) {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	// 添加form参数
@@ -106,7 +106,7 @@ func (c *Curl) PostFile(url string, files map[string]string, params map[string]s
 }
 
 // Send return Response by http.Request
-func (c *Curl) Send(request *http.Request) (serializer2.Serializer, error) {
+func (c *Curl) Send(request *http.Request) (serializer.Serializer, error) {
 	resp, err := c.httpClient.Do(request)
 	// close response
 	defer func() {
@@ -122,7 +122,8 @@ func (c *Curl) Send(request *http.Request) (serializer2.Serializer, error) {
 	return c.ReadResponse(resp)
 }
 
-func (c *Curl) ReadResponse(resp *http.Response) (serializer2.Serializer, error) {
+// ReadResponse reads body from the *http.Response
+func (c *Curl) ReadResponse(resp *http.Response) (serializer.Serializer, error) {
 	if resp == nil {
 		return nil, EmptyResponse
 	}
@@ -133,9 +134,9 @@ func (c *Curl) ReadResponse(resp *http.Response) (serializer2.Serializer, error)
 
 	length := int(resp.ContentLength)
 	if length == 0 {
-		length = c.bufferLenght
+		length = c.bufferLength
 	}
-	buffer := serializer2.NewBuffer(length)
+	buffer := serializer.NewBuffer(length)
 
 	_, err := io.Copy(buffer, resp.Body)
 	if err != nil {
@@ -145,10 +146,16 @@ func (c *Curl) ReadResponse(resp *http.Response) (serializer2.Serializer, error)
 	return buffer, nil
 }
 
+// WithHttpClient sets the http client
+func (c *Curl) WithHttpClient(httpClient *http.Client) *Curl {
+	c.httpClient = httpClient
+	return c
+}
+
 func NewCurl() *Curl {
 	return &Curl{
 		Named:        componentCurl,
-		bufferLenght: 512,
+		bufferLength: 512,
 		httpClient: &http.Client{
 			Transport: &http.Transport{ // 配置连接池
 				Proxy: http.ProxyFromEnvironment,
