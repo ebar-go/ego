@@ -59,6 +59,12 @@ func (server *HTTPServer) WithDefaultRecoverMiddleware() *HTTPServer {
 	return server
 }
 
+// WithDefaultRequestLogMiddleware enables the default request log middleware.
+func (server *HTTPServer) WithDefaultRequestLogMiddleware() *HTTPServer {
+	server.router.Use(RequestLog())
+	return server
+}
+
 // EnableTraceMiddleware enables trace middleware with trace header name
 func (server *HTTPServer) EnableTraceMiddleware(traceHeader string) *HTTPServer {
 	server.router.Use(Trace(traceHeader))
