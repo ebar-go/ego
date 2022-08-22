@@ -38,6 +38,12 @@ func (impl JWT) ParseToken(token string) (jwt.Claims, error) {
 	return tokenClaims.Claims, nil
 }
 
+// WithSignKey sets the jwt algorithm signature key
+func (impl *JWT) WithSignKey(key []byte) *JWT {
+	impl.key = key
+	return impl
+}
+
 func NewJWT() *JWT {
 	return &JWT{Named: "jwt"}
 }
