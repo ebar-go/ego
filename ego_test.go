@@ -18,7 +18,10 @@ func TestRun(t *testing.T) {
 
 func Run(options ServerRunOptions) {
 	aggregator := NewAggregatorServer()
-	aggregator.WithComponent(component.NewCache(), component.NewLogger())
+	aggregator.WithComponent(
+		component.NewCache().WithDefaultExpiration(time.Minute*30).WithCleanupInterval(time.Hour),
+		component.NewJWT().WithSignKey([]byte("someJwtPrivateKey")),
+	)
 
 	// http server example
 	httpServer := NewHTTPServer(options.HttpAddr).
