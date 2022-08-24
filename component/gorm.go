@@ -3,6 +3,7 @@ package component
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
 	"time"
 )
 
@@ -24,6 +25,11 @@ func (g *Gorm) Open(dialector gorm.Dialector, config *gorm.Config) error {
 // OpenMySQL connect to mysql data
 func (g *Gorm) OpenMySQL(dsn string) error {
 	return g.Open(mysql.Open(dsn), &gorm.Config{})
+}
+
+// UseResolver use resolver for gorm component.include set many db connection configuration with different model or table name
+func (g *Gorm) UseResolver(resolver *dbresolver.DBResolver) error {
+	return g.Use(resolver)
 }
 
 // EnableConnectionPool enables connection pool
