@@ -15,6 +15,7 @@ const (
 	componentGorm            = "gorm"
 	componentCron            = "cron"
 	componentMongo           = "mongo"
+	componentDI              = "di"
 )
 
 // IProvider is a component provider
@@ -85,6 +86,8 @@ func (c *Container) build(name string) Component {
 		return NewCron()
 	case componentMongo:
 		return NewMongo()
+	case componentDI:
+		return NewDI()
 	}
 	return nil
 }
@@ -147,6 +150,10 @@ func (c *Container) Cron() *Cron {
 
 func (c *Container) Mongo() *Mongo {
 	return c.GetOrInit(componentMongo).(*Mongo)
+}
+
+func (c *Container) DI() *DI {
+	return c.GetOrInit(componentDI).(*DI)
 }
 func (c *Container) Get(name string) (Component, bool) {
 	c.rmu.RLock()
