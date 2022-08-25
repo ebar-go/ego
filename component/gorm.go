@@ -32,6 +32,21 @@ func (g *Gorm) UseResolver(resolver *dbresolver.DBResolver) error {
 	return g.Use(resolver)
 }
 
+// RegisterResolverConfig registers resolver configuration for current connection
+func (g *Gorm) RegisterResolverConfig(config dbresolver.Config, tables ...interface{}) {
+	resolver := &dbresolver.DBResolver{}
+	// get resolver plugin from config
+	plugin, ok := g.Config.Plugins[resolver.Name()]
+	if !ok {
+		// if resolver not exist, create and initialize it.
+		resolver = dbresolver.Register(config, tables)
+		g.Use(resolver)
+		return
+	}
+	// if resolver is already exist, register configuration directly.Because of this plugin is a pointer, it will effect when use register.
+	plugin.(*dbresolver.DBResolver).Register(config, tables)
+}
+
 // EnableConnectionPool enables connection pool
 func (g *Gorm) EnableConnectionPool(maxIdleConns int, maxOpenConns int, connMaxLifetime time.Duration) error {
 	sqlDB, err := g.DB.DB()
