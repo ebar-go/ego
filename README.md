@@ -23,40 +23,22 @@ package main
 
 import (
 	"github.com/ebar-go/ego"
-	"github.com/ebar-go/ego/component"
 	"github.com/gin-gonic/gin"
-	"google.golang.org/grpc"
 	"net/http"
 )
 
 func main() {
-	Run(ego.ServerRunOptions{HttpAddr: ":8080", HttpTraceHeader: "trace", RPCAddr: ":8081"})
-}
-
-func Run(options ego.ServerRunOptions) {
 	aggregator := ego.NewAggregatorServer()
-	aggregator.WithComponent(component.NewCache(), component.NewLogger())
 
-	httpServer := ego.NewHTTPServer(options.HttpAddr).
-		EnablePprofHandler().
-		EnableAvailableHealthCheck().
-		EnableSwaggerHandler().
-		EnableCorsMiddleware().
-		EnableTraceMiddleware(options.HttpTraceHeader).
-		WithNotFoundHandler(func(ctx *gin.Context) {
-			ctx.String(http.StatusNotFound, "404 Not Found")
-		}).
+	httpServer := ego.NewHTTPServer(":8080").
 		RegisterRouteLoader(func(router *gin.Engine) {
 			router.GET("/", func(ctx *gin.Context) {
 				ctx.String(http.StatusOK, "home")
 			})
 		})
 
-	grpcServer := ego.NewGRPCServer(options.RPCAddr).RegisterService(func(s *grpc.Server) {
-		// pb.RegisterGreeterServer(s, &HelloService{})
-	})
 
-	aggregator.WithServer(httpServer, grpcServer)
+	aggregator.WithServer(httpServer)
 
 	aggregator.Run()
 }
