@@ -29,6 +29,7 @@ require (
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/tebeka/strftime v0.1.4 // indirect
 	go.etcd.io/etcd v3.3.22+incompatible
+	go.mongodb.org/mongo-driver v1.10.1 // indirect
 	go.uber.org/dig v1.10.0
 	go.uber.org/zap v1.15.0
 	google.golang.org/grpc v1.48.0

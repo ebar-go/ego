@@ -14,6 +14,7 @@ const (
 	componentRedis           = "redis"
 	componentGorm            = "gorm"
 	componentCron            = "cron"
+	componentMongo           = "mongo"
 )
 
 // IProvider is a component provider
@@ -82,6 +83,8 @@ func (c *Container) build(name string) Component {
 		return NewValidator()
 	case componentCron:
 		return NewCron()
+	case componentMongo:
+		return NewMongo()
 	}
 	return nil
 }
@@ -140,6 +143,10 @@ func (c *Container) Gorm() *Gorm {
 
 func (c *Container) Cron() *Cron {
 	return c.GetOrInit(componentCron).(*Cron)
+}
+
+func (c *Container) Mongo() *Mongo {
+	return c.GetOrInit(componentMongo).(*Mongo)
 }
 func (c *Container) Get(name string) (Component, bool) {
 	c.rmu.RLock()
