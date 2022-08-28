@@ -13,13 +13,9 @@ type Gorm struct {
 }
 
 // Open connect to database
-func (g *Gorm) Open(dialector gorm.Dialector, config *gorm.Config) error {
-	conn, err := gorm.Open(dialector, config)
-	if err != nil {
-		g.DB = conn
-	}
-
-	return err
+func (g *Gorm) Open(dialector gorm.Dialector, config *gorm.Config) (err error) {
+	g.DB, err = gorm.Open(dialector, config)
+	return
 }
 
 // OpenMySQL connect to mysql data
