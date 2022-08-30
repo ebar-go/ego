@@ -1,57 +1,28 @@
 package component
 
 import (
-	"github.com/ebar-go/ego/runtime"
 	"sync"
 )
 
-// Event
-type Event struct {
-	// name
-	Name string
-	// event params
-	Params interface{}
-}
-
-const (
-	Sync  = 0
-	Async = 1
-)
-
-// Listener
-type Listener struct {
-	Mode    int
-	Handler Handler
-}
-
 // Handler process event
-type Handler func(ev Event)
-
+type Handler func(param any)
 type EventDispatcher struct {
 	Named
-	items map[string][]Listener
+	items map[string][]Handler
 	rmw   sync.RWMutex
-}
-
-// Register
-func (instance *EventDispatcher) Register(eventName string, listener Listener) {
-	instance.rmw.Lock()
-	defer instance.rmw.Unlock()
-	listeners, ok := instance.items[eventName]
-	if !ok {
-		// 预定义数组的长度为10
-		listeners = make([]Listener, 10)
-	}
-	listeners = append(listeners, listener)
-	instance.items[eventName] = listeners
 }
 
 // Listen register a sync event
 func (instance *EventDispatcher) Listen(eventName string, handler Handler) {
-	instance.Register(eventName, Listener{
-		Mode:    Sync,
-		Handler: handler,
-	})
+	instance.rmw.Lock()
+	defer instance.rmw.Unlock()
+	handlers, ok := instance.items[eventName]
+	if !ok {
+		// 预定义数组的长度为10
+		handlers = make([]Handler, 0, 10)
+	}
+	handlers = append(handlers, handler)
+	instance.items[eventName] = handlers
 }
 
 // Has return event exist
@@ -63,32 +34,50 @@ func (instance *EventDispatcher) Has(eventName string) bool {
 }
 
 // Trigger make event trigger with given name and params
-func (instance *EventDispatcher) Trigger(eventName string, params interface{}) {
+func (instance *EventDispatcher) Trigger(eventName string, param any) {
 	instance.rmw.RLock()
 	defer instance.rmw.RUnlock()
-	listeners, ok := instance.items[eventName]
+	handlers, ok := instance.items[eventName]
 	if !ok {
 		return
 	}
 
-	for _, listener := range listeners {
-		if listener.Mode == Sync {
-			listener.Handler(Event{
-				Name:   eventName,
-				Params: params,
-			})
-		} else {
-			runtime.Goroutine(func() {
-				listener.Handler(Event{
-					Name:   eventName,
-					Params: params,
-				})
-			})
-		}
-
+	for _, handler := range handlers {
+		handler(param)
 	}
 }
 
 func NewEventDispatcher() *EventDispatcher {
-	return &EventDispatcher{Named: componentEventDispatcher, items: make(map[string][]Listener, 16)}
+	return &EventDispatcher{Named: componentEventDispatcher, items: make(map[string][]Handler)}
+}
+
+// ListenEvent listen with type parameters
+func ListenEvent[T any](eventName string, handler func(param T)) {
+	Provider().EventDispatcher().Listen(eventName, func(param any) {
+		data, ok := param.(T)
+		if !ok {
+			return
+		}
+		handler(data)
+	})
+}
+
+type Event[T any] struct {
+	Name string
+}
+
+// NewEvent creates a new Event with the given name.
+func NewEvent[T any](name string) Event[T] {
+	return Event[T]{Name: name}
+}
+
+// Bind binds handler
+func (e Event[T]) Bind(handler func(param T)) {
+	Provider().EventDispatcher().Listen(e.Name, func(param any) {
+		data, ok := param.(T)
+		if !ok {
+			return
+		}
+		handler(data)
+	})
 }
