@@ -97,3 +97,12 @@ func TestComponentConfig(t *testing.T) {
 	fmt.Println(conf.GetBool("app.someBool"))
 	fmt.Println(conf.GetString("app.someString"))
 }
+
+func TestComponentCurl(t *testing.T) {
+	curl := component.Provider().Curl()
+
+	response, err := curl.Get("http://localhost:8080/")
+	assert.Nil(t, err)
+	fmt.Println(string(response.Bytes()))
+	response.Release()
+}
