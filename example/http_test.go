@@ -28,14 +28,14 @@ func TestAggregatorWithHttpServerComplex(t *testing.T) {
 
 	// 实例化一个http服务
 	httpServer := ego.NewHTTPServer(":8080").
-		WithDefaultRecoverMiddleware().              // 使用默认的recover组件
-		WithDefaultRequestLogMiddleware().           // 使用默认的请求日志组件
-		EnableReleaseMode().                         // 开启release mode
-		EnablePprofHandler().                        // 开启pprof分析
-		EnableAvailableHealthCheck().                // 开启健康检查
-		EnableSwaggerHandler().                      // 开启swagger接口插件
-		EnableCorsMiddleware().                      // 开启跨域组件
-		EnableTraceMiddleware("traceHeader").        // 开启全局链路组件
+		WithDefaultRecoverMiddleware(). // 使用默认的recover组件
+		WithDefaultRequestLogMiddleware(). // 使用默认的请求日志组件
+		EnableReleaseMode(). // 开启release mode
+		EnablePprofHandler(). // 开启pprof分析
+		EnableAvailableHealthCheck(). // 开启健康检查
+		EnableSwaggerHandler(). // 开启swagger接口插件
+		EnableCorsMiddleware(). // 开启跨域组件
+		EnableTraceMiddleware("traceHeader"). // 开启全局链路组件
 		WithNotFoundHandler(func(ctx *gin.Context) { // 配置404
 			ctx.String(http.StatusNotFound, "404 Not Found")
 		}).
@@ -45,7 +45,19 @@ func TestAggregatorWithHttpServerComplex(t *testing.T) {
 			})
 		})
 
-	aggregator.WithServer(httpServer)
+	customServer := NewCustomServer()
+
+	aggregator.WithServer(httpServer, customServer)
 
 	aggregator.Run()
+}
+
+type CustomServer struct {
+}
+
+func (c CustomServer) Serve(stop <-chan struct{}) {
+	// do something..
+}
+func NewCustomServer() *CustomServer {
+	return &CustomServer{}
 }

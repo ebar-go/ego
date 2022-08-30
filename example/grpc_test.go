@@ -8,9 +8,9 @@ import (
 func TestAggregatorWithGrpcServer(t *testing.T) {
 	aggregator := ego.NewAggregatorServer()
 
-	httpServer := ego.NewGRPCServer(":8081")
+	grpcServer := ego.NewGRPCServer(":8081")
 
-	aggregator.WithServer(httpServer)
+	aggregator.WithServer(grpcServer)
 
 	aggregator.Run()
 }

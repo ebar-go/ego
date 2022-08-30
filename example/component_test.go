@@ -1,6 +1,7 @@
 package example
 
 import (
+	"fmt"
 	"github.com/ebar-go/ego"
 	"github.com/ebar-go/ego/component"
 	"github.com/gin-gonic/gin"
@@ -81,4 +82,18 @@ func TestComponentGorm(t *testing.T) {
 	// insert other users with db2 connection
 	otherInsertErr := component.Provider().Gorm().Create(&OtherUser{Name: "Tom"}).Error
 	assert.Nil(t, otherInsertErr)
+
+	// test insert primary connection
+	insertPrimaryErr := component.Provider().Gorm().Create(&User{Name: "John"}).Error
+	assert.Nil(t, insertPrimaryErr)
+}
+
+func TestComponentConfig(t *testing.T) {
+	conf := component.Provider().Config()
+	err := conf.LoadFile("example.yaml")
+	assert.Nil(t, err)
+
+	fmt.Println(conf.GetInt("app.someInt"))
+	fmt.Println(conf.GetBool("app.someBool"))
+	fmt.Println(conf.GetString("app.someString"))
 }
