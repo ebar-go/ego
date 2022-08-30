@@ -106,3 +106,14 @@ func TestComponentCurl(t *testing.T) {
 	fmt.Println(string(response.Bytes()))
 	response.Release()
 }
+
+func TestComponentRedis(t *testing.T) {
+	// connect redis
+	if err := component.Provider().Redis().Connect(&redis.Options{Addr: "127.0.0.1:6379"}); err != nil {
+		t.Fatal(err)
+	}
+
+	// set some key
+	component.Provider().Redis().Set("someKey", "someValue", time.Second)
+
+}
