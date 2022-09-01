@@ -1,10 +1,10 @@
 package aggregator
 
 import (
-	"context"
 	component "github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/runtime"
 	"github.com/ebar-go/ego/server"
+	"github.com/ebar-go/ego/utils/async"
 	"time"
 )
 
@@ -29,16 +29,17 @@ func (a *Aggregator) prepare() {
 }
 
 func (a *Aggregator) Run() {
-
-	ctx, cancel := context.WithCancel(context.Background())
+	runner := async.NewRunner()
 	for _, s := range a.servers {
-		go s.Serve(ctx.Done())
+		runner.Add(func(stop chan struct{}) {
+			s.Serve(stop)
+		})
 	}
 
 	component.Provider().Logger().Info("Aggregator started successfully")
 
 	runtime.Shutdown(func() {
-		cancel()
+		runner.Stop()
 		time.Sleep(time.Second)
 		component.Provider().Logger().Info("Aggregator stopped successfully")
 	})
