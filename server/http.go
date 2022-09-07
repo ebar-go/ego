@@ -18,12 +18,17 @@ type HTTPServer struct {
 
 	instance *http.Server
 
-	router    *gin.Engine
-	closeOnce sync.Once
+	router                    *gin.Engine
+	closeOnce                 sync.Once
+	startHooks, shutdownHooks []func()
 }
 
 func (server *HTTPServer) Serve(stop <-chan struct{}) {
 	component.Provider().Logger().Infof("listening and serving HTTP on %s", server.schema.Bind)
+
+	for _, hook := range server.startHooks {
+		hook()
+	}
 
 	go func() {
 		if err := server.instance.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -97,8 +102,23 @@ func (server *HTTPServer) EnableSwaggerHandler() *HTTPServer {
 	return server
 }
 
+// AddStartHook adds a hook function what's called before server is start
+func (server *HTTPServer) AddStartHook(hook func()) *HTTPServer {
+	server.startHooks = append(server.startHooks, hook)
+	return server
+}
+
+// AddShutdownHook adds a callback function what's called before the server is shutdown
+func (server *HTTPServer) AddShutdownHook(hook func()) *HTTPServer {
+	server.shutdownHooks = append(server.shutdownHooks, hook)
+	return server
+}
+
 // Shutdown shuts down the server.
 func (server *HTTPServer) Shutdown() {
+	for _, hook := range server.shutdownHooks {
+		hook()
+	}
 	server.closeOnce.Do(server.shutdown)
 }
 
