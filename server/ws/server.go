@@ -142,7 +142,7 @@ func (server *Server) accept() error {
 
 func NewServer(bind string) *Server {
 	return &Server{
-		schema: protocol.Schema{Protocol: "ws", Bind: bind},
+		schema: protocol.NewWSSchema(bind),
 		upgrader: ws.Upgrader{
 			OnHeader: func(key, value []byte) (err error) {
 				log.Printf("non-websocket header: %q=%q", key, value)

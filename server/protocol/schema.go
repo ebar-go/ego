@@ -1,8 +1,24 @@
 package protocol
 
+import (
+	"fmt"
+	"net"
+)
+
+// Schema defines server protocol
 type Schema struct {
 	Protocol string
 	Bind     string
+}
+
+// Address returns address of schema.
+func (s Schema) Address() string {
+	return fmt.Sprintf("%s://%s", s.Protocol, s.Bind)
+}
+
+// HostPort returns the host and port of the schema.
+func (s Schema) HostPort() (string, string, error) {
+	return net.SplitHostPort(s.Bind)
 }
 
 func NewSchema(protocol string, bind string) Schema {
