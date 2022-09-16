@@ -11,7 +11,7 @@ func New() *NamedEngine {
 }
 
 // NewHttpServer creates a new http server instance.
-func NewHTTPServer(addr string) *http.HTTPServer {
+func NewHTTPServer(addr string) *http.Server {
 	return http.NewServer(addr)
 }
 
