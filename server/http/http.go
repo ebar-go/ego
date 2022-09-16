@@ -26,14 +26,15 @@ type Server struct {
 	startHooks, shutdownHooks []func()
 }
 
-// initialize init http server only once.
-func (server *Server) initialize() {
+// getInstance returns the singleton instance of the http.Server.
+func (server *Server) getInstance() *http.Server {
 	server.initOnce.Do(func() {
 		server.instance = &http.Server{
 			Addr:    server.schema.Bind,
 			Handler: server.router,
 		}
 	})
+	return server.instance
 
 }
 
@@ -46,7 +47,7 @@ func (server *Server) Serve(stop <-chan struct{}) {
 	}
 
 	go func() {
-		if err := server.instance.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := server.getInstance().ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			component.Provider().Logger().Fatalf("unable to serve: %v", err)
 		}
 	}()
@@ -143,7 +144,7 @@ func (server *Server) shutdown() {
 	defer cancel()
 
 	// stop the server gracefully
-	if err := server.instance.Shutdown(ctx); err != nil {
+	if err := server.getInstance().Shutdown(ctx); err != nil {
 		component.Provider().Logger().Fatalf("Server shutdown failed: %v", err)
 	}
 	component.Provider().Logger().Info("Server showdown success")
@@ -155,8 +156,6 @@ func NewServer(addr string) *Server {
 		schema: protocol.NewHttpSchema(addr),
 		router: gin.Default(),
 	}
-
-	instance.initialize()
 
 	return instance
 }

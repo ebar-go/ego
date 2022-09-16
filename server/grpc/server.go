@@ -1,4 +1,4 @@
-package server
+package grpc
 
 import (
 	"github.com/ebar-go/ego/component"
@@ -10,7 +10,8 @@ import (
 	"sync"
 )
 
-type RPCServer struct {
+// Server represents a gRPC server.
+type Server struct {
 	schema protocol.Schema
 
 	initOnce  sync.Once
@@ -20,29 +21,29 @@ type RPCServer struct {
 }
 
 // WithOptions sets the options for the RPC server.It must be called before RegisterService.
-func (server *RPCServer) WithOptions(opts ...grpc.ServerOption) *RPCServer {
+func (server *Server) WithOptions(opts ...grpc.ServerOption) *Server {
 	server.options = append(server.options, opts...)
 	return server
 }
 
 // WithKeepAliveParams sets the KeepAlive option.It must be called before RegisterService.
-func (server *RPCServer) WithKeepAliveParams(kp keepalive.ServerParameters) *RPCServer {
+func (server *Server) WithKeepAliveParams(kp keepalive.ServerParameters) *Server {
 	return server.WithOptions(grpc.KeepaliveParams(kp))
 }
 
 // WithChainUnaryInterceptor sets the interceptors.It must be called before RegisterService.
-func (server *RPCServer) WithChainUnaryInterceptor(interceptors ...grpc.UnaryServerInterceptor) *RPCServer {
+func (server *Server) WithChainUnaryInterceptor(interceptors ...grpc.UnaryServerInterceptor) *Server {
 	return server.WithOptions(grpc.ChainUnaryInterceptor())
 }
 
 // RegisterService registers grpc service
-func (server *RPCServer) RegisterService(register func(s *grpc.Server)) *RPCServer {
+func (server *Server) RegisterService(register func(s *grpc.Server)) *Server {
 	register(server.getInstance())
 	return server
 }
 
 // getInstance returns the singleton instance of the grpc server
-func (server *RPCServer) getInstance() *grpc.Server {
+func (server *Server) getInstance() *grpc.Server {
 	server.initOnce.Do(func() {
 		server.instance = grpc.NewServer(server.options...)
 	})
@@ -50,7 +51,7 @@ func (server *RPCServer) getInstance() *grpc.Server {
 }
 
 // Serve start grpc listener
-func (server *RPCServer) Serve(stop <-chan struct{}) {
+func (server *Server) Serve(stop <-chan struct{}) {
 	component.Provider().Logger().Infof("listening and serving GRPC on %s", server.schema.Bind)
 
 	lis, err := net.Listen("tcp", server.schema.Bind)
@@ -68,21 +69,19 @@ func (server *RPCServer) Serve(stop <-chan struct{}) {
 }
 
 // Shutdown shuts down the server.
-func (server *RPCServer) Shutdown() {
+func (server *Server) Shutdown() {
 	server.closeOnce.Do(server.shutdown)
 }
 
-func (server *RPCServer) shutdown() {
+func (server *Server) shutdown() {
 	// stop grpc server gracefully
 	server.instance.GracefulStop()
-	component.Provider().Logger().Info("RPCServer shutdown success")
+	component.Provider().Logger().Info("Server shutdown success")
 }
 
-func NewGRPCServer(bind string) *RPCServer {
-	return &RPCServer{
-		schema: protocol.Schema{
-			Protocol: "grpc",
-			Bind:     bind,
-		},
+// NewServer returns a new instance of the Server.
+func NewServer(bind string) *Server {
+	return &Server{
+		schema: protocol.NewGRPCSchema(bind),
 	}
 }

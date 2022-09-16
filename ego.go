@@ -2,6 +2,7 @@ package ego
 
 import (
 	"github.com/ebar-go/ego/server"
+	"github.com/ebar-go/ego/server/grpc"
 	"github.com/ebar-go/ego/server/http"
 )
 
@@ -16,8 +17,8 @@ func NewHTTPServer(addr string) *http.Server {
 }
 
 // NewGrpcServer creates a new grpc server instance.
-func NewGRPCServer(addr string) *server.RPCServer {
-	return server.NewGRPCServer(addr)
+func NewGRPCServer(addr string) *grpc.RPCServer {
+	return grpc.NewGRPCServer(addr)
 }
 
 // NewWebSocketServer creates a new web server instance.
