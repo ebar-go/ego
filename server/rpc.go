@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/runtime"
+	"github.com/ebar-go/ego/server/protocol"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"net"
@@ -10,7 +11,7 @@ import (
 )
 
 type RPCServer struct {
-	schema Schema
+	schema protocol.Schema
 
 	initOnce  sync.Once
 	instance  *grpc.Server
@@ -79,7 +80,7 @@ func (server *RPCServer) shutdown() {
 
 func NewGRPCServer(bind string) *RPCServer {
 	return &RPCServer{
-		schema: Schema{
+		schema: protocol.Schema{
 			Protocol: "grpc",
 			Bind:     bind,
 		},

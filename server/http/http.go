@@ -1,9 +1,11 @@
-package server
+package http
 
 import (
 	"context"
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/runtime"
+	server2 "github.com/ebar-go/ego/server"
+	"github.com/ebar-go/ego/server/protocol"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -13,16 +15,30 @@ import (
 	"time"
 )
 
+// HTTPServer represents an HTTP server.
 type HTTPServer struct {
-	schema Schema
+	schema protocol.Schema
 
 	instance *http.Server
+	initOnce sync.Once
 
 	router                    *gin.Engine
 	closeOnce                 sync.Once
 	startHooks, shutdownHooks []func()
 }
 
+// initialize init http server only once.
+func (server *HTTPServer) initialize() {
+	server.initOnce.Do(func() {
+		server.instance = &http.Server{
+			Addr:    server.schema.Bind,
+			Handler: server.router,
+		}
+	})
+
+}
+
+// Serve starts the server.
 func (server *HTTPServer) Serve(stop <-chan struct{}) {
 	component.Provider().Logger().Infof("listening and serving HTTP on %s", server.schema.Bind)
 
@@ -54,25 +70,25 @@ func (server *HTTPServer) WithNotFoundHandler(notFoundHandler ...gin.HandlerFunc
 
 // EnableCorsMiddleware enables cors middleware
 func (server *HTTPServer) EnableCorsMiddleware() *HTTPServer {
-	server.router.Use(CORS)
+	server.router.Use(server2.CORS)
 	return server
 }
 
 // WithDefaultRecoverMiddleware enables default recover middleware
 func (server *HTTPServer) WithDefaultRecoverMiddleware() *HTTPServer {
-	server.router.Use(Recover())
+	server.router.Use(server2.Recover())
 	return server
 }
 
 // WithDefaultRequestLogMiddleware enables the default request log middleware.
 func (server *HTTPServer) WithDefaultRequestLogMiddleware() *HTTPServer {
-	server.router.Use(RequestLog())
+	server.router.Use(server2.RequestLog())
 	return server
 }
 
 // EnableTraceMiddleware enables trace middleware with trace header name
 func (server *HTTPServer) EnableTraceMiddleware(traceHeader string) *HTTPServer {
-	server.router.Use(Trace(traceHeader))
+	server.router.Use(server2.Trace(traceHeader))
 	return server
 }
 
@@ -129,22 +145,19 @@ func (server *HTTPServer) shutdown() {
 
 	// stop the server gracefully
 	if err := server.instance.Shutdown(ctx); err != nil {
-		component.Provider().Logger().Fatalf("HTTPServer shutdown failed:", err)
+		component.Provider().Logger().Fatalf("HTTPServer shutdown failed: %v", err)
 	}
 	component.Provider().Logger().Info("HTTPServer showdown success")
 }
 
-func NewHTTPServer(addr string) *HTTPServer {
-	router := gin.Default()
-	return &HTTPServer{
-		schema: Schema{
-			Protocol: "http",
-			Bind:     addr,
-		},
-		router: router,
-		instance: &http.Server{
-			Addr:    addr,
-			Handler: router,
-		},
+// NewServer returns a new instance of the HTTPServer.
+func NewServer(addr string) *HTTPServer {
+	instance := &HTTPServer{
+		schema: protocol.NewHttpSchema(addr),
+		router: gin.Default(),
 	}
+
+	instance.initialize()
+
+	return instance
 }

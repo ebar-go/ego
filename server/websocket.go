@@ -5,6 +5,7 @@ import (
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/errors"
 	"github.com/ebar-go/ego/runtime"
+	"github.com/ebar-go/ego/server/protocol"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"log"
@@ -24,7 +25,7 @@ func (c *Conn) Push(msg []byte) error {
 
 // WebSocketServer provide the websocket server.
 type WebSocketServer struct {
-	schema            Schema
+	schema            protocol.Schema
 	closeOnce         sync.Once
 	upgrader          ws.Upgrader
 	listener          net.Listener
@@ -151,7 +152,7 @@ func (server *WebSocketServer) accept() error {
 
 func NewWebSocketServer(bind string) *WebSocketServer {
 	return &WebSocketServer{
-		schema: Schema{Protocol: "ws", Bind: bind},
+		schema: protocol.Schema{Protocol: "ws", Bind: bind},
 		upgrader: ws.Upgrader{
 			OnHeader: func(key, value []byte) (err error) {
 				log.Printf("non-websocket header: %q=%q", key, value)

@@ -2,6 +2,7 @@ package ego
 
 import (
 	"github.com/ebar-go/ego/server"
+	"github.com/ebar-go/ego/server/http"
 )
 
 // New creates a new NamedEngine instance with default name.
@@ -10,8 +11,8 @@ func New() *NamedEngine {
 }
 
 // NewHttpServer creates a new http server instance.
-func NewHTTPServer(addr string) *server.HTTPServer {
-	return server.NewHTTPServer(addr)
+func NewHTTPServer(addr string) *http.HTTPServer {
+	return http.NewServer(addr)
 }
 
 // NewGrpcServer creates a new grpc server instance.

@@ -2,7 +2,7 @@ package ego
 
 import (
 	"github.com/ebar-go/ego/component"
-	"github.com/ebar-go/ego/server"
+	"github.com/ebar-go/ego/server/http"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -26,7 +26,7 @@ func TestEngine_WithComponent(t *testing.T) {
 }
 
 func TestEngine_WithServer(t *testing.T) {
-	engine := buildEngine().WithServer(server.NewHTTPServer(":8080"))
+	engine := buildEngine().WithServer(http.NewServer(":8080"))
 	assert.NotNil(t, engine)
 }
 
