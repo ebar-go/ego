@@ -13,7 +13,7 @@ func TestNewServer(t *testing.T) {
 	assert.NotNil(t, server)
 }
 
-func serveServer(server *HTTPServer) {
+func serveServer(server *Server) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go server.Serve(ctx.Done())
 

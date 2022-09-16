@@ -42,14 +42,6 @@ func (server *Server) RegisterService(register func(s *grpc.Server)) *Server {
 	return server
 }
 
-// getInstance returns the singleton instance of the grpc server
-func (server *Server) getInstance() *grpc.Server {
-	server.initOnce.Do(func() {
-		server.instance = grpc.NewServer(server.options...)
-	})
-	return server.instance
-}
-
 // Serve start grpc listener
 func (server *Server) Serve(stop <-chan struct{}) {
 	component.Provider().Logger().Infof("listening and serving GRPC on %s", server.schema.Bind)
@@ -71,6 +63,16 @@ func (server *Server) Serve(stop <-chan struct{}) {
 // Shutdown shuts down the server.
 func (server *Server) Shutdown() {
 	server.closeOnce.Do(server.shutdown)
+}
+
+// ========================= private methods =========================
+
+// getInstance returns the singleton instance of the grpc server
+func (server *Server) getInstance() *grpc.Server {
+	server.initOnce.Do(func() {
+		server.instance = grpc.NewServer(server.options...)
+	})
+	return server.instance
 }
 
 func (server *Server) shutdown() {

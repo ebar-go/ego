@@ -1,4 +1,4 @@
-package server
+package ws
 
 import (
 	"context"
@@ -13,18 +13,8 @@ import (
 	"sync"
 )
 
-// Conn websocket connection
-type Conn struct {
-	conn net.Conn
-}
-
-// Push send message to client
-func (c *Conn) Push(msg []byte) error {
-	return wsutil.WriteServerBinary(c.conn, msg)
-}
-
-// WebSocketServer provide the websocket server.
-type WebSocketServer struct {
+// Server provide the websocket server.
+type Server struct {
 	schema            protocol.Schema
 	closeOnce         sync.Once
 	upgrader          ws.Upgrader
@@ -36,13 +26,13 @@ type WebSocketServer struct {
 }
 
 // OnConnect is set callback when the connection is established
-func (server *WebSocketServer) OnConnect(handler func(conn Conn)) *WebSocketServer {
+func (server *Server) OnConnect(handler func(conn Conn)) *Server {
 	server.connectHandler = handler
 	return server
 }
 
 // handleConnect is called when the connection is established
-func (server *WebSocketServer) handleConnect(conn Conn) {
+func (server *Server) handleConnect(conn Conn) {
 	if server.connectHandler == nil {
 		return
 	}
@@ -50,7 +40,7 @@ func (server *WebSocketServer) handleConnect(conn Conn) {
 }
 
 // OnMessage is set callback  when a message is received.
-func (server *WebSocketServer) OnMessage(handler func(conn Conn, msg []byte)) *WebSocketServer {
+func (server *Server) OnMessage(handler func(conn Conn, msg []byte)) *Server {
 	if handler != nil {
 		server.requestHandler = handler
 	}
@@ -58,13 +48,13 @@ func (server *WebSocketServer) OnMessage(handler func(conn Conn, msg []byte)) *W
 }
 
 // OnDisconnect is set callback when the client disconnects from the server
-func (server *WebSocketServer) OnDisconnect(handler func(conn Conn)) *WebSocketServer {
+func (server *Server) OnDisconnect(handler func(conn Conn)) *Server {
 	server.disconnectHandler = handler
 	return server
 }
 
 // handleConnect is called when the client disconnects from the server
-func (server *WebSocketServer) handleDisconnect(conn Conn) {
+func (server *Server) handleDisconnect(conn Conn) {
 	if server.disconnectHandler == nil {
 		return
 	}
@@ -72,7 +62,7 @@ func (server *WebSocketServer) handleDisconnect(conn Conn) {
 }
 
 // Serve start websocket server
-func (server *WebSocketServer) Serve(stop <-chan struct{}) {
+func (server *Server) Serve(stop <-chan struct{}) {
 	component.Provider().Logger().Infof("listening and serving websocket on %s", server.schema.Bind)
 
 	ln, err := net.Listen("tcp", server.schema.Bind)
@@ -102,18 +92,18 @@ func (server *WebSocketServer) Serve(stop <-chan struct{}) {
 	runtime.WaitClose(stop, server.Shutdown)
 }
 
-func (server *WebSocketServer) shutdown() {
+func (server *Server) shutdown() {
 	server.cancel()
-	component.Provider().Logger().Info("WebSocketServer shutdown success")
+	component.Provider().Logger().Info("Server shutdown success")
 }
 
 // Shutdown stop websocket server.
-func (server *WebSocketServer) Shutdown() {
+func (server *Server) Shutdown() {
 	server.closeOnce.Do(server.shutdown)
 }
 
 // accept process incoming connection, and trigger callback with OnConnect,OnDisconnect,OnMessage.
-func (server *WebSocketServer) accept() error {
+func (server *Server) accept() error {
 	conn, err := server.listener.Accept()
 	if err != nil {
 		return errors.WithMessage(err, "listener.Accept")
@@ -150,8 +140,8 @@ func (server *WebSocketServer) accept() error {
 	return nil
 }
 
-func NewWebSocketServer(bind string) *WebSocketServer {
-	return &WebSocketServer{
+func NewServer(bind string) *Server {
+	return &Server{
 		schema: protocol.Schema{Protocol: "ws", Bind: bind},
 		upgrader: ws.Upgrader{
 			OnHeader: func(key, value []byte) (err error) {
