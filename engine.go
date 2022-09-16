@@ -30,8 +30,17 @@ func (engine *Engine) prepare() {
 	component.Initialize(engine.provider)
 }
 
-// Run runs the engine.
+// BlockRun runs the engine with block until os.Exit.
+func (engine *Engine) BlockRun() {
+	engine.Run()
+}
+
+// Run runs the engine with non-blocking mode.
 func (engine *Engine) Run() {
+	go engine.Run()
+}
+
+func (engine *Engine) run() {
 	engine.prepare()
 
 	runner := async.NewRunner()
@@ -52,6 +61,10 @@ func (engine *Engine) Run() {
 	})
 }
 
+func buildEngine() *Engine {
+	return &Engine{provider: component.NewContainer()}
+}
+
 // NamedEngine define engine with name.
 type NamedEngine struct {
 	*Engine
@@ -68,6 +81,6 @@ func (engine *NamedEngine) Run() {
 func NewNamedEngine(name string) *NamedEngine {
 	return &NamedEngine{
 		name:   name,
-		Engine: &Engine{provider: component.NewContainer()},
+		Engine: buildEngine(),
 	}
 }
