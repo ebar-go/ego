@@ -52,12 +52,9 @@ func (engine *Engine) run() {
 
 	runner.Start()
 
-	component.Provider().Logger().Info("Engine started successfully")
-
 	runtime.Shutdown(func() {
 		runner.Stop()
 		time.Sleep(time.Second)
-		component.Provider().Logger().Info("Engine stopped successfully")
 	})
 }
 
@@ -73,7 +70,6 @@ type NamedEngine struct {
 
 // Run override engine Run function.
 func (engine *NamedEngine) Run() {
-	component.Provider().Logger().Infof("Running Engine:%s\n", engine.name)
 	engine.Engine.Run()
 }
 
