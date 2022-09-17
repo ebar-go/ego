@@ -45,9 +45,7 @@ func (engine *Engine) run() {
 
 	runner := async.NewRunner()
 	for _, s := range engine.servers {
-		runner.Add(func(stop chan struct{}) {
-			s.Serve(stop)
-		})
+		runner.Add(s.Serve)
 	}
 
 	runner.Start()

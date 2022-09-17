@@ -4,11 +4,11 @@ import "sync"
 
 type Runner struct {
 	lock          sync.Mutex
-	loopFunctions []func(stop chan struct{})
+	loopFunctions []func(stop <-chan struct{})
 	stop          *chan struct{}
 }
 
-func (r *Runner) Add(fn func(stop chan struct{})) {
+func (r *Runner) Add(fn func(stop <-chan struct{})) {
 	r.lock.Lock()
 	r.loopFunctions = append(r.loopFunctions, fn)
 	r.lock.Unlock()
@@ -39,6 +39,6 @@ func (r *Runner) Stop() {
 
 // NewRunner makes a runner for the given function(s). The function(s) should loop until
 // the channel is closed.
-func NewRunner(f ...func(stop chan struct{})) *Runner {
+func NewRunner(f ...func(stop <-chan struct{})) *Runner {
 	return &Runner{loopFunctions: f}
 }
