@@ -35,3 +35,8 @@ func TestEngine_Run(t *testing.T) {
 	assert.NotNil(t, engine)
 	engine.Run()
 }
+
+func TestEngine_RunNonBlocking(t *testing.T) {
+	engine := buildEngine()
+	engine.RunNonBlocking()
+}

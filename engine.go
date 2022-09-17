@@ -30,14 +30,14 @@ func (engine *Engine) prepare() {
 	component.Initialize(engine.provider)
 }
 
-// BlockRun runs the engine with block until os.Exit.
-func (engine *Engine) BlockRun() {
-	engine.Run()
+// RunNonBlocking runs the engine with block until os.Exit.
+func (engine *Engine) RunNonBlocking() {
+	runtime.Goroutine(engine.run)
 }
 
-// Run runs the engine with non-blocking mode.
+// Run runs the engine with blocking mode.
 func (engine *Engine) Run() {
-	go engine.Run()
+	engine.run()
 }
 
 func (engine *Engine) run() {

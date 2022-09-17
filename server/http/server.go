@@ -26,18 +26,6 @@ type Server struct {
 	startHooks, shutdownHooks []func()
 }
 
-// getInstance returns the singleton instance of the http.Server.
-func (server *Server) getInstance() *http.Server {
-	server.initOnce.Do(func() {
-		server.instance = &http.Server{
-			Addr:    server.schema.Bind,
-			Handler: server.router,
-		}
-	})
-	return server.instance
-
-}
-
 // Serve starts the server.
 func (server *Server) Serve(stop <-chan struct{}) {
 	component.Provider().Logger().Infof("listening and serving HTTP on %s", server.schema.Bind)
@@ -136,6 +124,19 @@ func (server *Server) Shutdown() {
 		hook()
 	}
 	server.closeOnce.Do(server.shutdown)
+}
+
+// =======================private methods =========================
+// getInstance returns the singleton instance of the http.Server.
+func (server *Server) getInstance() *http.Server {
+	server.initOnce.Do(func() {
+		server.instance = &http.Server{
+			Addr:    server.schema.Bind,
+			Handler: server.router,
+		}
+	})
+	return server.instance
+
 }
 
 // Shutdown 平滑重启
