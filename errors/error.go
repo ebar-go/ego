@@ -21,6 +21,14 @@ func (err Error) Error() string {
 	return fmt.Sprintf("code=%d message=%s", err.code, err.message)
 }
 
+func (err Error) Code() int {
+	return err.code
+}
+
+func (err Error) Message() string {
+	return err.message
+}
+
 func (err *Error) WithMessage(message string) *Error {
 	if err == nil {
 		return nil
