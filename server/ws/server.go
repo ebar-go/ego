@@ -22,7 +22,7 @@ type Server struct {
 	cancel            context.CancelFunc
 	connectHandler    func(conn Conn)
 	disconnectHandler func(conn Conn)
-	requestHandler    func(conn Conn, msg []byte)
+	requestHandler    func(ctx *Context)
 }
 
 // OnConnect is set callback when the connection is established
@@ -40,7 +40,7 @@ func (server *Server) handleConnect(conn Conn) {
 }
 
 // OnMessage is set callback  when a message is received.
-func (server *Server) OnMessage(handler func(conn Conn, msg []byte)) *Server {
+func (server *Server) OnMessage(handler func(ctx *Context)) *Server {
 	if handler != nil {
 		server.requestHandler = handler
 	}
@@ -129,11 +129,12 @@ func (server *Server) accept() error {
 				return
 			}
 
-			if op != ws.OpBinary {
+			if op != ws.OpBinary && op != ws.OpText {
 				continue
 			}
 
-			server.requestHandler(connection, msg)
+			ctx := NewContext(connection, msg)
+			server.requestHandler(ctx)
 		}
 
 	}()
@@ -149,8 +150,8 @@ func NewServer(bind string) *Server {
 				return
 			},
 		},
-		requestHandler: func(conn Conn, msg []byte) {
-			component.Provider().Logger().Infof("received request: %v", string(msg))
+		requestHandler: func(ctx *Context) {
+			component.Provider().Logger().Infof("received request: %v", string(ctx.Body()))
 		},
 	}
 }

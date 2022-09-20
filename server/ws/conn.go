@@ -14,3 +14,7 @@ type Conn struct {
 func (c *Conn) Push(msg []byte) error {
 	return wsutil.WriteServerBinary(c.conn, msg)
 }
+
+func (c *Conn) IP() string {
+	return c.conn.RemoteAddr().String()
+}

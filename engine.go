@@ -30,8 +30,8 @@ func (engine *Engine) prepare() {
 	component.Initialize(engine.provider)
 }
 
-// RunNonBlocking runs the engine with block until os.Exit.
-func (engine *Engine) RunNonBlocking() {
+// NonBlockingRun runs the engine with block until os.Exit.
+func (engine *Engine) NonBlockingRun() {
 	runtime.Goroutine(engine.run)
 }
 
