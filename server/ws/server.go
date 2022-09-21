@@ -150,6 +150,8 @@ func NewServer(bind string) *Server {
 				return
 			},
 		},
+		connectHandler:    func(conn Conn) {},
+		disconnectHandler: func(conn Conn) {},
 		requestHandler: func(ctx *Context) {
 			component.Provider().Logger().Infof("received request: %v", string(ctx.Body()))
 		},

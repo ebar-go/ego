@@ -38,5 +38,5 @@ func TestEngine_Run(t *testing.T) {
 
 func TestEngine_RunNonBlocking(t *testing.T) {
 	engine := buildEngine()
-	engine.RunNonBlocking()
+	engine.NonBlockingRun()
 }
