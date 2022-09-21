@@ -2,7 +2,7 @@ package compress
 
 import (
 	"bytes"
-	"github.com/ebar-go/ego/runtime"
+	"github.com/ebar-go/ego/utils/runtime"
 	"io"
 	"sync"
 )

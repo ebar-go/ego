@@ -1,7 +1,0 @@
-server: # 服务器配置
-  name: someApp
-  environment: product # 运行环境
-app: # 自定义配置
-  someString: a
-  someInt: 1
-  SomeBool: true

@@ -3,8 +3,8 @@ package http
 import (
 	"context"
 	"github.com/ebar-go/ego/component"
-	"github.com/ebar-go/ego/runtime"
 	"github.com/ebar-go/ego/server/protocol"
+	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"

@@ -2,8 +2,8 @@ package grpc
 
 import (
 	"github.com/ebar-go/ego/component"
-	"github.com/ebar-go/ego/runtime"
 	"github.com/ebar-go/ego/server/protocol"
+	"github.com/ebar-go/ego/utils/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"net"

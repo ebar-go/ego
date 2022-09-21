@@ -2,9 +2,9 @@ package ego
 
 import (
 	"github.com/ebar-go/ego/component"
-	"github.com/ebar-go/ego/runtime"
 	"github.com/ebar-go/ego/server"
 	"github.com/ebar-go/ego/utils/async"
+	"github.com/ebar-go/ego/utils/runtime"
 	"time"
 )
 

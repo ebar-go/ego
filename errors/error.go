@@ -15,10 +15,11 @@ const (
 type Error struct {
 	code    int
 	message string
+	stack   *stack
 }
 
 func (err Error) Error() string {
-	return fmt.Sprintf("code=%d message=%s", err.code, err.message)
+	return fmt.Sprintf("code=%d message=%s stack=%v", err.code, err.message, err.stack.current())
 }
 
 func (err Error) Code() int {
@@ -38,7 +39,15 @@ func (err *Error) WithMessage(message string) *Error {
 }
 
 func WithMessage(err error, message string) *Error {
-	e := Convert(err)
+	if err == nil {
+		return nil
+	}
+
+	e, ok := err.(*Error)
+	if !ok {
+		e = sprintf(unknown, err.Error())
+	}
+
 	return e.WithMessage(message)
 }
 
@@ -51,33 +60,48 @@ func Convert(err error) *Error {
 		return e
 	}
 
-	return &Error{message: err.Error()}
+	return sprintf(unknown, err.Error())
+}
+func convert(err error) *Error {
+	if err == nil {
+		return nil
+	}
 
+	if e, ok := err.(*Error); ok {
+		return e
+	}
+
+	return sprintf(unknown, err.Error())
 }
 
-func Sprintf(code int, format string, args ...interface{}) *Error {
-	return &Error{code: code, message: fmt.Sprintf(format, args...)}
+func New(code int, msg string) *Error {
+	return sprintf(code, msg)
 }
+
+func sprintf(code int, format string, args ...interface{}) *Error {
+	return &Error{code: code, message: fmt.Sprintf(format, args...), stack: callers()}
+}
+
 func Unknown(format string, args ...interface{}) *Error {
-	return Sprintf(unknown, format, args...)
+	return sprintf(unknown, format, args...)
 }
 
 func NotFound(format string, args ...interface{}) *Error {
-	return Sprintf(notfound, format, args...)
+	return sprintf(notfound, format, args...)
 }
 
 func InvalidParam(format string, args ...interface{}) *Error {
-	return Sprintf(invalidParam, format, args...)
+	return sprintf(invalidParam, format, args...)
 }
 func Timeout(format string, args ...interface{}) *Error {
-	return Sprintf(timeout, format, args...)
+	return sprintf(timeout, format, args...)
 }
 func Forbidden(format string, args ...interface{}) *Error {
-	return Sprintf(forbidden, format, args...)
+	return sprintf(forbidden, format, args...)
 }
 func Unauthorized(format string, args ...interface{}) *Error {
-	return Sprintf(unauthorized, format, args...)
+	return sprintf(unauthorized, format, args...)
 }
 func InternalServer(format string, args ...interface{}) *Error {
-	return Sprintf(internalServer, format, args...)
+	return sprintf(internalServer, format, args...)
 }
