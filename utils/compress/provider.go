@@ -45,9 +45,10 @@ func NewSyncPoolCompressors() *SyncPoolCompressors {
 			New: func() any {
 				return new(gzip.Reader)
 			}},
-		writerPool: &sync.Pool{New: func() any {
-			return new(gzip.Writer)
-		}},
+		writerPool: &sync.Pool{
+			New: func() any {
+				return new(gzip.Writer)
+			}},
 	}
 }
 
