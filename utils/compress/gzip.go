@@ -2,15 +2,12 @@ package compress
 
 import (
 	"bytes"
-	"compress/gzip"
 	"github.com/ebar-go/ego/runtime"
 	"io"
-	"sync"
 )
 
 type GzipCompressor struct {
-	rp *sync.Pool
-	wp *sync.Pool
+	provider CompressorProvider
 }
 
 func (c *GzipCompressor) Compress(dst io.Writer, src []byte) (err error) {
@@ -19,9 +16,8 @@ func (c *GzipCompressor) Compress(dst io.Writer, src []byte) (err error) {
 		return
 	}
 
-	w := c.wp.Get().(*gzip.Writer)
-	w.Reset(dst)
-	defer c.wp.Put(w)
+	w := c.provider.AcquireGzipWriter()
+	defer c.provider.ReleaseGzipWriter(w)
 
 	return runtime.Call(func() error {
 		_, err := w.Write(src)
@@ -30,8 +26,8 @@ func (c *GzipCompressor) Compress(dst io.Writer, src []byte) (err error) {
 }
 
 func (c *GzipCompressor) Decompress(dst io.Writer, src []byte) (err error) {
-	r := c.rp.Get().(*gzip.Reader)
-	defer c.rp.Put(r)
+	r := c.provider.AcquireGzipReader()
+	defer c.provider.ReleaseGzipReader(r)
 
 	if err = r.Reset(bytes.NewReader(src)); err != nil {
 		return

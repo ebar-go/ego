@@ -1,9 +1,7 @@
 package compress
 
 import (
-	"compress/gzip"
 	"io"
-	"sync"
 )
 
 type Compressor interface {
@@ -12,13 +10,5 @@ type Compressor interface {
 }
 
 func NewGzip() Compressor {
-	return &GzipCompressor{
-		rp: &sync.Pool{
-			New: func() any {
-				return new(gzip.Reader)
-			}},
-		wp: &sync.Pool{New: func() any {
-			return new(gzip.Writer)
-		}},
-	}
+	return &GzipCompressor{provider: CurrentCompressorProvider()}
 }
