@@ -16,9 +16,3 @@ func GoroutineRecover(fn func(), callback func(reason interface{})) {
 	}()
 	fn()
 }
-
-func HandleCrash() {
-	if r := recover(); r != nil {
-		log.Println("goroutine crash:", r)
-	}
-}
