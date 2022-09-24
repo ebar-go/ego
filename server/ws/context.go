@@ -16,6 +16,10 @@ func (ctx *Context) Output(msg []byte) {
 	_ = ctx.conn.Push(msg)
 }
 
+func (ctx *Context) Conn() Conn {
+	return ctx.conn
+}
+
 func NewContext(conn Conn, body []byte) *Context {
-	return &Context{conn: conn, body: body}
+	return &Context{Context: context.Background(), conn: conn, body: body}
 }

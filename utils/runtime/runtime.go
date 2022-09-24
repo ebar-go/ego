@@ -42,3 +42,10 @@ func logPanic(r interface{}) {
 		log.Printf("Observed a panic: %#v (%v)\n%s", r, r, stacktrace)
 	}
 }
+
+func HandlerError(err error, fn func(err error)) {
+	if err == nil {
+		return
+	}
+	fn(err)
+}
