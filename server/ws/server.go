@@ -7,7 +7,6 @@ import (
 	"github.com/ebar-go/ego/server/protocol"
 	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gobwas/ws"
-	"github.com/gobwas/ws/wsutil"
 	"log"
 	"net"
 	"sync"
@@ -114,7 +113,7 @@ func (server *Server) accept() error {
 		return errors.WithMessage(err, "listener.Upgrade")
 	}
 
-	connection := Conn{conn: conn}
+	connection := NewWrapConnection(conn)
 	server.handleConnect(connection)
 
 	go func() {
@@ -124,12 +123,12 @@ func (server *Server) accept() error {
 		}()
 
 		for {
-			msg, op, err := wsutil.ReadClientData(conn)
+			msg, err := connection.readClientData()
 			if err != nil {
 				return
 			}
 
-			if op != ws.OpBinary && op != ws.OpText {
+			if len(msg) == 0 {
 				continue
 			}
 
