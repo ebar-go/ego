@@ -28,13 +28,9 @@ func Shutdown(callback func()) {
 }
 
 // WaitClose is a helper function that waits for the channel to close and invoke the callback
-func WaitClose(stop <-chan struct{}, onClose func()) {
-	for {
-		select {
-		case <-stop:
-			onClose()
-		default:
-
-		}
+func WaitClose(stop <-chan struct{}, closeFunc ...func()) {
+	<-stop
+	for _, fn := range closeFunc {
+		fn()
 	}
 }

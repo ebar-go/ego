@@ -62,17 +62,6 @@ func Convert(err error) *Error {
 
 	return sprintf(unknown, err.Error())
 }
-func convert(err error) *Error {
-	if err == nil {
-		return nil
-	}
-
-	if e, ok := err.(*Error); ok {
-		return e
-	}
-
-	return sprintf(unknown, err.Error())
-}
 
 func New(code int, msg string) *Error {
 	return sprintf(code, msg)
@@ -104,4 +93,12 @@ func Unauthorized(format string, args ...interface{}) *Error {
 }
 func InternalServer(format string, args ...interface{}) *Error {
 	return sprintf(internalServer, format, args...)
+}
+
+func Is(err error, target error) bool {
+	e := Convert(err)
+	if e == nil {
+		return false
+	}
+	return e.code == Convert(target).code
 }
