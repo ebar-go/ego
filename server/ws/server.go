@@ -22,6 +22,7 @@ type Server struct {
 	connectHandler    func(conn Conn)
 	disconnectHandler func(conn Conn)
 	requestHandler    func(ctx *Context)
+	worker            int
 }
 
 // OnConnect is set callback when the connection is established
@@ -52,6 +53,12 @@ func (server *Server) OnDisconnect(handler func(conn Conn)) *Server {
 	return server
 }
 
+// WithWorker sets the concurrent worker threads.
+func (server *Server) WithWorker(worker int) *Server {
+	server.worker = worker
+	return server
+}
+
 // handleConnect is called when the client disconnects from the server
 func (server *Server) handleDisconnect(conn Conn) {
 	if server.disconnectHandler == nil {
@@ -73,22 +80,26 @@ func (server *Server) Serve(stop <-chan struct{}) {
 	// cancel function is used to be called when the server need shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	server.cancel = cancel
-	go func() {
-		for {
-			select {
-			case <-ctx.Done(): // if cancel is called, goroutine should exit.
-				return
-			default:
-				if err := server.accept(); err != nil {
-					component.Provider().Logger().Errorf("failed to accept: %v", err)
-					continue
-				}
-			}
-		}
-
-	}()
+	for i := 0; i < server.worker; i++ {
+		go server.serve(ctx.Done())
+	}
 
 	runtime.WaitClose(stop, server.Shutdown)
+}
+
+func (server *Server) serve(stopCh <-chan struct{}) {
+	for {
+		select {
+		case <-stopCh:
+			return
+		default:
+		}
+
+		if err := server.accept(); err != nil {
+			component.Provider().Logger().Errorf("failed to accept: %v", err)
+			continue
+		}
+	}
 }
 
 func (server *Server) shutdown() {
@@ -154,5 +165,6 @@ func NewServer(bind string) *Server {
 		requestHandler: func(ctx *Context) {
 			component.Provider().Logger().Infof("received request: %v", string(ctx.Body()))
 		},
+		worker: 1,
 	}
 }
