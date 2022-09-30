@@ -3,7 +3,7 @@ package ego
 import (
 	"github.com/ebar-go/ego/server/grpc"
 	"github.com/ebar-go/ego/server/http"
-	"github.com/ebar-go/ego/server/ws"
+	"github.com/ebar-go/ego/server/socket"
 )
 
 // New creates a new NamedEngine instance with default name.
@@ -22,6 +22,6 @@ func NewGRPCServer(addr string) *grpc.Server {
 }
 
 // NewWebSocketServer creates a new web server instance.
-func NewWebsocketServer(addr string) *ws.Server {
-	return ws.NewServer(addr)
+func NewWebsocketServer(addr string) *socket.Server {
+	return socket.NewWebsocket(addr)
 }

@@ -35,3 +35,7 @@ func NewGRPCSchema(bind string) Schema {
 func NewWSSchema(bind string) Schema {
 	return NewSchema(WS, bind)
 }
+
+func NewTCPSchema(bind string) Schema {
+	return NewSchema(TCP, bind)
+}

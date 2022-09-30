@@ -1,4 +1,4 @@
-package ws
+package socket
 
 import (
 	"github.com/gobwas/ws"
@@ -8,22 +8,32 @@ import (
 	"sync"
 )
 
-// Conn websocket connection
-type Conn interface {
+// Connection define socket connection interface
+type Connection interface {
+	// ID returns socket connection uuid
 	ID() string
-	Push(msg []byte) error
-	IP() string
-	Property() *Property
-}
 
-func NewWrapConnection(netConn net.Conn) *connection {
-	return &connection{conn: netConn, uuid: uuid.NewV4().String(), property: &Property{properties: map[string]any{}}}
+	// IP returns client ip address
+	IP() string
+
+	// Close closes socket connection
+	Close() error
+
+	// Push send message to client.
+	Push(msg []byte) error
+
+	// Property returns client property
+	Property() *Property
 }
 
 type connection struct {
 	conn     net.Conn
 	uuid     string
 	property *Property
+}
+
+func (c *connection) Close() error {
+	return c.conn.Close()
 }
 
 func (c *connection) Property() *Property {
@@ -56,8 +66,12 @@ func (c *connection) readClientData() ([]byte, error) {
 	return msg, err
 }
 
+func NewWrapConnection(netConn net.Conn) *connection {
+	return &connection{conn: netConn, uuid: uuid.NewV4().String(), property: &Property{properties: map[string]any{}}}
+}
+
 type Property struct {
-	mu         sync.Mutex //
+	mu         sync.RWMutex // guards the properties
 	properties map[string]any
 }
 
@@ -68,9 +82,9 @@ func (p *Property) Set(key string, value any) {
 }
 
 func (p *Property) Get(key string) any {
-	p.mu.Lock()
+	p.mu.RLock()
 	property := p.properties[key]
-	p.mu.Unlock()
+	p.mu.RUnlock()
 	return property
 }
 

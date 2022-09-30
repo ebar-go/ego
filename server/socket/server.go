@@ -1,4 +1,4 @@
-package ws
+package socket
 
 import (
 	"context"
@@ -7,32 +7,31 @@ import (
 	"github.com/ebar-go/ego/server/protocol"
 	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gobwas/ws"
-	"log"
 	"net"
 	"sync"
 )
 
-// Server provide the websocket server.
 type Server struct {
-	schema            protocol.Schema
-	closeOnce         sync.Once
-	upgrader          ws.Upgrader
-	listener          net.Listener
-	cancel            context.CancelFunc
-	connectHandler    func(conn Conn)
-	disconnectHandler func(conn Conn)
+	connectHandler    func(conn Connection)
+	disconnectHandler func(conn Connection)
 	requestHandler    func(ctx *Context)
 	worker            int
+
+	schema    protocol.Schema
+	closeOnce sync.Once
+	stopCh    chan struct{}
+
+	upgrader ws.Upgrader
 }
 
 // OnConnect is set callback when the connection is established
-func (server *Server) OnConnect(handler func(conn Conn)) *Server {
+func (server *Server) OnConnect(handler func(conn Connection)) *Server {
 	server.connectHandler = handler
 	return server
 }
 
 // handleConnect is called when the connection is established
-func (server *Server) handleConnect(conn Conn) {
+func (server *Server) handleConnect(conn Connection) {
 	if server.connectHandler == nil {
 		return
 	}
@@ -48,7 +47,7 @@ func (server *Server) OnMessage(handler func(ctx *Context)) *Server {
 }
 
 // OnDisconnect is set callback when the client disconnects from the server
-func (server *Server) OnDisconnect(handler func(conn Conn)) *Server {
+func (server *Server) OnDisconnect(handler func(conn Connection)) *Server {
 	server.disconnectHandler = handler
 	return server
 }
@@ -60,50 +59,15 @@ func (server *Server) WithWorker(worker int) *Server {
 }
 
 // handleConnect is called when the client disconnects from the server
-func (server *Server) handleDisconnect(conn Conn) {
+func (server *Server) handleDisconnect(conn Connection) {
 	if server.disconnectHandler == nil {
 		return
 	}
 	server.disconnectHandler(conn)
 }
 
-// Serve start websocket server
-func (server *Server) Serve(stop <-chan struct{}) {
-	component.Provider().Logger().Infof("listening and serving websocket on %s", server.schema.Bind)
-
-	ln, err := net.Listen("tcp", server.schema.Bind)
-	if err != nil {
-		component.Provider().Logger().Fatalf("failed to listen websocket: %v", err)
-	}
-	server.listener = ln
-
-	// cancel function is used to be called when the server need shutdown
-	ctx, cancel := context.WithCancel(context.Background())
-	server.cancel = cancel
-	for i := 0; i < server.worker; i++ {
-		go server.serve(ctx.Done())
-	}
-
-	runtime.WaitClose(stop, server.Shutdown)
-}
-
-func (server *Server) serve(stopCh <-chan struct{}) {
-	for {
-		select {
-		case <-stopCh:
-			return
-		default:
-		}
-
-		if err := server.accept(); err != nil {
-			component.Provider().Logger().Errorf("failed to accept: %v", err)
-			continue
-		}
-	}
-}
-
 func (server *Server) shutdown() {
-	server.cancel()
+	close(server.stopCh)
 	component.Provider().Logger().Info("Server shutdown success")
 }
 
@@ -112,13 +76,53 @@ func (server *Server) Shutdown() {
 	server.closeOnce.Do(server.shutdown)
 }
 
-// accept process incoming connection, and trigger callback with OnConnect,OnDisconnect,OnMessage.
-func (server *Server) accept() error {
-	conn, err := server.listener.Accept()
+// Serve start websocket server
+func (server *Server) Serve(stop <-chan struct{}) {
+	component.Provider().Logger().Infof("listening and serving websocket on %s", server.schema.Bind)
+
+	listener, err := net.Listen("tcp", server.schema.Bind)
+	if err != nil {
+		component.Provider().Logger().Fatalf("failed to listen websocket: %v", err)
+	}
+
+	// cancel function is used to be called when the server need shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		<-server.stopCh
+		cancel()
+	}()
+	for i := 0; i < server.worker; i++ {
+		go server.serve(listener, ctx.Done())
+	}
+
+	runtime.WaitClose(stop, server.Shutdown)
+}
+
+func (server *Server) serve(listener net.Listener, stopCh <-chan struct{}) {
+	var err error
+	for {
+		select {
+		case <-stopCh:
+			return
+		default:
+		}
+
+		if server.schema.Protocol == protocol.WS {
+			err = server.acceptWebsocket(listener)
+		} else if server.schema.Protocol == protocol.TCP {
+			err = server.acceptTCP(listener)
+		}
+		if err != nil {
+			component.Provider().Logger().Errorf("failed to accept: %v", err)
+		}
+	}
+}
+
+func (server *Server) acceptWebsocket(listener net.Listener) error {
+	conn, err := listener.Accept()
 	if err != nil {
 		return errors.WithMessage(err, "listener.Accept")
 	}
-
 	_, err = server.upgrader.Upgrade(conn)
 	if err != nil {
 		return errors.WithMessage(err, "listener.Upgrade")
@@ -151,20 +155,6 @@ func (server *Server) accept() error {
 	return nil
 }
 
-func NewServer(bind string) *Server {
-	return &Server{
-		schema: protocol.NewWSSchema(bind),
-		upgrader: ws.Upgrader{
-			OnHeader: func(key, value []byte) (err error) {
-				log.Printf("non-websocket header: %q=%q", key, value)
-				return
-			},
-		},
-		connectHandler:    func(conn Conn) {},
-		disconnectHandler: func(conn Conn) {},
-		requestHandler: func(ctx *Context) {
-			component.Provider().Logger().Infof("received request: %v", string(ctx.Body()))
-		},
-		worker: 1,
-	}
+func (server *Server) acceptTCP(listener net.Listener) error {
+	return nil
 }
