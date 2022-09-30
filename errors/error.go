@@ -38,7 +38,7 @@ func (err *Error) WithMessage(message string) *Error {
 	return err
 }
 
-func WithMessage(err error, message string) *Error {
+func WithMessage(err error, message string) error {
 	if err == nil {
 		return nil
 	}

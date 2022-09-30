@@ -10,16 +10,16 @@ func BenchmarkByteSlice(b *testing.B) {
 	b.Run("Run.N", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			bs := Get(1024)
-			Put(bs)
+			bs := GetByte(1024)
+			PutByte(bs)
 		}
 	})
 	b.Run("Run.Parallel", func(b *testing.B) {
 		b.ReportAllocs()
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				bs := Get(1024)
-				Put(bs)
+				bs := GetByte(1024)
+				PutByte(bs)
 			}
 		})
 	})
