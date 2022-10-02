@@ -10,13 +10,12 @@ import (
 
 // Engine includes the components and servers
 type Engine struct {
-	provider *component.Container
-	servers  []server.Server
+	servers []server.Server
 }
 
 // WithComponent use the provided components.
 func (engine *Engine) WithComponent(components ...component.Component) *Engine {
-	engine.provider.Register(components...)
+	component.Provider().Register(components...)
 	return engine
 }
 
@@ -27,7 +26,7 @@ func (engine *Engine) WithServer(servers ...server.Server) *Engine {
 }
 
 func (engine *Engine) prepare() {
-	component.Initialize(engine.provider)
+
 }
 
 // NonBlockingRun runs the engine with block until os.Exit.
@@ -57,7 +56,7 @@ func (engine *Engine) run() {
 }
 
 func buildEngine() *Engine {
-	return &Engine{provider: component.NewContainer()}
+	return &Engine{}
 }
 
 // NamedEngine define engine with name.

@@ -43,9 +43,16 @@ func logPanic(r interface{}) {
 	}
 }
 
-func HandlerError(err error, fn func(err error)) {
+func HandleError(err error, fn func(err error)) {
 	if err == nil {
 		return
 	}
 	fn(err)
+}
+
+func HandleNil[T any](pointer *T, fn func(notNilPointer *T)) {
+	if pointer == nil {
+		return
+	}
+	fn(pointer)
 }

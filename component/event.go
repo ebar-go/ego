@@ -1,6 +1,7 @@
 package component
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -35,6 +36,7 @@ func (instance *EventDispatcher) Has(eventName string) bool {
 
 // Trigger make event trigger with given name and params
 func (instance *EventDispatcher) Trigger(eventName string, param any) {
+	fmt.Printf("dispatcher: %p, event: %s\n", instance, eventName)
 	instance.rmw.RLock()
 	defer instance.rmw.RUnlock()
 	handlers, ok := instance.items[eventName]
@@ -53,13 +55,15 @@ func NewEventDispatcher() *EventDispatcher {
 
 // ListenEvent listen with type parameters
 func ListenEvent[T any](eventName string, handler func(param T)) {
-	Provider().EventDispatcher().Listen(eventName, func(param any) {
+	dispatcher := Provider().EventDispatcher()
+	dispatcher.Listen(eventName, func(param any) {
 		data, ok := param.(T)
 		if !ok {
 			return
 		}
 		handler(data)
 	})
+	fmt.Printf("dispatcher: %p, event: %s\n", dispatcher, eventName)
 }
 
 type Event[T any] struct {

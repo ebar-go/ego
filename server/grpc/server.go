@@ -82,8 +82,8 @@ func (server *Server) shutdown() {
 }
 
 // NewServer returns a new instance of the Server.
-func NewServer(bind string) *Server {
+func NewServer(address string) *Server {
 	return &Server{
-		schema: protocol.NewGRPCSchema(bind),
+		schema: protocol.NewGRPCSchema(address),
 	}
 }
