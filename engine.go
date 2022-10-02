@@ -31,7 +31,10 @@ func (engine *Engine) prepare() {
 
 // NonBlockingRun runs the engine with block until os.Exit.
 func (engine *Engine) NonBlockingRun() {
-	runtime.Goroutine(engine.run)
+	go func() {
+		defer runtime.HandleCrash()
+		engine.run()
+	}()
 }
 
 // Run runs the engine with blocking mode.
