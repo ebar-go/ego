@@ -16,3 +16,10 @@ func Call(callers ...errCaller) error {
 
 	return nil
 }
+
+// IgnoreErrorCaller return new function that will ignore error
+func IgnoreErrorCaller(caller errCaller) func() {
+	return func() {
+		_ = caller()
+	}
+}

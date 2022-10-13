@@ -126,9 +126,7 @@ func (server *Server) EnableTracing(service, address string) *Server {
 		return server
 	}
 
-	server.shutdownHooks = append(server.shutdownHooks, func() {
-		_ = tracer.Close()
-	})
+	server.shutdownHooks = append(server.shutdownHooks, runtime.IgnoreErrorCaller(tracer.Close))
 	tracer.ListenHttp(server.router)
 	return server
 }
