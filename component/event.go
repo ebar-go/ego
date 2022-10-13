@@ -47,6 +47,19 @@ func (instance *EventDispatcher) Trigger(eventName string, param any) {
 	}
 }
 
+func (instance *EventDispatcher) TriggerAsync(eventName string, param any) {
+	instance.rmw.RLock()
+	defer instance.rmw.RUnlock()
+	handlers, ok := instance.items[eventName]
+	if !ok {
+		return
+	}
+
+	for _, handler := range handlers {
+		go handler(param)
+	}
+}
+
 func NewEventDispatcher() *EventDispatcher {
 	return &EventDispatcher{Named: componentEventDispatcher, items: make(map[string][]Handler)}
 }
@@ -55,26 +68,6 @@ func NewEventDispatcher() *EventDispatcher {
 func ListenEvent[T any](eventName string, handler func(param T)) {
 	dispatcher := Provider().EventDispatcher()
 	dispatcher.Listen(eventName, func(param any) {
-		data, ok := param.(T)
-		if !ok {
-			return
-		}
-		handler(data)
-	})
-}
-
-type Event[T any] struct {
-	Name string
-}
-
-// NewEvent creates a new Event with the given name.
-func NewEvent[T any](name string) Event[T] {
-	return Event[T]{Name: name}
-}
-
-// Bind binds handler
-func (e Event[T]) Bind(handler func(param T)) {
-	Provider().EventDispatcher().Listen(e.Name, func(param any) {
 		data, ok := param.(T)
 		if !ok {
 			return

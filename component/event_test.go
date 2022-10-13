@@ -26,17 +26,3 @@ func TestListenEvent(t *testing.T) {
 	Provider().EventDispatcher().Trigger("testString", "someString")
 	Provider().EventDispatcher().Trigger("testInt", 1)
 }
-
-func TestEvent(t *testing.T) {
-	e := Event[string]{Name: "test2"}
-	e.Bind(func(param string) {
-		fmt.Println(param)
-	})
-	Provider().EventDispatcher().Trigger("test2", "some other string")
-
-	NewEvent[int]("test1").Bind(func(param int) {
-		fmt.Println(param)
-	})
-	Provider().EventDispatcher().Trigger("test1", 1)
-
-}

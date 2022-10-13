@@ -1,7 +1,8 @@
 package component
 
 import (
-	"github.com/go-redis/redis"
+	"context"
+	"github.com/go-redis/redis/v8"
 	"log"
 )
 
@@ -12,7 +13,7 @@ type Redis struct {
 
 func (r *Redis) Connect(options *redis.Options) error {
 	client := redis.NewClient(options)
-	_, err := client.Ping().Result()
+	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
 		return err
 	}
