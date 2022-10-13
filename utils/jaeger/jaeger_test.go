@@ -33,7 +33,7 @@ const (
 )
 
 func TestServer(t *testing.T) {
-	tracer, closer, err := NewTracer(ginServerName, jaegerEndpoint)
+	tracer, closer, err := NewOpenTracer(ginServerName, jaegerEndpoint)
 	if err != nil {
 		panic(err)
 	}
@@ -67,7 +67,7 @@ func HandlerError(span opentracing.Span, err error) {
 	//log.Fatal("%v", err)
 }
 func TestClient(t *testing.T) {
-	tracer, closer, err := NewTracer(clientServerName, jaegerEndpoint)
+	tracer, closer, err := NewOpenTracer(clientServerName, jaegerEndpoint)
 	if err != nil {
 		panic(err)
 	}

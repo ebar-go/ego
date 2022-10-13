@@ -121,15 +121,15 @@ func (server *Server) AddShutdownHook(hook func()) *Server {
 
 // EnableTracing enables tracing of jaeger
 func (server *Server) EnableTracing(service, address string) *Server {
-	tracer, closer, err := jaeger.NewTracer(service, address)
+	tracer, err := jaeger.New(service, address)
 	if err != nil {
 		return server
 	}
 
 	server.shutdownHooks = append(server.shutdownHooks, func() {
-		_ = closer.Close()
+		_ = tracer.Close()
 	})
-	jaeger.WithGinEngine(server.router, tracer)
+	tracer.ListenHttp(server.router)
 	return server
 }
 
