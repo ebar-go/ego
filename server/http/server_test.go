@@ -11,11 +11,13 @@ import (
 )
 
 func TestNewServer(t *testing.T) {
-	server := NewServer(":8081").RegisterRouteLoader(func(router *gin.Engine) {
-		router.Any("test", func(c *gin.Context) {
-			c.JSON(200, gin.H{"name": "123"})
+	server := NewServer(":8081").
+		EnableTracing("demo-server", "127.0.0.1:6831").
+		RegisterRouteLoader(func(router *gin.Engine) {
+			router.Any("test", func(c *gin.Context) {
+				c.JSON(200, gin.H{"name": "123"})
+			})
 		})
-	})
 	ctx, cancel := context.WithCancel(context.Background())
 	go server.Serve(ctx.Done())
 	assert.NotNil(t, server)

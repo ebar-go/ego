@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/server/protocol"
+	"github.com/ebar-go/ego/utils/jaeger"
 	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
@@ -115,6 +116,20 @@ func (server *Server) AddStartHook(hook func()) *Server {
 // AddShutdownHook adds a callback function what's called before the server is shutdown
 func (server *Server) AddShutdownHook(hook func()) *Server {
 	server.shutdownHooks = append(server.shutdownHooks, hook)
+	return server
+}
+
+// EnableTracing enables tracing of jaeger
+func (server *Server) EnableTracing(service, address string) *Server {
+	tracer, closer, err := jaeger.NewTracer(service, address)
+	if err != nil {
+		return server
+	}
+
+	server.shutdownHooks = append(server.shutdownHooks, func() {
+		_ = closer.Close()
+	})
+	jaeger.WithGinEngine(server.router, tracer)
 	return server
 }
 
