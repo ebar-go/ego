@@ -5,8 +5,13 @@ import (
 	"log"
 )
 
+type LoggerInterface interface {
+	Println(v ...any)
+}
+
 type Logger struct {
 	Named
+	instance LoggerInterface
 }
 
 type LogLevel string
@@ -20,9 +25,9 @@ const (
 	LevelPanic LogLevel = "panic"
 )
 
-func (l *Logger) Log(level LogLevel, message string) { log.Println(level, message) }
+func (l *Logger) Log(level LogLevel, message string) { l.instance.Println(level, message) }
 func (l *Logger) Logf(level LogLevel, format string, a ...interface{}) {
-	log.Println(level, fmt.Sprintf(format, a...))
+	l.instance.Println(level, fmt.Sprintf(format, a...))
 }
 
 func (l *Logger) Info(message string)  { l.Log(LevelInfo, message) }
@@ -39,5 +44,9 @@ func (l *Logger) Errorf(format string, args ...interface{}) { l.Logf(LevelError,
 func (l *Logger) Fatalf(format string, args ...interface{}) { l.Logf(LevelFatal, format, args...) }
 
 func NewLogger() *Logger {
-	return &Logger{Named: componentLogger}
+	return NewLoggerWithInterface(log.Default())
+}
+
+func NewLoggerWithInterface(delegate LoggerInterface) *Logger {
+	return &Logger{Named: componentLogger, instance: delegate}
 }
