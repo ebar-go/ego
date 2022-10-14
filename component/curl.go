@@ -2,8 +2,10 @@ package component
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	"github.com/ebar-go/ego/utils/jaeger"
 	"github.com/ebar-go/ego/utils/serializer"
 	"io"
 	"mime/multipart"
@@ -23,46 +25,47 @@ type Curl struct {
 	Named
 	httpClient   *http.Client
 	bufferLength int
+	tracer       *jaeger.Tracer
 }
 
 // Get send get request
-func (c *Curl) Get(url string) (serializer.Serializer, error) {
+func (c *Curl) Get(ctx context.Context, url string) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
-	return c.Send(request)
+	return c.Send(ctx, request)
 }
 
 // Post send post request
-func (c *Curl) Post(url string, body io.Reader) (serializer.Serializer, error) {
+func (c *Curl) Post(ctx context.Context, url string, body io.Reader) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, err
 	}
-	return c.Send(request)
+	return c.Send(ctx, request)
 }
 
 // Put send put request
-func (c *Curl) Put(url string, body io.Reader) (serializer.Serializer, error) {
+func (c *Curl) Put(ctx context.Context, url string, body io.Reader) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodPut, url, body)
 	if err != nil {
 		return nil, err
 	}
-	return c.Send(request)
+	return c.Send(ctx, request)
 }
 
 // Delete send delete request
-func (c *Curl) Delete(url string, body io.Reader) (serializer.Serializer, error) {
+func (c *Curl) Delete(ctx context.Context, url string, body io.Reader) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodDelete, url, body)
 	if err != nil {
 		return nil, err
 	}
-	return c.Send(request)
+	return c.Send(ctx, request)
 }
 
 // PostFile send post request with file
-func (c *Curl) PostFile(url string, files map[string]string, params map[string]string) (serializer.Serializer, error) {
+func (c *Curl) PostFile(ctx context.Context, url string, files map[string]string, params map[string]string) (serializer.Serializer, error) {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	// 添加form参数
@@ -102,11 +105,15 @@ func (c *Curl) PostFile(url string, files map[string]string, params map[string]s
 
 	request.Header.Set("Content-Type", writer.FormDataContentType())
 
-	return c.Send(request)
+	return c.Send(ctx, request)
 }
 
 // Send return Response by http.Request
-func (c *Curl) Send(request *http.Request) (serializer.Serializer, error) {
+func (c *Curl) Send(ctx context.Context, request *http.Request) (serializer.Serializer, error) {
+	if c.tracer != nil {
+		ht := c.tracer.NewHttpRequestWithContext(ctx, request)
+		defer ht.Finish()
+	}
 	resp, err := c.httpClient.Do(request)
 	// close response
 	defer func() {
@@ -149,6 +156,11 @@ func (c *Curl) ReadResponse(resp *http.Response) (serializer.Serializer, error) 
 // WithHttpClient sets the http client
 func (c *Curl) WithHttpClient(httpClient *http.Client) *Curl {
 	c.httpClient = httpClient
+	return c
+}
+
+func (c *Curl) WithTracer(tracer *jaeger.Tracer) *Curl {
+	c.tracer = tracer
 	return c
 }
 
