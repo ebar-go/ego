@@ -16,7 +16,3 @@ func TestNewHTTPServer(t *testing.T) {
 func TestNewGRPCServer(t *testing.T) {
 	assert.NotNil(t, NewGRPCServer(":8081"))
 }
-
-func TestNewWebsocketServer(t *testing.T) {
-	assert.NotNil(t, NewWebsocketServer(":8082"))
-}
