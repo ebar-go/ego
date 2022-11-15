@@ -5,14 +5,18 @@ import (
 	"sync"
 )
 
+type KeyType interface {
+	int | int16 | int32 | int64 | string
+}
+
 // ConcurrentMap represents safe concurrent map container
-type ConcurrentMap[T any] struct {
+type ConcurrentMap[Key KeyType, Val any] struct {
 	mu    sync.RWMutex
-	items map[string]T
+	items map[Key]Val
 }
 
 // Get return item and exist
-func (container *ConcurrentMap[T]) Get(key string) (item T, exist bool) {
+func (container *ConcurrentMap[Key, T]) Get(key Key) (item T, exist bool) {
 	container.mu.RLock()
 	defer container.mu.RUnlock()
 	item, exist = container.items[key]
@@ -20,7 +24,7 @@ func (container *ConcurrentMap[T]) Get(key string) (item T, exist bool) {
 }
 
 // Set sets map item
-func (container *ConcurrentMap[T]) Set(key string, value T) error {
+func (container *ConcurrentMap[Key, T]) Set(key Key, value T) error {
 	container.mu.Lock()
 	container.items[key] = value
 	container.mu.Unlock()
@@ -29,7 +33,7 @@ func (container *ConcurrentMap[T]) Set(key string, value T) error {
 
 // Find returns item
 // if key is not exist, returns not found error
-func (container *ConcurrentMap[T]) Find(key string) (item T, err error) {
+func (container *ConcurrentMap[Key, T]) Find(key Key) (item T, err error) {
 	var exist bool
 	item, exist = container.Get(key)
 	if !exist {
@@ -39,13 +43,13 @@ func (container *ConcurrentMap[T]) Find(key string) (item T, err error) {
 }
 
 // Del remove keys from container
-func (container *ConcurrentMap[T]) Del(key string) {
+func (container *ConcurrentMap[Key, T]) Del(key Key) {
 	container.mu.Lock()
 	delete(container.items, key)
 	container.mu.Unlock()
 	return
 }
 
-func NewConcurrentMap[T any]() *ConcurrentMap[T] {
-	return &ConcurrentMap[T]{items: make(map[string]T, 0)}
+func NewConcurrentMap[Key KeyType, T any]() *ConcurrentMap[Key, T] {
+	return &ConcurrentMap[Key, T]{items: make(map[Key]T, 0)}
 }

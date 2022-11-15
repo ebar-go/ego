@@ -10,7 +10,7 @@ import (
 // Tracer generate the uuid for per goroutine, use to mark user requests.
 type Tracer struct {
 	Named
-	collections *structure.ConcurrentMap[string]
+	collections *structure.ConcurrentMap[string, string]
 }
 
 // key use goroutine id to generate unique identifier
@@ -40,5 +40,5 @@ func (tracer *Tracer) Release() {
 }
 
 func NewTracer() *Tracer {
-	return &Tracer{Named: componentTracer, collections: structure.NewConcurrentMap[string]()}
+	return &Tracer{Named: componentTracer, collections: structure.NewConcurrentMap[string, string]()}
 }
