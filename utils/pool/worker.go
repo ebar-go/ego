@@ -1,52 +1,55 @@
 package pool
 
-type Worker interface {
-	Schedule(fn func())
-}
-type WorkerPool struct {
-	size int
-	task chan struct{}
+import (
+	"sync"
+	"sync/atomic"
+	"time"
+)
+
+type Worker struct {
+	task chan f
+	pool *Pool
+	once sync.Once
+	done chan struct{}
 }
 
-func NewWorkerPool(size int) *WorkerPool {
-	pool := &WorkerPool{size: size, task: make(chan struct{}, size)}
-	return pool
+func NewWorker(pool *Pool, size int) *Worker {
+	return &Worker{
+		pool: pool,
+		task: make(chan f, size),
+		done: make(chan struct{}),
+	}
 }
 
-// Submit run some task
-func (pool WorkerPool) Schedule(fn func()) {
-	pool.task <- struct{}{}
+func (w *Worker) run() {
 	go func() {
-		fn()
-		<-pool.task
+		for {
+			select {
+			case <-w.done:
+				atomic.AddInt32(&w.pool.running, -1)
+				return
+			case fn := <-w.task:
+				fn()
+				//回收复用
+				w.pool.releaseWorker(w)
+			default:
+				time.Sleep(time.Millisecond * 100)
+			}
+		}
 	}()
 }
 
-type GoroutinePool struct {
-	work chan func()
+// stop this worker.
+func (w *Worker) stop() {
+	w.once.Do(func() {
+		close(w.done)
+	})
 }
 
-func NewGoroutinePool(size int) *GoroutinePool {
-	gp := &GoroutinePool{
-		work: make(chan func(), size),
-	}
-
-	for i := 0; i < size; i++ {
-		go gp.run()
-	}
-	return gp
-}
-func (p *GoroutinePool) Schedule(task func()) {
+// submit sends a task to this worker.
+func (w *Worker) submit(task f) {
 	select {
-	case p.work <- task:
+	case w.task <- task:
 	default:
-	}
-}
-
-func (p *GoroutinePool) run() {
-	var task func()
-	for {
-		task = <-p.work
-		task()
 	}
 }
