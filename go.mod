@@ -8,8 +8,6 @@ require (
 	github.com/gin-gonic/gin v1.7.0
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/gobwas/ws v1.1.0
-	github.com/orcaman/concurrent-map v0.0.0-20210106121528-16402b402231
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5
 	github.com/robfig/cron v1.2.0
