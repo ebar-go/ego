@@ -6,7 +6,7 @@ import (
 )
 
 func TestGoroutine(t *testing.T) {
-	pool := NewGoroutinePool(100)
+	pool := NewGoroutinePool()
 
 	for i := 0; i < 1000; i++ {
 		pool.Schedule(func() {

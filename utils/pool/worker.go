@@ -8,12 +8,12 @@ import (
 
 type Worker struct {
 	task chan f
-	pool *Pool
+	pool *GoroutinePool
 	once sync.Once
 	done chan struct{}
 }
 
-func NewWorker(pool *Pool, size int) *Worker {
+func NewWorker(pool *GoroutinePool, size int) *Worker {
 	return &Worker{
 		pool: pool,
 		task: make(chan f, size),
