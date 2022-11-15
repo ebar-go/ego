@@ -2,7 +2,7 @@ package component
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego/utils/cmap"
+	"github.com/ebar-go/ego/utils/structure"
 	"github.com/petermattis/goid"
 	uuid "github.com/satori/go.uuid"
 )
@@ -10,7 +10,7 @@ import (
 // Tracer generate the uuid for per goroutine, use to mark user requests.
 type Tracer struct {
 	Named
-	collections *cmap.Container[string, string]
+	collections *structure.ConcurrentMap[string]
 }
 
 // key use goroutine id to generate unique identifier
@@ -40,5 +40,5 @@ func (tracer *Tracer) Release() {
 }
 
 func NewTracer() *Tracer {
-	return &Tracer{Named: componentTracer, collections: cmap.NewContainer[string, string]()}
+	return &Tracer{Named: componentTracer, collections: structure.NewConcurrentMap[string]()}
 }

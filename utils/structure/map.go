@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-// ConcurrentMap represents map container
+// ConcurrentMap represents safe concurrent map container
 type ConcurrentMap[T any] struct {
 	mu    sync.RWMutex
 	items map[string]T
@@ -35,6 +35,14 @@ func (container *ConcurrentMap[T]) Find(key string) (item T, err error) {
 	if !exist {
 		err = errors.NotFound("not found")
 	}
+	return
+}
+
+// Del remove keys from container
+func (container *ConcurrentMap[T]) Del(key string) {
+	container.mu.Lock()
+	delete(container.items, key)
+	container.mu.Unlock()
 	return
 }
 
