@@ -1,9 +1,16 @@
 package pool
 
 import (
+	"log"
 	"sync"
 	"sync/atomic"
+	"time"
 )
+
+type WorkerPool interface {
+	Schedule(task func())
+	Stop()
+}
 
 type GoroutinePool struct {
 	options Options
@@ -27,18 +34,19 @@ type GoroutinePool struct {
 	lock sync.Mutex
 
 	once sync.Once
+	done chan struct{}
 }
 
 type Options struct {
-	Max  int32
-	Idle int
-	Step int
+	Max     int32         // maximum number of workers
+	Idle    int           // idle number of workers
+	Timeout time.Duration // quit time for worker
 }
 
 type Option func(options *Options)
 
 func NewGoroutinePool(opts ...Option) *GoroutinePool {
-	defaultOptions := Options{Max: 100, Idle: 10, Step: 10}
+	defaultOptions := Options{Max: 100, Idle: 10, Timeout: time.Second * 10}
 	for _, setter := range opts {
 		setter(&defaultOptions)
 	}
@@ -48,11 +56,29 @@ func NewGoroutinePool(opts ...Option) *GoroutinePool {
 		running:    0,
 		freeSignal: make(chan struct{}, defaultOptions.Max),
 		workers:    make([]*Worker, 0, 20),
+		done:       make(chan struct{}),
 	}
 
 	// 提前准备空闲协程池
 	pool.grow(defaultOptions.Idle)
+	pool.monitor()
+
 	return pool
+}
+
+func (pool *GoroutinePool) monitor() {
+	go func() {
+		for {
+			select {
+			case <-pool.done:
+				return
+			default:
+				// 定时缩容
+				pool.scaleDown()
+			}
+
+		}
+	}()
 }
 
 // grow 自动扩容worker数量
@@ -73,12 +99,19 @@ type f func()
 
 // Stop 停止协程池
 func (p *GoroutinePool) Stop() {
-	atomic.StoreInt32(&p.stopped, 1)
+	p.once.Do(func() {
+		atomic.StoreInt32(&p.stopped, 1)
+		close(p.done)
+		p.lock.Lock()
+		for _, worker := range p.workers {
+			worker.stop()
+		}
+		p.lock.Unlock()
+	})
 }
 
 // Schedule 执行任务
 func (p *GoroutinePool) Schedule(task func()) {
-
 	// 判断pool是否已关闭
 	if atomic.LoadInt32(&p.stopped) == 1 {
 		return
@@ -95,7 +128,7 @@ func (p *GoroutinePool) acquireWorker() (w *Worker) {
 	// 查看当前可用worker
 	available := len(p.workers)
 	if p.running < p.capacity {
-		if available < 0 {
+		if available == 0 {
 			p.grow(p.options.Idle)
 		}
 
@@ -114,6 +147,7 @@ func (p *GoroutinePool) acquireWorker() (w *Worker) {
 	return w
 }
 
+// popLastWorker 获取空闲队列里最尾部的一个worker
 func (p *GoroutinePool) popLastWorker() (w *Worker) {
 	// 取数组最后一个worker
 	n := len(p.workers) - 1
@@ -129,4 +163,25 @@ func (p *GoroutinePool) releaseWorker(worker *Worker) {
 	p.workers = append(p.workers, worker)
 	p.lock.Unlock()
 	p.freeSignal <- struct{}{}
+}
+
+// scaleDown 缩容
+func (p *GoroutinePool) scaleDown() {
+	// 根据时间控制每隔一段时间按策略缩容
+	time.Sleep(p.options.Timeout)
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
+	// 低于空闲数量则不缩容
+	available := len(p.workers)
+	if available <= p.options.Idle {
+		return
+	}
+
+	num := (available - p.options.Idle) / 4
+	log.Println("scale down: ", num)
+	for i := 0; i < num; i++ {
+		p.workers[i].stop()
+	}
+	p.workers = p.workers[num:]
 }

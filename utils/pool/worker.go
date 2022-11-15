@@ -3,7 +3,6 @@ package pool
 import (
 	"sync"
 	"sync/atomic"
-	"time"
 )
 
 type Worker struct {
@@ -32,8 +31,6 @@ func (w *Worker) run() {
 				fn()
 				//回收复用
 				w.pool.releaseWorker(w)
-			default:
-				time.Sleep(time.Millisecond * 100)
 			}
 		}
 	}()
