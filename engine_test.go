@@ -26,8 +26,9 @@ func TestEngine_WithComponent(t *testing.T) {
 }
 
 func TestEngine_WithServer(t *testing.T) {
-	engine := buildEngine().WithServer(http.NewServer(":8080"))
+	engine := buildEngine().WithServer(http.NewServer(":9000").EnableStatsviz().EnableAvailableHealthCheck())
 	assert.NotNil(t, engine)
+	engine.Run()
 }
 
 func TestEngine_Run(t *testing.T) {
