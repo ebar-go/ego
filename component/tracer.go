@@ -2,7 +2,7 @@ package component
 
 import (
 	"fmt"
-	cmap "github.com/orcaman/concurrent-map"
+	"github.com/ebar-go/ego/utils/structure"
 	"github.com/petermattis/goid"
 	uuid "github.com/satori/go.uuid"
 )
@@ -10,7 +10,7 @@ import (
 // Tracer generate the uuid for per goroutine, use to mark user requests.
 type Tracer struct {
 	Named
-	collections cmap.ConcurrentMap
+	collections *structure.ConcurrentMap[string, string]
 }
 
 // key use goroutine id to generate unique identifier
@@ -24,21 +24,21 @@ func (tracer *Tracer) Set(id string) {
 }
 
 // Get returns the uuid for this goroutine, it will generate a unique string if it doesn't exist'
-func (tracer *Tracer) Get() string {
-	val, ok := tracer.collections.Get(tracer.key())
+func (tracer *Tracer) Get() (id string) {
+	id, ok := tracer.collections.Get(tracer.key())
 	if ok {
-		return val.(string)
+		return id
 	}
-	id := uuid.NewV4().String()
+	id = uuid.NewV4().String()
 	tracer.Set(id)
-	return id
+	return
 }
 
 // Release remove the uuid of this goroutine
 func (tracer *Tracer) Release() {
-	tracer.collections.Remove(tracer.key())
+	tracer.collections.Del(tracer.key())
 }
 
 func NewTracer() *Tracer {
-	return &Tracer{Named: componentTracer, collections: cmap.New()}
+	return &Tracer{Named: componentTracer, collections: structure.NewConcurrentMap[string, string]()}
 }
