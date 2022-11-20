@@ -24,11 +24,10 @@ func (container *ConcurrentMap[Key, T]) Get(key Key) (item T, exist bool) {
 }
 
 // Set sets map item
-func (container *ConcurrentMap[Key, T]) Set(key Key, value T) error {
+func (container *ConcurrentMap[Key, T]) Set(key Key, value T) {
 	container.mu.Lock()
 	container.items[key] = value
 	container.mu.Unlock()
-	return nil
 }
 
 // Find returns item
@@ -47,7 +46,6 @@ func (container *ConcurrentMap[Key, T]) Del(key Key) {
 	container.mu.Lock()
 	delete(container.items, key)
 	container.mu.Unlock()
-	return
 }
 
 func NewConcurrentMap[Key KeyType, T any]() *ConcurrentMap[Key, T] {
