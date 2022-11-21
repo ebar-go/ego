@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"go.etcd.io/etcd/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"log"
 	"time"
 )
@@ -26,7 +26,7 @@ type Service struct {
 func NewService(info ServiceInfo, endpoints []string) (service *Service, err error) {
 	client, err := clientv3.New(clientv3.Config{
 		Endpoints:   endpoints,
-		DialTimeout: time.Second * 200,
+		DialTimeout: time.Second * 5,
 	})
 
 	if err != nil {

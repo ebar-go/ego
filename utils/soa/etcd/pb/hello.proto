@@ -1,0 +1,28 @@
+// hello.proto
+// syntax 标识文件遵循什么样的协议
+syntax="proto3";
+
+// package 标识使用包名，如果文件使用go_package选项将按照go_package选项命名包名，如果未使用则使用package关键字命名包名
+package service;
+
+// 命名存储的包名
+option go_package="etcd/pb";
+
+// service rpc returns 都是关键字
+// req 是入参，resp是出参
+// 经过protoc编译器解析后会生成go的rpc服务
+service HelloServer {
+  rpc SayHello(Req)returns(Resp);
+}
+
+
+// message是关键字
+// 1是标识符号，每个类中都是唯一的，不能重复
+// 这个会生成go中Req的机构提
+message Req {
+  string Name = 1;
+}
+
+message Resp {
+  string Name = 1;
+}

@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/etcd/mvcc/mvccpb"
+	"go.etcd.io/etcd/api/v3/mvccpb"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"google.golang.org/grpc/resolver"
 	"log"
 )
@@ -31,7 +31,7 @@ func NewResolver(endpoints []string, service string) resolver.Builder {
 // Scheme return etcd schema
 func (r *Resolver) Scheme() string {
 	// 最好用这种，因为grpc resolver.Register(r)在注册时，会取scheme，如果一个系统有多个grpc发现，就会覆盖之前注册的
-	return schema + "://" + r.service
+	return schema
 }
 
 // ResolveNow
