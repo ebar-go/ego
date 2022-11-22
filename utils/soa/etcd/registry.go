@@ -1,108 +1,124 @@
 package etcd
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
+	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	clientv3 "go.etcd.io/etcd/client/v3"
-	"log"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc/grpclog"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
-// 服务信息
-type ServiceInfo struct {
-	Name string
-	IP   string
+type Registry struct {
+	etcd3Client *clientv3.Client
+	key         string
+	value       map[string]interface{}
+	ttl         time.Duration
+	ctx         context.Context
+	cancel      context.CancelFunc
+	leaseID     clientv3.LeaseID
 }
 
-type Service struct {
-	ServiceInfo ServiceInfo
-	stop        chan error
-	leaseId     clientv3.LeaseID
-	client      *clientv3.Client
+type Option struct {
+	Endpoints   []string
+	RegistryDir string
+	ServiceName string
+	ServiceAddr string
+	ServiceData map[string]interface{}
+	Ttl         time.Duration
 }
 
-// NewService 创建一个注册服务
-func NewService(info ServiceInfo, endpoints []string) (service *Service, err error) {
-	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   endpoints,
-		DialTimeout: time.Second * 5,
-	})
-
+func NewRegistry(option Option) *Registry {
+	client, err := clientv3.New(clientv3.Config{Endpoints: option.Endpoints})
 	if err != nil {
-		log.Fatal(err)
-		return nil, err
+		grpclog.Fatalln(err)
 	}
-
-	service = &Service{
-		ServiceInfo: info,
-		client:      client,
+	ctx, cancel := context.WithCancel(context.Background())
+	registry := &Registry{
+		etcd3Client: client,
+		key:         option.RegistryDir + "/" + option.ServiceName + "/" + option.ServiceAddr,
+		value:       option.ServiceData,
+		ttl:         option.Ttl / time.Second,
+		ctx:         ctx,
+		cancel:      cancel,
 	}
-	return
+	return registry
 }
 
-// Start 注册服务启动
-func (service *Service) Start() (err error) {
-
-	ch, err := service.keepAlive()
+func (e *Registry) put() {
+	resp, err := e.etcd3Client.Grant(e.ctx, int64(e.ttl))
 	if err != nil {
-		log.Fatal(err)
-		return
+		grpclog.Fatalln(err)
 	}
-
-	for {
-		select {
-		case err := <-service.stop:
-			return err
-		case <-service.client.Ctx().Done():
-			return errors.New("service closed")
-		case resp, ok := <-ch:
-			// 监听租约
-			if !ok {
-				log.Println("keep alive channel closed")
-				return service.revoke()
-			}
-			log.Printf("Recv reply from service: %s, ttl:%d", service.getKey(), resp.TTL)
+	e.leaseID = resp.ID
+	_, err = e.etcd3Client.Get(e.ctx, e.key)
+	value := ""
+	if e.value != nil {
+		if valueByte, errjson := json.Marshal(e.value); errjson == nil {
+			value = string(valueByte)
+		} else {
+			grpclog.Infoln(errjson)
 		}
 	}
+	if err != nil {
+		if err == rpctypes.ErrKeyNotFound {
+			if _, err := e.etcd3Client.Put(e.ctx, e.key, value, clientv3.WithLease(resp.ID)); err != nil {
+				grpclog.Fatalln(err.Error())
+			}
+		} else {
+			grpclog.Fatalln(err.Error())
+		}
+	} else {
+		if _, err := e.etcd3Client.Put(e.ctx, e.key, value, clientv3.WithLease(resp.ID)); err != nil {
+			grpclog.Fatalln(err.Error())
+		}
+	}
+}
 
+func (e *Registry) delete() {
+	if _, err := e.etcd3Client.Delete(context.Background(), e.key); err != nil {
+		grpclog.Infoln(err.Error())
+	}
 	return
 }
 
-func (service *Service) Stop() {
-	service.stop <- nil
+func (e *Registry) keepalive() {
+	_, err := e.etcd3Client.KeepAliveOnce(e.ctx, e.leaseID)
+	if err != nil {
+		grpclog.Infoln(err.Error())
+	}
 }
 
-func (service *Service) keepAlive() (<-chan *clientv3.LeaseKeepAliveResponse, error) {
-	info := &service.ServiceInfo
-	key := info.Name + "/" + info.IP
-	val, _ := json.Marshal(info)
+func (e *Registry) Register() {
+	e.put()
+	go func() {
+		ticker := time.NewTicker(e.ttl / 5)
+		for {
+			select {
+			case <-ticker.C:
+				e.keepalive()
+			case <-e.ctx.Done():
+				e.delete()
+				return
+			}
+		}
+	}()
 
-	// 创建一个租约
-	resp, err := service.client.Grant(context.TODO(), 5)
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
+	go func() {
+		stopSignal := make(chan os.Signal, 1)
+		signal.Notify(stopSignal, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
+		s := <-stopSignal
+		grpclog.Infoln("receive signal ", s)
+		e.UnRegister()
+		os.Exit(1)
+	}()
 
-	_, err = service.client.Put(context.TODO(), key, string(val), clientv3.WithLease(resp.ID))
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
-	service.leaseId = resp.ID
-	return service.client.KeepAlive(context.TODO(), resp.ID)
 }
 
-func (service *Service) revoke() error {
-	_, err := service.client.Revoke(context.TODO(), service.leaseId)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("servide:%s stop\n", service.getKey())
-	return err
-}
-
-func (service *Service) getKey() string {
-	return service.ServiceInfo.Name + "/" + service.ServiceInfo.IP
+func (e *Registry) UnRegister() {
+	e.cancel()
+	return
 }
