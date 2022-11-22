@@ -20,7 +20,7 @@ type ServiceInfo struct {
 
 type Instance interface {
 	// Register a new service
-	Register(info ServiceInfo)
+	Register(stopCh <-chan struct{}, info ServiceInfo) error
 	Discovery(serviceName string) (infos []ServiceInfo, err error)
 
 	Resolver(serviceName string)
@@ -51,14 +51,16 @@ func (discovery *ETCDDiscovery) getClient() *clientv3.Client {
 	return discovery.cli
 }
 
-func (discovery *ETCDDiscovery) Register(info ServiceInfo) {
-	etcd.NewRegistry(discovery.getClient(), etcd.Option{
+func (discovery *ETCDDiscovery) Register(stopCh <-chan struct{}, info ServiceInfo) error {
+	return etcd.NewRegistry(discovery.getClient(), etcd.Option{
 		RegistryDir: discovery.namespace,
 		ServiceName: info.Name,
 		ServiceAddr: info.Addr,
-		ServiceData: nil,
-		Ttl:         discovery.ttl,
-	}).Register()
+		ServiceData: map[string]interface{}{
+			"weight": info.Weight,
+		},
+		Ttl: discovery.ttl,
+	}).Register(stopCh)
 }
 
 func (discovery *ETCDDiscovery) Resolver(serviceName string) {

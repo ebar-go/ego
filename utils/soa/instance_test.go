@@ -3,6 +3,7 @@ package soa
 import (
 	"context"
 	"fmt"
+	"github.com/ebar-go/ego/utils/runtime/signal"
 	"github.com/ebar-go/ego/utils/soa/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
@@ -15,6 +16,7 @@ import (
 
 var (
 	endpoints = []string{"127.0.0.1:2379"}
+	discovery = NewETCDDiscovery(endpoints, "default", time.Minute)
 )
 
 type Hello struct {
@@ -27,8 +29,8 @@ func (h Hello) SayHello(ctx context.Context, in *pb.Req) (*pb.Resp, error) {
 }
 
 func TestRegister(t *testing.T) {
-	discovery := NewETCDDiscovery(endpoints, "default", time.Minute)
 	addrs := []string{"127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083"}
+	stopCh := signal.SetupSignalHandler()
 	for _, addr := range addrs {
 		lis, err := net.Listen("tcp", addr)
 		if err != nil {
@@ -41,14 +43,15 @@ func TestRegister(t *testing.T) {
 			srv.Serve(lis)
 		}()
 
-		discovery.Register(ServiceInfo{Name: "app", Addr: addr})
+		if err := discovery.Register(stopCh, ServiceInfo{Name: "app", Addr: addr}); err != nil {
+			log.Println("register failed", err)
+		}
 	}
 
-	select {}
+	<-stopCh
 }
 
 func TestResolver(t *testing.T) {
-	discovery := NewETCDDiscovery(endpoints, "default", time.Minute)
 	discovery.Resolver("app")
 	cc, _ := grpc.DialContext(context.Background(), discovery.BuildTarget("app"), []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),

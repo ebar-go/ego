@@ -2,13 +2,11 @@ package etcd
 
 import (
 	"encoding/json"
+	"github.com/pkg/errors"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc/grpclog"
-	"os"
-	"os/signal"
-	"syscall"
+	"log"
 	"time"
 )
 
@@ -43,77 +41,64 @@ func NewRegistry(client *clientv3.Client, option Option) *Registry {
 	return registry
 }
 
-func (e *Registry) put() {
-	resp, err := e.etcd3Client.Grant(e.ctx, int64(e.ttl))
-	if err != nil {
-		grpclog.Fatalln(err)
+func (e *Registry) Register(stopCh <-chan struct{}) (err error) {
+	if err = e.put(); err != nil {
+		return
 	}
-	e.leaseID = resp.ID
-	_, err = e.etcd3Client.Get(e.ctx, e.key)
-	value := ""
-	if e.value != nil {
-		if valueByte, errjson := json.Marshal(e.value); errjson == nil {
-			value = string(valueByte)
-		} else {
-			grpclog.Infoln(errjson)
-		}
-	}
-	if err != nil {
-		if err == rpctypes.ErrKeyNotFound {
-			if _, err := e.etcd3Client.Put(e.ctx, e.key, value, clientv3.WithLease(resp.ID)); err != nil {
-				grpclog.Fatalln(err.Error())
-			}
-		} else {
-			grpclog.Fatalln(err.Error())
-		}
-	} else {
-		if _, err := e.etcd3Client.Put(e.ctx, e.key, value, clientv3.WithLease(resp.ID)); err != nil {
-			grpclog.Fatalln(err.Error())
-		}
-	}
-}
-
-func (e *Registry) delete() {
-	if _, err := e.etcd3Client.Delete(context.Background(), e.key); err != nil {
-		grpclog.Infoln(err.Error())
-	}
-	return
-}
-
-func (e *Registry) keepalive() {
-	_, err := e.etcd3Client.KeepAliveOnce(e.ctx, e.leaseID)
-	if err != nil {
-		grpclog.Infoln(err.Error())
-	}
-}
-
-func (e *Registry) Register() {
-	e.put()
 	go func() {
 		ticker := time.NewTicker(e.ttl / 5)
 		for {
 			select {
 			case <-ticker.C:
-				e.keepalive()
-			case <-e.ctx.Done():
-				e.delete()
+				if lastErr := e.keepAlive(); lastErr != nil {
+					log.Println("keepAlive failed", lastErr)
+				}
+			case <-stopCh:
+				if lastErr := e.delete(); lastErr != nil {
+					log.Println("delete failed", lastErr)
+				}
+				e.UnRegister()
 				return
 			}
 		}
 	}()
 
-	go func() {
-		stopSignal := make(chan os.Signal, 1)
-		signal.Notify(stopSignal, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
-		s := <-stopSignal
-		grpclog.Infoln("receive signal ", s)
-		e.UnRegister()
-		os.Exit(1)
-	}()
-
+	return
 }
 
 func (e *Registry) UnRegister() {
 	e.cancel()
 	return
+}
+
+// =========================private methods =========================
+func (e *Registry) put() error {
+	resp, err := e.etcd3Client.Grant(e.ctx, int64(e.ttl))
+	if err != nil {
+		return errors.WithMessage(err, "grant key")
+	}
+	e.leaseID = resp.ID
+	_, err = e.etcd3Client.Get(e.ctx, e.key)
+	if err != nil && err != rpctypes.ErrKeyNotFound {
+		return errors.WithMessage(err, "get key")
+	}
+
+	value, _ := json.Marshal(e.value)
+
+	if err == nil || err == rpctypes.ErrKeyNotFound {
+		_, err = e.etcd3Client.Put(e.ctx, e.key, string(value), clientv3.WithLease(resp.ID))
+		return err
+	}
+
+	return errors.WithMessage(err, "get key")
+}
+
+func (e *Registry) delete() error {
+	_, err := e.etcd3Client.Delete(e.ctx, e.key)
+	return err
+}
+
+func (e *Registry) keepAlive() error {
+	_, err := e.etcd3Client.KeepAliveOnce(e.ctx, e.leaseID)
+	return err
 }
