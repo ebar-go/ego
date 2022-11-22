@@ -9,7 +9,7 @@ import (
 
 type etcdResolver struct {
 	scheme        string
-	etcdConfig    clientv3.Config
+	cli           *clientv3.Client
 	etcdWatchPath string
 	watcher       *Watcher
 	cc            resolver.ClientConn
@@ -17,12 +17,8 @@ type etcdResolver struct {
 }
 
 func (r *etcdResolver) Build(target resolver.Target, cc resolver.ClientConn, opts resolver.BuildOptions) (resolver.Resolver, error) {
-	etcdCli, err := clientv3.New(r.etcdConfig)
-	if err != nil {
-		return nil, err
-	}
 	r.cc = cc
-	r.watcher = newWatcher(r.etcdWatchPath, etcdCli)
+	r.watcher = newWatcher(r.etcdWatchPath, r.cli)
 	r.start()
 	return r, nil
 }
@@ -51,21 +47,16 @@ func (r *etcdResolver) Close() {
 	r.wg.Wait()
 }
 
-func RegisterResolver(scheme string, endpoints []string, registryDir, srvName string) {
+func RegisterResolver(scheme string, cli *clientv3.Client, registryDir, srvName string) {
 	resolver.Register(&etcdResolver{
 		scheme:        scheme,
-		etcdConfig:    clientv3.Config{Endpoints: endpoints},
+		cli:           cli,
 		etcdWatchPath: parseRegistryDir(registryDir) + "/" + srvName,
 	})
 }
 
-func Discovery(endpoints []string, registryDir, srvName string) ([]resolver.Address, error) {
-	etcdCli, err := clientv3.New(clientv3.Config{Endpoints: endpoints})
-	if err != nil {
-		return nil, err
-	}
-
-	watcher := newWatcher(parseRegistryDir(registryDir)+"/"+srvName, etcdCli)
+func Discovery(client *clientv3.Client, registryDir, srvName string) ([]resolver.Address, error) {
+	watcher := newWatcher(parseRegistryDir(registryDir)+"/"+srvName, client)
 	return watcher.GetAllAddresses(), nil
 }
 

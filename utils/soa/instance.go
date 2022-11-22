@@ -1,9 +1,10 @@
 package soa
 
 import (
-	"context"
 	"fmt"
 	"github.com/ebar-go/ego/utils/soa/etcd"
+	clientv3 "go.etcd.io/etcd/client/v3"
+	"sync"
 	"time"
 )
 
@@ -11,10 +12,16 @@ const (
 	ETCDSchema = "etcd"
 )
 
+type ServiceInfo struct {
+	Name   string
+	Addr   string
+	Weight int
+}
+
 type Instance interface {
 	// Register a new service
 	Register(info ServiceInfo)
-	Discovery(ctx context.Context, serviceName string) (infos []ServiceInfo, err error)
+	Discovery(serviceName string) (infos []ServiceInfo, err error)
 
 	Resolver(serviceName string)
 	BuildTarget(serviceName string) string
@@ -24,21 +31,28 @@ type ETCDDiscovery struct {
 	endpoints []string
 	namespace string
 	ttl       time.Duration
+	once      sync.Once
+	cli       *clientv3.Client
 }
 
 func NewETCDDiscovery(endpoints []string, namespace string, ttl time.Duration) Instance {
 	return &ETCDDiscovery{endpoints: endpoints, namespace: namespace, ttl: ttl}
 }
 
-type ServiceInfo struct {
-	Name   string
-	Addr   string
-	Weight int
+func (discovery *ETCDDiscovery) getClient() *clientv3.Client {
+	discovery.once.Do(func() {
+		cli, err := clientv3.New(clientv3.Config{Endpoints: discovery.endpoints, DialTimeout: time.Second * 10})
+		if err != nil {
+			panic(err)
+		}
+		discovery.cli = cli
+
+	})
+	return discovery.cli
 }
 
 func (discovery *ETCDDiscovery) Register(info ServiceInfo) {
-	etcd.NewRegistry(etcd.Option{
-		Endpoints:   discovery.endpoints,
+	etcd.NewRegistry(discovery.getClient(), etcd.Option{
 		RegistryDir: discovery.namespace,
 		ServiceName: info.Name,
 		ServiceAddr: info.Addr,
@@ -48,15 +62,15 @@ func (discovery *ETCDDiscovery) Register(info ServiceInfo) {
 }
 
 func (discovery *ETCDDiscovery) Resolver(serviceName string) {
-	etcd.RegisterResolver(ETCDSchema, discovery.endpoints, discovery.namespace, serviceName)
+	etcd.RegisterResolver(ETCDSchema, discovery.getClient(), discovery.namespace, serviceName)
 }
 
 func (discovery *ETCDDiscovery) BuildTarget(serviceName string) string {
 	return fmt.Sprintf("%s:///%s/%s", ETCDSchema, discovery.namespace, serviceName)
 }
 
-func (discovery *ETCDDiscovery) Discovery(ctx context.Context, serviceName string) (infos []ServiceInfo, err error) {
-	items, err := etcd.Discovery(discovery.endpoints, discovery.namespace, serviceName)
+func (discovery *ETCDDiscovery) Discovery(serviceName string) (infos []ServiceInfo, err error) {
+	items, err := etcd.Discovery(discovery.getClient(), discovery.namespace, serviceName)
 	if err != nil {
 		return
 	}

@@ -23,7 +23,6 @@ type Registry struct {
 }
 
 type Option struct {
-	Endpoints   []string
 	RegistryDir string
 	ServiceName string
 	ServiceAddr string
@@ -31,11 +30,7 @@ type Option struct {
 	Ttl         time.Duration
 }
 
-func NewRegistry(option Option) *Registry {
-	client, err := clientv3.New(clientv3.Config{Endpoints: option.Endpoints})
-	if err != nil {
-		grpclog.Fatalln(err)
-	}
+func NewRegistry(client *clientv3.Client, option Option) *Registry {
 	ctx, cancel := context.WithCancel(context.Background())
 	registry := &Registry{
 		etcd3Client: client,
