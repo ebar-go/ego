@@ -1,6 +1,7 @@
 package soa
 
 import (
+	"context"
 	"fmt"
 	"github.com/ebar-go/ego/utils/soa/etcd"
 	"time"
@@ -13,6 +14,7 @@ const (
 type Instance interface {
 	// Register a new service
 	Register(info ServiceInfo)
+	Discovery(ctx context.Context, serviceName string) (infos []ServiceInfo, err error)
 
 	Resolver(serviceName string)
 	BuildTarget(serviceName string) string
@@ -51,4 +53,18 @@ func (discovery *ETCDDiscovery) Resolver(serviceName string) {
 
 func (discovery *ETCDDiscovery) BuildTarget(serviceName string) string {
 	return fmt.Sprintf("%s:///%s/%s", ETCDSchema, discovery.namespace, serviceName)
+}
+
+func (discovery *ETCDDiscovery) Discovery(ctx context.Context, serviceName string) (infos []ServiceInfo, err error) {
+	items, err := etcd.Discovery(discovery.endpoints, discovery.namespace, serviceName)
+	if err != nil {
+		return
+	}
+
+	infos = make([]ServiceInfo, 0, len(items))
+	for _, item := range items {
+		weight, _ := item.Attributes.Value("weight").(int)
+		infos = append(infos, ServiceInfo{Name: serviceName, Addr: item.Addr, Weight: weight})
+	}
+	return
 }

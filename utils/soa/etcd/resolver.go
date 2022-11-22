@@ -59,6 +59,16 @@ func RegisterResolver(scheme string, endpoints []string, registryDir, srvName st
 	})
 }
 
+func Discovery(endpoints []string, registryDir, srvName string) ([]resolver.Address, error) {
+	etcdCli, err := clientv3.New(clientv3.Config{Endpoints: endpoints})
+	if err != nil {
+		return nil, err
+	}
+
+	watcher := newWatcher(parseRegistryDir(registryDir)+"/"+srvName, etcdCli)
+	return watcher.GetAllAddresses(), nil
+}
+
 func parseRegistryDir(registryDir string) string {
 	if registryDir == "" {
 		return ""
