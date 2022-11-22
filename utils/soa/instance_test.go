@@ -1,11 +1,12 @@
-package etcd
+package soa
 
 import (
 	"context"
 	"fmt"
-	"github.com/ebar-go/ego/utils/soa/etcd/pb"
+	"github.com/ebar-go/ego/utils/soa/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net"
 	"testing"
@@ -25,7 +26,8 @@ func (h Hello) SayHello(ctx context.Context, in *pb.Req) (*pb.Resp, error) {
 	return &pb.Resp{Name: "bar," + h.addr}, nil
 }
 
-func TestRegistry(t *testing.T) {
+func TestRegister(t *testing.T) {
+	discovery := NewETCDDiscovery(endpoints, "default", time.Minute)
 	addrs := []string{"127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083"}
 	for _, addr := range addrs {
 		lis, err := net.Listen("tcp", addr)
@@ -39,25 +41,19 @@ func TestRegistry(t *testing.T) {
 			srv.Serve(lis)
 		}()
 
-		registry := NewRegistry(Option{
-			Endpoints:   endpoints,
-			RegistryDir: "default",
-			ServiceName: "app",
-			ServiceAddr: addr,
-			ServiceData: nil,
-			Ttl:         time.Minute,
-		})
-		registry.Register()
+		discovery.Register(ServiceInfo{Name: "app", Addr: addr})
 	}
 
 	select {}
 }
 
 func TestResolver(t *testing.T) {
-	RegisterResolver("etcd", endpoints, "default", "app")
-	cc, _ := grpc.DialContext(context.Background(), "etcd:///default/app", []grpc.DialOption{
-		grpc.WithInsecure(),
+	discovery := NewETCDDiscovery(endpoints, "default", time.Minute)
+	discovery.Resolver("app")
+	cc, _ := grpc.DialContext(context.Background(), discovery.BuildTarget("app"), []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
+		grpc.WithResolvers(),
 	}...)
 	client := pb.NewHelloServerClient(cc)
 	resp, err := client.SayHello(context.Background(), &pb.Req{Name: "foo"})
