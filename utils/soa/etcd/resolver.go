@@ -44,8 +44,7 @@ func (r *etcdResolver) start() {
 	}()
 }
 
-func (r *etcdResolver) ResolveNow(o resolver.ResolveNowOptions) {
-}
+func (r *etcdResolver) ResolveNow(o resolver.ResolveNowOptions) {}
 
 func (r *etcdResolver) Close() {
 	r.watcher.Close()
