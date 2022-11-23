@@ -1,0 +1,18 @@
+// hello.proto
+syntax="proto3";
+
+package service;
+
+option go_package="echo/pb";
+
+service UserService {
+  rpc Greet(GreetRequest)returns(GreetResponse);
+}
+
+message GreetRequest {
+  string Name = 1;
+}
+
+message GreetResponse {
+  string Name = 1;
+}
