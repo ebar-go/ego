@@ -29,7 +29,7 @@ func (h Hello) SayHello(ctx context.Context, in *pb.Req) (*pb.Resp, error) {
 }
 
 func TestRegister(t *testing.T) {
-	addrs := []string{"127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083"}
+	addrs := []string{"127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083", "127.0.0.1:8084"}
 	stopCh := signal.SetupSignalHandler()
 	for _, addr := range addrs {
 		lis, err := net.Listen("tcp", addr)
@@ -59,9 +59,10 @@ func TestResolver(t *testing.T) {
 		grpc.WithResolvers(),
 	}...)
 	client := pb.NewHelloServerClient(cc)
-	resp, err := client.SayHello(context.Background(), &pb.Req{Name: "foo"})
-	if err != nil {
-		panic(err)
+	for {
+		resp, err := client.SayHello(context.Background(), &pb.Req{Name: "foo"})
+		log.Println(resp, err)
+		time.Sleep(time.Second)
 	}
-	log.Println(resp.Name)
+
 }

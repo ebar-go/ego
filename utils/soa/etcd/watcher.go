@@ -42,7 +42,7 @@ func (w *Watcher) GetAllAddresses() []resolver.Address {
 
 	resp, err := w.client.Get(w.ctx, w.key, clientv3.WithPrefix())
 	if err == nil {
-		return extractAddrs(resp)
+		return extractAddresses(resp)
 	}
 	return ret
 }
@@ -98,7 +98,7 @@ func convertEventToAddress(kv *mvccpb.KeyValue, address *resolver.Address) error
 	if lastArr == nil || len(lastArr) == 0 {
 		return errors.New("invalid key")
 	}
-	address.Addr = lastArr[len(arr)-1]
+	address.Addr = lastArr[len(lastArr)-1]
 	address.Attributes = attributes.New("someKey", "someValue")
 	//获取属性
 	attr := make(map[string]interface{}, 0)
@@ -110,10 +110,10 @@ func convertEventToAddress(kv *mvccpb.KeyValue, address *resolver.Address) error
 	return nil
 }
 
-func extractAddrs(resp *clientv3.GetResponse) []resolver.Address {
-	addrs := make([]resolver.Address, 0)
+func extractAddresses(resp *clientv3.GetResponse) []resolver.Address {
+	addresses := make([]resolver.Address, 0)
 	if resp == nil || resp.Kvs == nil {
-		return addrs
+		return addresses
 	}
 	for i := range resp.Kvs {
 		address := resolver.Address{}
@@ -132,9 +132,9 @@ func extractAddrs(resp *clientv3.GetResponse) []resolver.Address {
 				}
 			}
 		}
-		addrs = append(addrs, address)
+		addresses = append(addresses, address)
 	}
-	return addrs
+	return addresses
 }
 
 func (w *Watcher) cloneAddresses(in []resolver.Address) []resolver.Address {
