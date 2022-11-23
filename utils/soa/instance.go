@@ -2,6 +2,7 @@ package soa
 
 import (
 	"fmt"
+	"github.com/ebar-go/ego/utils/number"
 	"github.com/ebar-go/ego/utils/soa/etcd"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"sync"
@@ -79,7 +80,7 @@ func (discovery *ETCDDiscovery) Discovery(serviceName string) (infos []ServiceIn
 
 	infos = make([]ServiceInfo, 0, len(items))
 	for _, item := range items {
-		weight, _ := item.Attributes.Value("weight").(int)
+		weight := number.Int(item.Attributes.Value("weight"))
 		infos = append(infos, ServiceInfo{Name: serviceName, Addr: item.Addr, Weight: weight})
 	}
 	return

@@ -43,7 +43,7 @@ func TestRegister(t *testing.T) {
 			srv.Serve(lis)
 		}()
 
-		if err := discovery.Register(stopCh, ServiceInfo{Name: "app", Addr: addr}); err != nil {
+		if err := discovery.Register(stopCh, ServiceInfo{Name: "app", Addr: addr, Weight: 10}); err != nil {
 			log.Println("register failed", err)
 		}
 	}
@@ -65,4 +65,9 @@ func TestResolver(t *testing.T) {
 		time.Sleep(time.Second)
 	}
 
+}
+
+func TestDiscovery(t *testing.T) {
+	services, err := discovery.Discovery("app")
+	log.Println(services, err)
 }

@@ -126,9 +126,9 @@ func extractAddresses(resp *clientv3.GetResponse) []resolver.Address {
 		address.Attributes = attributes.New("someKey", "someValue")
 		if v := resp.Kvs[i].Value; v != nil {
 			attr := make(map[string]interface{}, 0)
-			if err := json.Unmarshal(v, &attr); err != nil && len(attr) > 0 {
+			if err := json.Unmarshal(v, &attr); err == nil && len(attr) > 0 {
 				for attrKey, attrValue := range attr {
-					address.Attributes.WithValue(attrKey, attrValue)
+					address.Attributes = address.Attributes.WithValue(attrKey, attrValue)
 				}
 			}
 		}
