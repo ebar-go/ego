@@ -9,20 +9,20 @@ import (
 // Cache provide cache instance builder function
 type Cache struct {
 	Named
-	defaultExpiration, cleanupInterval time.Duration
-	once                               sync.Once
-	instance                           *cache.Cache
+	opts     cacheOptions
+	once     sync.Once
+	instance *cache.Cache
 }
 
 // WithDefaultExpiration sets default expiration for cache component
 func (c *Cache) WithDefaultExpiration(defaultExpiration time.Duration) *Cache {
-	c.defaultExpiration = defaultExpiration
+	c.opts.defaultExpiration = defaultExpiration
 	return c
 }
 
 // WithCleanupInterval sets default cleanup interval for cache component
 func (c *Cache) WithCleanupInterval(cleanupInterval time.Duration) *Cache {
-	c.cleanupInterval = cleanupInterval
+	c.opts.cleanupInterval = cleanupInterval
 	return c
 }
 
@@ -34,16 +34,21 @@ func (c *Cache) Default() *cache.Cache {
 	return c.instance
 }
 
-// Build returns a new cache instance
-func (c *Cache) Build() *cache.Cache {
-	return cache.New(c.defaultExpiration, c.cleanupInterval)
+type cacheOptions struct {
+	defaultExpiration, cleanupInterval time.Duration
 }
 
-// BuildWith returns a new cache instance with the given expiration.
-func (c *Cache) BuildWith(defaultExpiration, cleanupInterval time.Duration) *cache.Cache {
-	return cache.New(defaultExpiration, cleanupInterval)
+type cacheOption func(options *cacheOptions)
+
+// Build returns a new cache instance
+func (c *Cache) Build(opts ...cacheOption) *cache.Cache {
+	defaultOptions := c.opts
+	for _, setter := range opts {
+		setter(&defaultOptions)
+	}
+	return cache.New(defaultOptions.defaultExpiration, defaultOptions.cleanupInterval)
 }
 
 func NewCache() *Cache {
-	return &Cache{Named: componentCache, defaultExpiration: time.Minute * 5, cleanupInterval: time.Minute * 10}
+	return &Cache{Named: componentCache, opts: cacheOptions{defaultExpiration: time.Minute * 5, cleanupInterval: time.Minute * 10}}
 }
