@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/ebar-go/ego"
-	"github.com/ebar-go/ego/server"
+	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -10,12 +10,12 @@ import (
 func main() {
 	aggregator := ego.New()
 
-	aggregator.WithServer(httpServer())
+	aggregator.Aggregate(httpServer())
 
 	aggregator.Run()
 }
 
-func httpServer() server.Server {
+func httpServer() runtime.Runnable {
 	return ego.NewHTTPServer(":8080").EnableAvailableHealthCheck().
 		WithDefaultRequestLogMiddleware().RegisterRouteLoader(func(router *gin.Engine) {
 		router.GET("echo", func(ctx *gin.Context) {

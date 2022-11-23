@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"github.com/ebar-go/ego/component"
-	"github.com/ebar-go/ego/server/protocol"
+	"github.com/ebar-go/ego/protocol/schema"
 	"github.com/ebar-go/ego/utils/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -12,7 +12,7 @@ import (
 
 // Server represents a gRPC server.
 type Server struct {
-	schema protocol.Schema
+	schema schema.Schema
 
 	initOnce  sync.Once
 	instance  *grpc.Server
@@ -42,8 +42,8 @@ func (server *Server) RegisterService(register func(s *grpc.Server)) *Server {
 	return server
 }
 
-// Serve start grpc listener
-func (server *Server) Serve(stop <-chan struct{}) {
+// Run start grpc listener
+func (server *Server) Run(stop <-chan struct{}) {
 	component.Provider().Logger().Infof("listening and serving GRPC on %s", server.schema.Bind)
 
 	lis, err := net.Listen("tcp", server.schema.Bind)
@@ -84,6 +84,6 @@ func (server *Server) shutdown() {
 // NewServer returns a new instance of the Server.
 func NewServer(address string) *Server {
 	return &Server{
-		schema: protocol.NewGRPCSchema(address),
+		schema: schema.NewGRPCSchema(address),
 	}
 }

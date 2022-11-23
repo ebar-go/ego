@@ -5,7 +5,7 @@ import (
 	"github.com/ebar-go/ego"
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/examples/grpc/pb"
-	"github.com/ebar-go/ego/server"
+	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -15,12 +15,12 @@ import (
 func main() {
 	aggregator := ego.New()
 
-	aggregator.WithServer(httpServer(), grpcServer())
+	aggregator.Aggregate(httpServer(), grpcServer())
 
 	aggregator.Run()
 }
 
-func httpServer() server.Server {
+func httpServer() runtime.Runnable {
 	return ego.NewHTTPServer(":8080").EnableAvailableHealthCheck().
 		WithDefaultRequestLogMiddleware().RegisterRouteLoader(func(router *gin.Engine) {
 		router.GET("greeter", func(ctx *gin.Context) {
@@ -48,7 +48,7 @@ func (srv UserService) Greet(ctx context.Context, in *pb.GreetRequest) (*pb.Gree
 	return &pb.GreetResponse{Name: "greeter:" + in.GetName()}, nil
 }
 
-func grpcServer() server.Server {
+func grpcServer() runtime.Runnable {
 	return ego.NewGRPCServer(":8081").RegisterService(func(s *grpc.Server) {
 		pb.RegisterUserServiceServer(s, new(UserService))
 	})
