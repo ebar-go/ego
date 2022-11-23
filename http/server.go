@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"github.com/arl/statsviz"
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/server/protocol"
 	"github.com/ebar-go/ego/utils/jaeger"
@@ -129,18 +128,6 @@ func (server *Server) EnableTracing(service, address string) *Server {
 
 	server.shutdownHooks = append(server.shutdownHooks, runtime.IgnoreErrorCaller(tracer.Close))
 	tracer.ListenHttp(server.router)
-	return server
-}
-
-// EnableStatsviz enables stats visualization
-func (server *Server) EnableStatsviz() *Server {
-	server.router.GET("/debug/statsviz/*filepath", func(context *gin.Context) {
-		if context.Param("filepath") == "/ws" {
-			statsviz.Ws(context.Writer, context.Request)
-			return
-		}
-		statsviz.IndexAtRoot("/debug/statsviz").ServeHTTP(context.Writer, context.Request)
-	})
 	return server
 }
 

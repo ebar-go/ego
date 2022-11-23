@@ -1,13 +1,13 @@
 package ego
 
 import (
-	"github.com/ebar-go/ego/server/grpc"
-	"github.com/ebar-go/ego/server/http"
+	"github.com/ebar-go/ego/grpc"
+	"github.com/ebar-go/ego/http"
 )
 
-// New creates a new NamedEngine instance with default name.
-func New() *NamedEngine {
-	return NewNamedEngine("default")
+// New creates a new Aggregator instance with default name.
+func New() *Aggregator {
+	return NewAggregator("default")
 }
 
 // NewHttpServer creates a new http server instance.

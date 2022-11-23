@@ -3,7 +3,6 @@ module github.com/ebar-go/ego
 go 1.18
 
 require (
-	github.com/arl/statsviz v0.5.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.8.1
