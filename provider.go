@@ -5,15 +5,17 @@ import (
 	"github.com/ebar-go/ego/component/cache"
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/curl"
+	"github.com/ebar-go/ego/component/event"
 	"github.com/robfig/cron"
 	"sync"
 )
 
 type Provider struct {
-	cb   component.Instance[*cache.Builder]
-	cc   component.Instance[*config.Config]
-	cron component.Instance[*cron.Cron]
-	curl component.Instance[*curl.Curl]
+	cb    component.Instance[*cache.Builder]
+	cc    component.Instance[*config.Config]
+	cron  component.Instance[*cron.Cron]
+	curl  component.Instance[*curl.Curl]
+	event component.Instance[*event.Dispatcher]
 }
 
 var providerInstance = struct {
@@ -25,10 +27,11 @@ func provider() *Provider {
 	providerInstance.once.Do(func() {
 		name := "default"
 		providerInstance.instance = &Provider{
-			cb:   component.NewInstance[*cache.Builder](name, cache.New()),
-			cc:   component.NewInstance[*config.Config](name, config.New()),
-			cron: component.NewInstance[*cron.Cron](name, cron.New()),
-			curl: component.NewInstance[*curl.Curl](name, curl.New()),
+			cb:    component.NewInstance[*cache.Builder](name, cache.New()),
+			cc:    component.NewInstance[*config.Config](name, config.New()),
+			cron:  component.NewInstance[*cron.Cron](name, cron.New()),
+			curl:  component.NewInstance[*curl.Curl](name, curl.New()),
+			event: component.NewInstance[*event.Dispatcher](name, event.New()),
 		}
 	})
 	return providerInstance.instance
@@ -48,4 +51,19 @@ func Cron() *cron.Cron {
 
 func Curl() *curl.Curl {
 	return provider().curl.Delegate()
+}
+
+func Event() *event.Dispatcher {
+	return provider().event.Delegate()
+}
+
+// ListenEvent listen with type parameters
+func ListenEvent[T any](eventName string, handler func(param T)) {
+	Event().Listen(eventName, func(param any) {
+		data, ok := param.(T)
+		if !ok {
+			return
+		}
+		handler(data)
+	})
 }
