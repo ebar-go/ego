@@ -19,7 +19,7 @@ func TestNewServer(t *testing.T) {
 			})
 		})
 	ctx, cancel := context.WithCancel(context.Background())
-	go server.Serve(ctx.Done())
+	go server.Run(ctx.Done())
 	assert.NotNil(t, server)
 	runtime.Shutdown(func() {
 		cancel()
@@ -28,7 +28,7 @@ func TestNewServer(t *testing.T) {
 
 func serveServer(server *Server) {
 	ctx, cancel := context.WithCancel(context.Background())
-	go server.Serve(ctx.Done())
+	go server.Run(ctx.Done())
 
 	time.Sleep(time.Second)
 	cancel()

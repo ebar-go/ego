@@ -1,8 +1,15 @@
-package protocol
+package schema
 
 import (
 	"fmt"
 	"net"
+)
+
+const (
+	HTTP = "http"
+	GRPC = "grpc"
+	WS   = "ws"
+	TCP  = "tcp"
 )
 
 // Schema defines server protocol

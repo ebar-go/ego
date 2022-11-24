@@ -2,9 +2,8 @@ package http
 
 import (
 	"context"
-	"github.com/arl/statsviz"
 	"github.com/ebar-go/ego/component"
-	"github.com/ebar-go/ego/server/protocol"
+	"github.com/ebar-go/ego/protocol/schema"
 	"github.com/ebar-go/ego/utils/jaeger"
 	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-contrib/pprof"
@@ -18,7 +17,7 @@ import (
 
 // Server represents an HTTP server.
 type Server struct {
-	schema protocol.Schema
+	schema schema.Schema
 
 	instance *http.Server
 	initOnce sync.Once
@@ -28,8 +27,8 @@ type Server struct {
 	startHooks, shutdownHooks []func()
 }
 
-// Serve starts the server.
-func (server *Server) Serve(stop <-chan struct{}) {
+// Run starts the server.
+func (server *Server) Run(stop <-chan struct{}) {
 	component.Provider().Logger().Infof("listening and serving HTTP on %s", server.schema.Bind)
 
 	for _, hook := range server.startHooks {
@@ -132,18 +131,6 @@ func (server *Server) EnableTracing(service, address string) *Server {
 	return server
 }
 
-// EnableStatsviz enables stats visualization
-func (server *Server) EnableStatsviz() *Server {
-	server.router.GET("/debug/statsviz/*filepath", func(context *gin.Context) {
-		if context.Param("filepath") == "/ws" {
-			statsviz.Ws(context.Writer, context.Request)
-			return
-		}
-		statsviz.IndexAtRoot("/debug/statsviz").ServeHTTP(context.Writer, context.Request)
-	})
-	return server
-}
-
 // Shutdown shuts down the server.
 func (server *Server) Shutdown() {
 	for _, hook := range server.shutdownHooks {
@@ -180,7 +167,7 @@ func (server *Server) shutdown() {
 // NewServer returns a new instance of the Server.
 func NewServer(addr string) *Server {
 	instance := &Server{
-		schema: protocol.NewHttpSchema(addr),
+		schema: schema.NewHttpSchema(addr),
 		router: gin.Default(),
 	}
 
