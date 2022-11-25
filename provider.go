@@ -7,6 +7,7 @@ import (
 	"github.com/ebar-go/ego/component/curl"
 	"github.com/ebar-go/ego/component/event"
 	"github.com/ebar-go/ego/component/logger"
+	"github.com/ebar-go/ego/component/mongo"
 	"github.com/ebar-go/ego/component/redis"
 	"github.com/robfig/cron"
 	"sync"
@@ -20,6 +21,7 @@ type Provider struct {
 	event  component.Instance[*event.Dispatcher]
 	redis  component.Instance[*redis.Instance]
 	logger component.Instance[*logger.Logger]
+	mgo    component.Instance[*mongo.Instance]
 }
 
 var providerInstance = struct {
@@ -38,6 +40,7 @@ func provider() *Provider {
 			event:  component.NewInstance[*event.Dispatcher](name, event.New()),
 			redis:  component.NewInstance[*redis.Instance](name, redis.New()),
 			logger: component.NewInstance[*logger.Logger](name, logger.New()),
+			mgo:    component.NewInstance[*mongo.Instance](name, mongo.New()),
 		}
 	})
 	return providerInstance.instance
@@ -80,4 +83,8 @@ func Redis() *redis.Instance {
 
 func Logger() *logger.Logger {
 	return provider().logger.Delegate()
+}
+
+func Mongo() *mongo.Instance {
+	return provider().mgo.Delegate()
 }
