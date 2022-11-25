@@ -9,19 +9,21 @@ import (
 	"github.com/ebar-go/ego/component/logger"
 	"github.com/ebar-go/ego/component/mongo"
 	"github.com/ebar-go/ego/component/redis"
+	"github.com/ebar-go/ego/component/validator"
 	"github.com/robfig/cron"
 	"sync"
 )
 
 type Provider struct {
-	cb     component.Instance[*cache.Builder]
-	cc     component.Instance[*config.Config]
-	cron   component.Instance[*cron.Cron]
-	curl   component.Instance[*curl.Curl]
-	event  component.Instance[*event.Dispatcher]
-	redis  component.Instance[*redis.Instance]
-	logger component.Instance[*logger.Logger]
-	mgo    component.Instance[*mongo.Instance]
+	cb        component.Instance[*cache.Builder]
+	cc        component.Instance[*config.Config]
+	cron      component.Instance[*cron.Cron]
+	curl      component.Instance[*curl.Curl]
+	event     component.Instance[*event.Dispatcher]
+	redis     component.Instance[*redis.Instance]
+	logger    component.Instance[*logger.Logger]
+	mgo       component.Instance[*mongo.Instance]
+	validator component.Instance[*validator.Instance]
 }
 
 var providerInstance = struct {
@@ -33,14 +35,15 @@ func provider() *Provider {
 	providerInstance.once.Do(func() {
 		name := "default"
 		providerInstance.instance = &Provider{
-			cb:     component.NewInstance[*cache.Builder](name, cache.New()),
-			cc:     component.NewInstance[*config.Config](name, config.New()),
-			cron:   component.NewInstance[*cron.Cron](name, cron.New()),
-			curl:   component.NewInstance[*curl.Curl](name, curl.New()),
-			event:  component.NewInstance[*event.Dispatcher](name, event.New()),
-			redis:  component.NewInstance[*redis.Instance](name, redis.New()),
-			logger: component.NewInstance[*logger.Logger](name, logger.New()),
-			mgo:    component.NewInstance[*mongo.Instance](name, mongo.New()),
+			cb:        component.NewInstance[*cache.Builder](name, cache.New()),
+			cc:        component.NewInstance[*config.Config](name, config.New()),
+			cron:      component.NewInstance[*cron.Cron](name, cron.New()),
+			curl:      component.NewInstance[*curl.Curl](name, curl.New()),
+			event:     component.NewInstance[*event.Dispatcher](name, event.New()),
+			redis:     component.NewInstance[*redis.Instance](name, redis.New()),
+			logger:    component.NewInstance[*logger.Logger](name, logger.New()),
+			mgo:       component.NewInstance[*mongo.Instance](name, mongo.New()),
+			validator: component.NewInstance[*validator.Instance](name, validator.New()),
 		}
 	})
 	return providerInstance.instance
@@ -87,4 +90,8 @@ func Logger() *logger.Logger {
 
 func Mongo() *mongo.Instance {
 	return provider().mgo.Delegate()
+}
+
+func Validator() *validator.Instance {
+	return provider().validator.Delegate()
 }
