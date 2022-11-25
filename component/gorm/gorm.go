@@ -8,8 +8,18 @@ import (
 	"time"
 )
 
-func ConnectMySQL(dsn string, config *gorm.Config) (*gorm.DB, error) {
-	return gorm.Open(mysql.Open(dsn), config)
+type Instance struct {
+	*gorm.DB
+}
+
+func New() *Instance {
+	return &Instance{}
+}
+
+// Connect open mysql connection
+func (instance *Instance) Connect(dsn string, config *gorm.Config) (err error) {
+	instance.DB, err = gorm.Open(mysql.Open(dsn), config)
+	return
 }
 
 // RegisterResolverConfig registers resolver configuration for current connection

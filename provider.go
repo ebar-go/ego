@@ -6,6 +6,8 @@ import (
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/curl"
 	"github.com/ebar-go/ego/component/event"
+	"github.com/ebar-go/ego/component/gorm"
+	"github.com/ebar-go/ego/component/jwt"
 	"github.com/ebar-go/ego/component/logger"
 	"github.com/ebar-go/ego/component/mongo"
 	"github.com/ebar-go/ego/component/redis"
@@ -26,6 +28,8 @@ type Provider struct {
 	mgo       component.Instance[*mongo.Instance]
 	validator component.Instance[*validator.Instance]
 	tracer    component.Instance[*tracer.Instance]
+	db        component.Instance[*gorm.Instance]
+	jwt       component.Instance[*jwt.Instance]
 }
 
 var providerInstance = struct {
@@ -47,6 +51,8 @@ func provider() *Provider {
 			mgo:       component.NewInstance[*mongo.Instance](name, mongo.New()),
 			validator: component.NewInstance[*validator.Instance](name, validator.New()),
 			tracer:    component.NewInstance[*tracer.Instance](name, tracer.New()),
+			db:        component.NewInstance[*gorm.Instance](name, gorm.New()),
+			jwt:       component.NewInstance[*jwt.Instance](name, jwt.New()),
 		}
 	})
 	return providerInstance.instance
@@ -101,4 +107,12 @@ func Validator() *validator.Instance {
 
 func Tracer() *tracer.Instance {
 	return provider().tracer.Delegate()
+}
+
+func Database() *gorm.Instance {
+	return provider().db.Delegate()
+}
+
+func JWT() *jwt.Instance {
+	return provider().jwt.Delegate()
 }
