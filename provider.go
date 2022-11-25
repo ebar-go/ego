@@ -6,6 +6,7 @@ import (
 	"github.com/ebar-go/ego/component/config"
 	"github.com/ebar-go/ego/component/curl"
 	"github.com/ebar-go/ego/component/event"
+	"github.com/ebar-go/ego/component/redis"
 	"github.com/robfig/cron"
 	"sync"
 )
@@ -16,6 +17,7 @@ type Provider struct {
 	cron  component.Instance[*cron.Cron]
 	curl  component.Instance[*curl.Curl]
 	event component.Instance[*event.Dispatcher]
+	redis component.Instance[*redis.Instance]
 }
 
 var providerInstance = struct {
@@ -32,6 +34,7 @@ func provider() *Provider {
 			cron:  component.NewInstance[*cron.Cron](name, cron.New()),
 			curl:  component.NewInstance[*curl.Curl](name, curl.New()),
 			event: component.NewInstance[*event.Dispatcher](name, event.New()),
+			redis: component.NewInstance[*redis.Instance](name, redis.New()),
 		}
 	})
 	return providerInstance.instance
@@ -66,4 +69,8 @@ func ListenEvent[T any](eventName string, handler func(param T)) {
 		}
 		handler(data)
 	})
+}
+
+func Redis() *redis.Instance {
+	return provider().redis.Delegate()
 }
