@@ -2,7 +2,7 @@ package http
 
 import (
 	"context"
-	"github.com/ebar-go/ego/component"
+	"github.com/ebar-go/ego/component/logger"
 	"github.com/ebar-go/ego/protocol/schema"
 	"github.com/ebar-go/ego/utils/jaeger"
 	"github.com/ebar-go/ego/utils/runtime"
@@ -29,7 +29,7 @@ type Server struct {
 
 // Run starts the server.
 func (server *Server) Run(stop <-chan struct{}) {
-	component.Provider().Logger().Infof("listening and serving HTTP on %s", server.schema.Bind)
+	logger.Infof("listening and serving HTTP on %s", server.schema.Bind)
 
 	for _, hook := range server.startHooks {
 		hook()
@@ -37,7 +37,7 @@ func (server *Server) Run(stop <-chan struct{}) {
 
 	go func() {
 		if err := server.getInstance().ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			component.Provider().Logger().Fatalf("unable to serve: %v", err)
+			logger.Fatalf("unable to serve: %v", err)
 		}
 	}()
 
@@ -159,9 +159,9 @@ func (server *Server) shutdown() {
 
 	// stop the server gracefully
 	if err := server.getInstance().Shutdown(ctx); err != nil {
-		component.Provider().Logger().Fatalf("Server shutdown failed: %v", err)
+		logger.Fatalf("Server shutdown failed: %v", err)
 	}
-	component.Provider().Logger().Info("Server showdown success")
+	logger.Info("Server showdown success")
 }
 
 // NewServer returns a new instance of the Server.

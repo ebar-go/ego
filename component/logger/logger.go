@@ -3,14 +3,28 @@ package logger
 import (
 	"fmt"
 	"log"
+	"sync"
 )
 
-type Interface interface {
+var (
+	Info   = Default().Info
+	Infof  = Default().Infof
+	Error  = Default().Error
+	Errorf = Default().Errorf
+	Debug  = Default().Debug
+	Debugf = Default().Debugf
+	Warn   = Default().Warn
+	Warnf  = Default().Warnf
+	Fatal  = Default().Fatal
+	Fatalf = Default().Fatalf
+)
+
+type Printer interface {
 	Println(v ...any)
 }
 
 type Logger struct {
-	instance Interface
+	instance Printer
 }
 
 type LogLevel string
@@ -46,6 +60,18 @@ func New() *Logger {
 	return NewWith(log.Default())
 }
 
-func NewWith(delegate Interface) *Logger {
+func NewWith(delegate Printer) *Logger {
 	return &Logger{instance: delegate}
+}
+
+var loggerInstance = struct {
+	once     sync.Once
+	instance *Logger
+}{}
+
+func Default() *Logger {
+	loggerInstance.once.Do(func() {
+		loggerInstance.instance = New()
+	})
+	return loggerInstance.instance
 }
