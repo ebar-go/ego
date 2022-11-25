@@ -2,7 +2,6 @@ package component
 
 import (
 	"errors"
-	"github.com/dgrijalva/jwt-go"
 )
 
 var (

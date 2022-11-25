@@ -9,6 +9,7 @@ import (
 	"github.com/ebar-go/ego/component/logger"
 	"github.com/ebar-go/ego/component/mongo"
 	"github.com/ebar-go/ego/component/redis"
+	"github.com/ebar-go/ego/component/tracer"
 	"github.com/ebar-go/ego/component/validator"
 	"github.com/robfig/cron"
 	"sync"
@@ -24,6 +25,7 @@ type Provider struct {
 	logger    component.Instance[*logger.Logger]
 	mgo       component.Instance[*mongo.Instance]
 	validator component.Instance[*validator.Instance]
+	tracer    component.Instance[*tracer.Instance]
 }
 
 var providerInstance = struct {
@@ -44,6 +46,7 @@ func provider() *Provider {
 			logger:    component.NewInstance[*logger.Logger](name, logger.New()),
 			mgo:       component.NewInstance[*mongo.Instance](name, mongo.New()),
 			validator: component.NewInstance[*validator.Instance](name, validator.New()),
+			tracer:    component.NewInstance[*tracer.Instance](name, tracer.New()),
 		}
 	})
 	return providerInstance.instance
@@ -94,4 +97,8 @@ func Mongo() *mongo.Instance {
 
 func Validator() *validator.Instance {
 	return provider().validator.Delegate()
+}
+
+func Tracer() *tracer.Instance {
+	return provider().tracer.Delegate()
 }

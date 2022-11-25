@@ -1,4 +1,4 @@
-package component
+package tracer
 
 import (
 	"fmt"
@@ -7,24 +7,23 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// Tracer generate the uuid for per goroutine, use to mark user requests.
-type Tracer struct {
-	Named
+// Instance generate the uuid for per goroutine, use to mark user requests.
+type Instance struct {
 	collections *structure.ConcurrentMap[string, string]
 }
 
 // key use goroutine id to generate unique identifier
-func (tracer *Tracer) key() string {
+func (tracer *Instance) key() string {
 	return fmt.Sprintf("g%d", goid.Get())
 }
 
 // Set sets the uuid for this goroutine
-func (tracer *Tracer) Set(id string) {
+func (tracer *Instance) Set(id string) {
 	tracer.collections.Set(tracer.key(), id)
 }
 
 // Get returns the uuid for this goroutine, it will generate a unique string if it doesn't exist'
-func (tracer *Tracer) Get() (id string) {
+func (tracer *Instance) Get() (id string) {
 	id, ok := tracer.collections.Get(tracer.key())
 	if ok {
 		return id
@@ -35,10 +34,10 @@ func (tracer *Tracer) Get() (id string) {
 }
 
 // Release remove the uuid of this goroutine
-func (tracer *Tracer) Release() {
+func (tracer *Instance) Release() {
 	tracer.collections.Del(tracer.key())
 }
 
-func NewTracer() *Tracer {
-	return &Tracer{Named: componentTracer, collections: structure.NewConcurrentMap[string, string]()}
+func New() *Instance {
+	return &Instance{collections: structure.NewConcurrentMap[string, string]()}
 }
