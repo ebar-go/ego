@@ -7,10 +7,11 @@ import (
 )
 
 func BenchmarkByteSlice(b *testing.B) {
+	size := 1024
 	b.Run("Run.N", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			bs := GetByte(1024)
+			bs := GetByte(size)
 			PutByte(bs)
 		}
 	})
@@ -18,10 +19,16 @@ func BenchmarkByteSlice(b *testing.B) {
 		b.ReportAllocs()
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				bs := GetByte(1024)
+				bs := GetByte(size)
 				PutByte(bs)
 			}
 		})
+	})
+	b.Run("Run.MakeSlice", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			_ = make([]byte, size)
+		}
 	})
 
 }
