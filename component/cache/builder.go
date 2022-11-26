@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+var (
+	Default = defaultBuilder().Default
+	Build   = defaultBuilder().Build
+)
+
 type options struct {
 	defaultExpiration, cleanupInterval time.Duration
 }
@@ -49,4 +54,16 @@ func (c *Builder) Build(opts ...Option) *cache.Cache {
 
 func New() *Builder {
 	return &Builder{options: options{defaultExpiration: time.Minute * 5, cleanupInterval: time.Minute * 10}}
+}
+
+var builderInstance = struct {
+	once    sync.Once
+	builder *Builder
+}{}
+
+func defaultBuilder() *Builder {
+	builderInstance.once.Do(func() {
+		builderInstance.builder = New()
+	})
+	return builderInstance.builder
 }
