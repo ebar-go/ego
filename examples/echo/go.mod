@@ -9,7 +9,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/ebar-go/ego v1.1.5 // indirect
+	github.com/ebar-go/ego v1.1.7 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gin-contrib/pprof v1.4.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -86,5 +86,3 @@ require (
 	gorm.io/gorm v1.24.1 // indirect
 	gorm.io/plugin/dbresolver v1.3.0 // indirect
 )
-
-replace github.com/ebar-go/ego => D:\Workspace\go\src\github.com\ebar-go\ego

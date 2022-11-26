@@ -3,7 +3,7 @@ module github.com/ebar-go/ego/examples/grpc
 go 1.19
 
 require (
-	github.com/ebar-go/ego v1.1.5
+	github.com/ebar-go/ego v1.1.7
 	github.com/gin-gonic/gin v1.8.1
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
@@ -89,5 +89,3 @@ require (
 	gorm.io/gorm v1.24.1 // indirect
 	gorm.io/plugin/dbresolver v1.3.0 // indirect
 )
-
-replace github.com/ebar-go/ego => D:\Workspace\go\src\github.com\ebar-go\ego
