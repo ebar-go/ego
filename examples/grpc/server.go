@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"github.com/ebar-go/ego"
-	"github.com/ebar-go/ego/component/logger"
+	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/examples/grpc/pb"
 	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-gonic/gin"
@@ -27,12 +27,12 @@ func httpServer() runtime.Runnable {
 			name := ctx.Query("name")
 			cc, err := grpc.Dial("127.0.0.1:8081", grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
-				logger.Errorf("NewClient: %v", err)
+				component.Logger().Errorf("NewClient: %v", err)
 				return
 			}
 			resp, err := pb.NewUserServiceClient(cc).Greet(ctx, &pb.GreetRequest{Name: name})
 			if err != nil {
-				logger.Errorf("Greet: %v", err)
+				component.Logger().Errorf("Greet: %v", err)
 				return
 			}
 			ctx.String(http.StatusOK, resp.Name)

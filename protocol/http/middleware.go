@@ -2,8 +2,8 @@ package http
 
 import (
 	"fmt"
-	"github.com/ebar-go/ego/component/logger"
-	"github.com/ebar-go/ego/component/tracer"
+	"github.com/ebar-go/ego/component"
+	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-gonic/gin"
 	"strings"
 	"time"
@@ -33,9 +33,9 @@ func Trace(traceHeader string) gin.HandlerFunc {
 		// 从头部信息获取
 		traceId := strings.TrimSpace(c.GetHeader(traceHeader))
 		if traceId != "" {
-			tracer.Set(traceId)
+			component.Tracer().Set(traceId)
 		}
-		defer tracer.Release()
+		defer component.Tracer().Release()
 
 		c.Next()
 	}
@@ -53,18 +53,13 @@ func RequestLog() gin.HandlerFunc {
 		items["refer_service_name"] = ctx.Request.Referer()
 		items["refer_request_host"] = ctx.ClientIP()
 		items["time_used"] = fmt.Sprintf("%v", time.Since(t))
-		logger.Infof("request log: %v", items)
+		component.Logger().Infof("request log: %v", items)
 	}
 }
 
 func Recover() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		defer func() {
-			if r := recover(); r != nil {
-				logger.Errorf("goroutine crash: %v", r)
-			}
-			ctx.Abort()
-		}()
+		defer runtime.HandleCrash()
 		ctx.Next()
 	}
 }

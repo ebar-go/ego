@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"github.com/ebar-go/ego/component/logger"
+	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/protocol/schema"
 	"github.com/ebar-go/ego/utils/runtime"
 	"google.golang.org/grpc"
@@ -44,16 +44,16 @@ func (server *Server) RegisterService(register func(s *grpc.Server)) *Server {
 
 // Run start grpc listener
 func (server *Server) Run(stop <-chan struct{}) {
-	logger.Infof("listening and serving GRPC on %s", server.schema.Bind)
+	component.Logger().Infof("listening and serving GRPC on %s", server.schema.Bind)
 
 	lis, err := net.Listen("tcp", server.schema.Bind)
 	if err != nil {
-		logger.Fatalf("failed to listen rpc: %v", err)
+		component.Logger().Fatalf("failed to listen rpc: %v", err)
 	}
 
 	go func() {
 		if err := server.getInstance().Serve(lis); err != nil {
-			logger.Fatalf("failed to serve: %v", err)
+			component.Logger().Fatalf("failed to serve: %v", err)
 		}
 	}()
 
@@ -78,7 +78,7 @@ func (server *Server) getInstance() *grpc.Server {
 func (server *Server) shutdown() {
 	// stop grpc server gracefully
 	server.instance.GracefulStop()
-	logger.Info("Server shutdown success")
+	component.Logger().Info("Server shutdown success")
 }
 
 // NewServer returns a new instance of the Server.
