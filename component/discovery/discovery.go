@@ -1,7 +1,5 @@
 package discovery
 
-import "sync"
-
 const (
 	ETCDSchema = "etcd"
 )
@@ -19,19 +17,4 @@ type Instance interface {
 
 	Resolver(serviceName string)
 	BuildTarget(serviceName string) string
-}
-
-var discoveryInstance = struct {
-	once     sync.Once
-	instance Instance
-}{}
-
-func SetInstance(instance Instance) {
-	discoveryInstance.once.Do(func() {
-		discoveryInstance.instance = instance
-	})
-}
-
-func Get() Instance {
-	return discoveryInstance.instance
 }

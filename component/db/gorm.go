@@ -1,7 +1,6 @@
-package gorm
+package db
 
 import (
-	"database/sql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
@@ -23,7 +22,8 @@ func (instance *Instance) Connect(dsn string, config *gorm.Config) (err error) {
 }
 
 // RegisterResolverConfig registers resolver configuration for current connection
-func RegisterResolverConfig(db *gorm.DB, config dbresolver.Config, tables ...interface{}) error {
+func (instance *Instance) RegisterResolverConfig(config dbresolver.Config, tables ...interface{}) error {
+	db := instance.DB
 	resolver := &dbresolver.DBResolver{}
 	// get resolver plugin from config
 	plugin, ok := db.Config.Plugins[resolver.Name()]
@@ -39,7 +39,11 @@ func RegisterResolverConfig(db *gorm.DB, config dbresolver.Config, tables ...int
 }
 
 // EnableConnectionPool enables connection pool
-func EnableConnectionPool(db *sql.DB, maxIdleConns int, maxOpenConns int, connMaxLifetime time.Duration) {
+func (instance *Instance) EnableConnectionPool(maxIdleConns int, maxOpenConns int, connMaxLifetime time.Duration) error {
+	db, err := instance.DB.DB()
+	if err != nil {
+		return err
+	}
 	// SetMaxIdleConns 设置空闲连接池中连接的最大数量
 	db.SetMaxIdleConns(maxIdleConns)
 
@@ -48,4 +52,5 @@ func EnableConnectionPool(db *sql.DB, maxIdleConns int, maxOpenConns int, connMa
 
 	// SetConnMaxLifetime 设置了连接可复用的最大时间。
 	db.SetConnMaxLifetime(connMaxLifetime)
+	return nil
 }

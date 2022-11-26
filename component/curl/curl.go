@@ -20,15 +20,15 @@ var (
 	EmptyResponse = errors.New("empty response")
 )
 
-// Curl simple wrapper of http.Client
-type Curl struct {
+// Instance simple wrapper of http.Client
+type Instance struct {
 	httpClient   *http.Client
 	bufferLength int
 	tracer       *jaeger.Tracer
 }
 
 // Get send get request
-func (c *Curl) Get(ctx context.Context, url string) (serializer.Serializer, error) {
+func (c *Instance) Get(ctx context.Context, url string) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (c *Curl) Get(ctx context.Context, url string) (serializer.Serializer, erro
 }
 
 // Post send post request
-func (c *Curl) Post(ctx context.Context, url string, body io.Reader) (serializer.Serializer, error) {
+func (c *Instance) Post(ctx context.Context, url string, body io.Reader) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (c *Curl) Post(ctx context.Context, url string, body io.Reader) (serializer
 }
 
 // Put send put request
-func (c *Curl) Put(ctx context.Context, url string, body io.Reader) (serializer.Serializer, error) {
+func (c *Instance) Put(ctx context.Context, url string, body io.Reader) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodPut, url, body)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (c *Curl) Put(ctx context.Context, url string, body io.Reader) (serializer.
 }
 
 // Delete send delete request
-func (c *Curl) Delete(ctx context.Context, url string, body io.Reader) (serializer.Serializer, error) {
+func (c *Instance) Delete(ctx context.Context, url string, body io.Reader) (serializer.Serializer, error) {
 	request, err := http.NewRequest(http.MethodDelete, url, body)
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (c *Curl) Delete(ctx context.Context, url string, body io.Reader) (serializ
 }
 
 // PostFile send post request with file
-func (c *Curl) PostFile(ctx context.Context, url string, files map[string]string, params map[string]string) (serializer.Serializer, error) {
+func (c *Instance) PostFile(ctx context.Context, url string, files map[string]string, params map[string]string) (serializer.Serializer, error) {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	// 添加form参数
@@ -108,7 +108,7 @@ func (c *Curl) PostFile(ctx context.Context, url string, files map[string]string
 }
 
 // Send return Response by http.Request
-func (c *Curl) Send(ctx context.Context, request *http.Request) (serializer.Serializer, error) {
+func (c *Instance) Send(ctx context.Context, request *http.Request) (serializer.Serializer, error) {
 	if c.tracer != nil {
 		ht := c.tracer.NewHttpRequestWithContext(ctx, request)
 		defer ht.Finish()
@@ -129,7 +129,7 @@ func (c *Curl) Send(ctx context.Context, request *http.Request) (serializer.Seri
 }
 
 // ReadResponse reads body from the *http.Response
-func (c *Curl) ReadResponse(resp *http.Response) (serializer.Serializer, error) {
+func (c *Instance) ReadResponse(resp *http.Response) (serializer.Serializer, error) {
 	if resp == nil {
 		return nil, EmptyResponse
 	}
@@ -153,18 +153,18 @@ func (c *Curl) ReadResponse(resp *http.Response) (serializer.Serializer, error) 
 }
 
 // WithHttpClient sets the http client
-func (c *Curl) WithHttpClient(httpClient *http.Client) *Curl {
+func (c *Instance) WithHttpClient(httpClient *http.Client) *Instance {
 	c.httpClient = httpClient
 	return c
 }
 
-func (c *Curl) WithTracer(tracer *jaeger.Tracer) *Curl {
+func (c *Instance) WithTracer(tracer *jaeger.Tracer) *Instance {
 	c.tracer = tracer
 	return c
 }
 
-func New() *Curl {
-	return &Curl{
+func New() *Instance {
+	return &Instance{
 		bufferLength: 512,
 		httpClient: &http.Client{
 			Transport: &http.Transport{ // 配置连接池

@@ -1,13 +1,15 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
-type Config struct {
+type Instance struct {
 	*viper.Viper
 }
 
 // LoadFile loads the configuration file specified.
-func (c *Config) LoadFile(paths ...string) error {
+func (c *Instance) LoadFile(paths ...string) error {
 	for _, p := range paths {
 		c.SetConfigFile(p)
 		if err := c.MergeInConfig(); err != nil {
@@ -17,15 +19,6 @@ func (c *Config) LoadFile(paths ...string) error {
 	return nil
 }
 
-func (c *Config) GetString(key string) string {
-	item := c.Get(key)
-	if item == nil {
-		return ""
-	}
-	s, _ := item.(string)
-	return s
-}
-
-func New() *Config {
-	return &Config{Viper: viper.New()}
+func New() *Instance {
+	return &Instance{Viper: viper.New()}
 }

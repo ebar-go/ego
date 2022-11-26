@@ -5,13 +5,6 @@ import (
 	"github.com/ebar-go/ego/utils/structure"
 	"github.com/petermattis/goid"
 	uuid "github.com/satori/go.uuid"
-	"sync"
-)
-
-var (
-	Set     = tracer().Set
-	Get     = tracer().Get
-	Release = tracer().Release
 )
 
 // Instance generate the uuid for per goroutine, use to mark user requests.
@@ -47,16 +40,4 @@ func (tracer *Instance) Release() {
 
 func New() *Instance {
 	return &Instance{collections: structure.NewConcurrentMap[string, string]()}
-}
-
-var tracerSingleton = struct {
-	once     sync.Once
-	instance *Instance
-}{}
-
-func tracer() *Instance {
-	tracerSingleton.once.Do(func() {
-		tracerSingleton.instance = New()
-	})
-	return tracerSingleton.instance
 }
