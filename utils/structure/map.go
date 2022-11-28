@@ -48,6 +48,14 @@ func (container *ConcurrentMap[Key, T]) Del(key Key) {
 	container.mu.Unlock()
 }
 
+func (container *ConcurrentMap[Key, T]) Iterator(fn func(key Key, val T)) {
+	container.mu.RLock()
+	for key, val := range container.items {
+		fn(key, val)
+	}
+	container.mu.RUnlock()
+}
+
 func NewConcurrentMap[Key KeyType, T any]() *ConcurrentMap[Key, T] {
 	return &ConcurrentMap[Key, T]{items: make(map[Key]T, 0)}
 }
