@@ -21,23 +21,26 @@ func main() {
 }
 
 func httpServer() runtime.Runnable {
-	return ego.NewHTTPServer(":8080").EnableAvailableHealthCheck().
-		WithDefaultRequestLogMiddleware().RegisterRouteLoader(func(router *gin.Engine) {
-		router.GET("greeter", func(ctx *gin.Context) {
-			name := ctx.Query("name")
-			cc, err := grpc.Dial("127.0.0.1:8081", grpc.WithTransportCredentials(insecure.NewCredentials()))
-			if err != nil {
-				component.Logger().Errorf("NewClient: %v", err)
-				return
-			}
-			resp, err := pb.NewUserServiceClient(cc).Greet(ctx, &pb.GreetRequest{Name: name})
-			if err != nil {
-				component.Logger().Errorf("Greet: %v", err)
-				return
-			}
-			ctx.String(http.StatusOK, resp.Name)
+	return ego.NewHTTPServer(":8080").
+		EnableAvailableHealthCheck().
+		EnablePprofHandler().
+		WithDefaultRequestLogMiddleware().
+		RegisterRouteLoader(func(router *gin.Engine) {
+			router.GET("greeter", func(ctx *gin.Context) {
+				name := ctx.Query("name")
+				cc, err := grpc.Dial("127.0.0.1:8081", grpc.WithTransportCredentials(insecure.NewCredentials()))
+				if err != nil {
+					component.Logger().Errorf("NewClient: %v", err)
+					return
+				}
+				resp, err := pb.NewUserServiceClient(cc).Greet(ctx, &pb.GreetRequest{Name: name})
+				if err != nil {
+					component.Logger().Errorf("Greet: %v", err)
+					return
+				}
+				ctx.String(http.StatusOK, resp.Name)
+			})
 		})
-	})
 }
 
 type UserService struct {

@@ -16,10 +16,13 @@ func main() {
 }
 
 func httpServer() runtime.Runnable {
-	return ego.NewHTTPServer(":8080").EnableAvailableHealthCheck().
-		WithDefaultRequestLogMiddleware().RegisterRouteLoader(func(router *gin.Engine) {
-		router.GET("echo", func(ctx *gin.Context) {
-			ctx.String(http.StatusOK, "Hello world")
+	return ego.NewHTTPServer(":8090").
+		EnableAvailableHealthCheck().
+		EnablePprofHandler().
+		WithDefaultRequestLogMiddleware().
+		RegisterRouteLoader(func(router *gin.Engine) {
+			router.GET("echo", func(ctx *gin.Context) {
+				ctx.String(http.StatusOK, "Hello world")
+			})
 		})
-	})
 }
