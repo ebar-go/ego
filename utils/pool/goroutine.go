@@ -6,11 +6,6 @@ import (
 	"time"
 )
 
-type WorkerPool interface {
-	Schedule(task func())
-	Stop()
-}
-
 type GoroutinePool struct {
 	options Options
 	// capacity of the pool.
@@ -81,8 +76,9 @@ func (p *GoroutinePool) monitor() {
 func (p *GoroutinePool) grow(n int) {
 	for i := 0; i < n; i++ {
 		// create instance of Worker
-		w := NewWorker(p, 10)
-		go w.run()
+		w := NewWorker(10, func() {
+			atomic.AddInt32(&p.running, -1)
+		}, p.releaseWorker)
 
 		// push into the slice
 		p.workers = append(p.workers, w)
@@ -100,21 +96,21 @@ func (p *GoroutinePool) Stop() {
 		close(p.done)
 		p.lock.Lock()
 		for _, worker := range p.workers {
-			worker.stop()
+			worker.Stop()
 		}
 		p.lock.Unlock()
 	})
 }
 
 // Schedule 执行任务
-func (p *GoroutinePool) Schedule(task func()) {
+func (p *GoroutinePool) Schedule(task func(), block bool) {
 	// 判断pool是否已关闭
 	if atomic.LoadInt32(&p.stopped) == 1 {
 		return
 	}
 
 	// 调度一个worker来执行任务
-	p.acquireWorker().submit(task)
+	p.acquireWorker().Submit(task, block)
 }
 
 // acquireWorker 获取一个worker实例
@@ -176,7 +172,7 @@ func (p *GoroutinePool) scaleDown() {
 
 	num := (available - p.options.Idle) / 4
 	for i := 0; i < num; i++ {
-		p.workers[i].stop()
+		p.workers[i].Stop()
 	}
 	p.workers = p.workers[num:]
 }

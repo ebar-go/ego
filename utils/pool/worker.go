@@ -2,49 +2,62 @@ package pool
 
 import (
 	"sync"
-	"sync/atomic"
 )
 
 type Worker struct {
 	task chan f
-	pool *GoroutinePool
 	once sync.Once
 	done chan struct{}
 }
 
-func NewWorker(pool *GoroutinePool, size int) *Worker {
-	return &Worker{
-		pool: pool,
-		task: make(chan f, size),
+func NewWorker(cap int, beforeCloseCallback func(), afterCallback func(w *Worker)) *Worker {
+	w := &Worker{
+		task: make(chan f, cap),
 		done: make(chan struct{}),
+	}
+	go w.run(beforeCloseCallback, afterCallback)
+	return w
+}
+
+func (w *Worker) run(beforeCloseCallback func(), afterCallback func(w *Worker)) {
+	var (
+		fn     f
+		opened bool
+	)
+	for {
+		select {
+		case <-w.done:
+			beforeCloseCallback()
+			return
+		case fn, opened = <-w.task:
+			if !opened {
+				return
+			}
+			fn()
+			//回收复用
+			afterCallback(w)
+		}
 	}
 }
 
-func (w *Worker) run() {
-	func() {
-		for {
-			select {
-			case <-w.done:
-				atomic.AddInt32(&w.pool.running, -1)
-				return
-			case fn := <-w.task:
-				fn()
-				//回收复用
-				w.pool.releaseWorker(w)
-			}
-		}
-	}()
-}
-
 // stop this worker.
-func (w *Worker) stop() {
+func (w *Worker) Stop() {
 	w.once.Do(func() {
 		close(w.done)
+		close(w.task)
 	})
 }
 
-// submit sends a task to this worker.
-func (w *Worker) submit(task f) {
+// Submit sends a task to this worker.
+func (w *Worker) Submit(task f, block bool) {
+	if block {
+		select {
+		case <-w.done:
+		case w.task <- task:
+		}
+		return
+	}
+
 	select {
 	case w.task <- task:
 	default:

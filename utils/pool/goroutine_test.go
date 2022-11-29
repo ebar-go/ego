@@ -12,7 +12,7 @@ func TestGoroutine(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		pool.Schedule(func() {
 			log.Println("test")
-		})
+		}, true)
 	}
 
 	go func() {
@@ -20,7 +20,7 @@ func TestGoroutine(t *testing.T) {
 			time.Sleep(time.Second * 1)
 			pool.Schedule(func() {
 				log.Println("test")
-			})
+			}, true)
 		}
 	}()
 
