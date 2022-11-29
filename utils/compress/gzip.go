@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/ebar-go/ego/utils/runtime"
 	"io"
-	"sync"
 )
 
 type GzipCompressor struct {
@@ -38,14 +37,6 @@ func (c *GzipCompressor) Decompress(dst io.Writer, src []byte) (err error) {
 	return
 }
 
-var gzipCompressorInstance struct {
-	once     sync.Once
-	instance *GzipCompressor
-}
-
-func GzipInstance() *GzipCompressor {
-	gzipCompressorInstance.once.Do(func() {
-		gzipCompressorInstance.instance = &GzipCompressor{provider: CurrentCompressorProvider()}
-	})
-	return gzipCompressorInstance.instance
+func New() *GzipCompressor {
+	return &GzipCompressor{provider: NewSyncPoolCompressors()}
 }

@@ -6,11 +6,6 @@ import (
 	"testing"
 )
 
-func TestDefault(t *testing.T) {
-	c := Default()
-	assert.Equal(t, GzipInstance(), c)
-}
-
 func TestCompress(t *testing.T) {
 	source := []byte("hello,world")
 	input := bytes.NewBuffer([]byte{})

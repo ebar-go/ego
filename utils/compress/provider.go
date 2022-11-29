@@ -21,27 +21,12 @@ type CompressorProvider interface {
 	ReleaseGzipReader(r *gzip.Reader)
 }
 
-// DefaultCompressorProvider is the actual provider of compressors (zlib or gzip).
-var currentCompressorProviderInstance struct {
-	once     sync.Once
-	instance CompressorProvider
-}
-
-// CurrentCompressorProvider returns the current CompressorProvider.
-// It is initialized using a SyncPoolCompressors.
-func CurrentCompressorProvider() CompressorProvider {
-	currentCompressorProviderInstance.once.Do(func() {
-		currentCompressorProviderInstance.instance = NewSyncPoolCompressors()
-	})
-	return currentCompressorProviderInstance.instance
-}
-
 type SyncPoolCompressors struct {
 	writerPool *sync.Pool
 	readerPool *sync.Pool
 }
 
-func NewSyncPoolCompressors() *SyncPoolCompressors {
+func NewSyncPoolCompressors() CompressorProvider {
 	return &SyncPoolCompressors{
 		readerPool: &sync.Pool{
 			New: func() any {

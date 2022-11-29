@@ -1,6 +1,7 @@
 package compress
 
 import (
+	"github.com/ebar-go/ego/utils/structure"
 	"io"
 )
 
@@ -12,7 +13,7 @@ type Compressor interface {
 
 var (
 	// Default alias GzipInstance
-	Default    = GzipInstance
-	Compress   = Default().Compress
-	Decompress = Default().Decompress
+	defaultInstance = structure.NewSingleton(New).Get()
+	Compress        = defaultInstance.Compress
+	Decompress      = defaultInstance.Decompress
 )
