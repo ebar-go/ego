@@ -56,6 +56,9 @@ func (container *ConcurrentMap[Key, T]) Iterator(fn func(key Key, val T)) {
 	container.mu.RUnlock()
 }
 
+func (container *ConcurrentMap[Key, T]) Len() int {
+	return len(container.items)
+}
 func NewConcurrentMap[Key KeyType, T any]() *ConcurrentMap[Key, T] {
 	return &ConcurrentMap[Key, T]{items: make(map[Key]T, 0)}
 }
