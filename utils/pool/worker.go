@@ -21,7 +21,7 @@ func NewWorker(pool *GoroutinePool, size int) *Worker {
 }
 
 func (w *Worker) run() {
-	go func() {
+	func() {
 		for {
 			select {
 			case <-w.done:

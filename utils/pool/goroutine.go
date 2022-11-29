@@ -1,7 +1,6 @@
 package pool
 
 import (
-	"log"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -55,30 +54,27 @@ func NewGoroutinePool(opts ...Option) *GoroutinePool {
 		capacity:   defaultOptions.Max,
 		running:    0,
 		freeSignal: make(chan struct{}, defaultOptions.Max),
-		workers:    make([]*Worker, 0, 20),
+		workers:    make([]*Worker, 0, 1024),
 		done:       make(chan struct{}),
 	}
 
 	// 提前准备空闲协程池
 	pool.grow(defaultOptions.Idle)
-	pool.monitor()
+	go pool.monitor()
 
 	return pool
 }
 
-func (pool *GoroutinePool) monitor() {
-	go func() {
-		for {
-			select {
-			case <-pool.done:
-				return
-			default:
-				// 定时缩容
-				pool.scaleDown()
-			}
-
+func (p *GoroutinePool) monitor() {
+	for {
+		select {
+		case <-p.done:
+			return
+		default:
+			// 定时缩容
+			p.scaleDown()
 		}
-	}()
+	}
 }
 
 // grow 自动扩容worker数量
@@ -86,7 +82,7 @@ func (p *GoroutinePool) grow(n int) {
 	for i := 0; i < n; i++ {
 		// create instance of Worker
 		w := NewWorker(p, 10)
-		w.run()
+		go w.run()
 
 		// push into the slice
 		p.workers = append(p.workers, w)
@@ -179,7 +175,6 @@ func (p *GoroutinePool) scaleDown() {
 	}
 
 	num := (available - p.options.Idle) / 4
-	log.Println("scale down: ", num)
 	for i := 0; i < num; i++ {
 		p.workers[i].stop()
 	}
