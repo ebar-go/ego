@@ -10,12 +10,19 @@ import (
 	"sync"
 )
 
+type GRPCServerInterface interface {
+	grpc.ServiceRegistrar
+
+	GracefulStop()
+	Serve(lis net.Listener) error
+}
+
 // Server represents a gRPC server.
 type Server struct {
 	schema schema.Schema
 
 	initOnce  sync.Once
-	instance  *grpc.Server
+	instance  GRPCServerInterface
 	closeOnce sync.Once
 	options   []grpc.ServerOption
 }
@@ -37,7 +44,7 @@ func (server *Server) WithChainUnaryInterceptor(interceptors ...grpc.UnaryServer
 }
 
 // RegisterService registers grpc service
-func (server *Server) RegisterService(register func(s *grpc.Server)) *Server {
+func (server *Server) RegisterService(register func(s grpc.ServiceRegistrar)) *Server {
 	register(server.getInstance())
 	return server
 }
@@ -68,7 +75,7 @@ func (server *Server) Shutdown() {
 // ========================= private methods =========================
 
 // getInstance returns the singleton instance of the grpc server
-func (server *Server) getInstance() *grpc.Server {
+func (server *Server) getInstance() GRPCServerInterface {
 	server.initOnce.Do(func() {
 		server.instance = grpc.NewServer(server.options...)
 	})
