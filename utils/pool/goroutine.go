@@ -176,3 +176,76 @@ func (p *GoroutinePool) scaleDown() {
 	}
 	p.workers = p.workers[num:]
 }
+
+type GoPool interface {
+	// Schedule 调度worker执行任务
+	Schedule(task func())
+
+	// Stop 停止工作
+	Stop()
+}
+
+// FixedGoroutinePool 固定数量的协程池
+type FixedGoroutinePool struct {
+	task  chan f
+	block bool // 控制当任务已满时是否阻塞
+
+	once sync.Once
+	done chan struct{}
+}
+
+func (pool *FixedGoroutinePool) Schedule(task func()) {
+	if pool.block {
+		// 阻塞等待任务被执行
+		pool.task <- task
+		return
+	}
+
+	// 非阻塞模式
+	select {
+	case pool.task <- task:
+	default:
+	}
+
+}
+
+func (pool *FixedGoroutinePool) Stop() {
+	pool.once.Do(func() {
+		close(pool.done)
+	})
+}
+
+func (pool *FixedGoroutinePool) run() {
+	for {
+		select {
+		case <-pool.done:
+			return
+		case fn := <-pool.task:
+			fn()
+		}
+	}
+}
+
+type FixedOptions struct {
+	Num   int  // 协程数
+	Block bool // 任务已满时是否需要阻塞
+}
+type fixedOption func(options *FixedOptions)
+
+func NewFixedGoroutinePool(options ...fixedOption) *FixedGoroutinePool {
+	defaultOptions := FixedOptions{Num: 100, Block: true}
+	for _, setter := range options {
+		setter(&defaultOptions)
+	}
+	pool := &FixedGoroutinePool{
+		task:  make(chan f, defaultOptions.Num),
+		block: defaultOptions.Block,
+	}
+
+	// 直接启动固定数量的协程
+	for i := 0; i < defaultOptions.Num; i++ {
+		go pool.run()
+	}
+
+	return pool
+}

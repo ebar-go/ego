@@ -1,6 +1,7 @@
 package pool
 
 import (
+	"fmt"
 	"log"
 	"testing"
 	"time"
@@ -33,4 +34,35 @@ func TestGoroutine(t *testing.T) {
 
 	time.Sleep(time.Minute)
 	pool.Stop()
+}
+
+func TestFixedGoroutinePool_Schedule(t *testing.T) {
+
+	t.Run("block", func(t *testing.T) {
+		pool := NewFixedGoroutinePool()
+		for i := 0; i < 1000; i++ {
+			content := fmt.Sprintf("content:%d", i)
+			pool.Schedule(func() {
+				fmt.Println(content)
+				time.Sleep(time.Millisecond * 10)
+			})
+		}
+
+		time.Sleep(time.Second * 3)
+	})
+
+	t.Run("nonBlock", func(t *testing.T) {
+		pool := NewFixedGoroutinePool(func(options *FixedOptions) {
+			options.Block = false
+		})
+		for i := 0; i < 1000; i++ {
+			content := fmt.Sprintf("content:%d", i)
+			pool.Schedule(func() {
+				fmt.Println(content)
+				time.Sleep(time.Millisecond * 10)
+			})
+		}
+
+		time.Sleep(time.Second * 3)
+	})
 }
