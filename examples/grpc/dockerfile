@@ -1,0 +1,14 @@
+FROM golang:1.19 AS builder
+COPY . /app
+WORKDIR /app
+RUN go env -w GOPROXY=https://goproxy.cn
+RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /bin/app server.go
+
+FROM scratch
+COPY --from=builder /bin/app /bin/app
+
+EXPOSE 8080
+EXPOSE 8081
+
+CMD [ "/bin/app" ]
