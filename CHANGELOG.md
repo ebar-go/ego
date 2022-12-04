@@ -1,5 +1,11 @@
 ## Change Log
 
+#### v1.1.8
+- 增加固定worker数量的协程池
+- 增加ToString方法
+- 增加grpc服务接口
+
+
 #### v1.1.7
 - 设计Aggregator结构
 - 增加对象池设计
