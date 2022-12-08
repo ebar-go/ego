@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
@@ -32,9 +31,10 @@ func NewClient(address string) (conn *grpc.ClientConn, err error) {
 			grpc.WithInitialConnWindowSize(grpcInitialConnWindowSize),
 			grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(grpcMaxCallMsgSize)),
 			grpc.WithDefaultCallOptions(grpc.MaxCallSendMsgSize(grpcMaxSendMsgSize)),
-			grpc.WithConnectParams(grpc.ConnectParams{
-				Backoff: backoff.Config{MaxDelay: grpcBackoffMaxDelay},
-			}),
+			// 这个选项会导致报错
+			//grpc.WithConnectParams(grpc.ConnectParams{
+			//	Backoff: backoff.Config{MaxDelay: grpcBackoffMaxDelay},
+			//}),
 			grpc.WithKeepaliveParams(keepalive.ClientParameters{
 				Time:                grpcKeepAliveTime,
 				Timeout:             grpcKeepAliveTimeout,
