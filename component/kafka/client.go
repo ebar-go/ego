@@ -8,8 +8,8 @@ import (
 )
 
 type Client struct {
-	host     string      // kafka地址,一般是: $host:9092
-	instance *kafka.Conn //
+	host        string // kafka地址,一般是: $host:9092
+	*kafka.Conn        //
 }
 
 // Connect 连接kafka服务
@@ -21,7 +21,7 @@ func (client *Client) Connect(topic string) error {
 
 	_ = conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 
-	client.instance = conn
+	client.Conn = conn
 	return nil
 }
 
