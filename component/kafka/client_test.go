@@ -9,14 +9,14 @@ import (
 )
 
 func TestClient(t *testing.T) {
-	addresses := []string{"172.27.93.155:9093"}
+	addresses := []string{"172.27.90.179:9093", "172.27.90.179:9094", "172.27.90.179:9095"}
 	topic := "test-topic"
 
-	consumer := NewConsumer(addresses, "consumer-a", func(topic string, msg []byte) {
-		log.Printf("[%s]receive: %s\n", topic, string(msg))
-	}, topic)
+	consumer := NewConsumer(addresses, "consumer-a", topic)
 
-	go consumer.Receive()
+	go consumer.Polling(func(topic string, msg []byte) {
+		log.Printf("[%s]receive: %s\n", topic, string(msg))
+	})
 
 	producer := NewProducer(addresses, topic)
 

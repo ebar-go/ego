@@ -10,13 +10,12 @@ import (
 
 type ConsumerCallback func(topic string, val []byte)
 type Consumer struct {
-	reader   *kafka.Reader
-	callback ConsumerCallback
-	done     chan struct{}
-	once     sync.Once
+	reader *kafka.Reader
+	done   chan struct{}
+	once   sync.Once
 }
 
-func NewConsumer(addresses []string, groupId string, callback ConsumerCallback, topics ...string) *Consumer {
+func NewConsumer(addresses []string, groupId string, topics ...string) *Consumer {
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        addresses,
 		GroupID:        groupId,
@@ -26,11 +25,14 @@ func NewConsumer(addresses []string, groupId string, callback ConsumerCallback, 
 		CommitInterval: time.Second * 2,
 	})
 
-	return &Consumer{reader: reader, callback: callback}
+	return &Consumer{reader: reader}
 }
 
-// Receive 接收
-func (consumer *Consumer) Receive() {
+// Polling 接收
+func (consumer *Consumer) Polling(callback ConsumerCallback) {
+	if callback == nil {
+		panic("polling with nil callback")
+	}
 	// 保持监听
 	for {
 		select {
@@ -46,7 +48,7 @@ func (consumer *Consumer) Receive() {
 			return
 		}
 
-		consumer.callback(message.Topic, message.Value)
+		callback(message.Topic, message.Value)
 	}
 
 }
