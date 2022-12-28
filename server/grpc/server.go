@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"github.com/ebar-go/ego/component"
-	"github.com/ebar-go/ego/protocol/schema"
+	"github.com/ebar-go/ego/server/schema"
 	"github.com/ebar-go/ego/utils/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"

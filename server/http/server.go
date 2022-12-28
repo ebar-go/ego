@@ -3,7 +3,7 @@ package http
 import (
 	"context"
 	"github.com/ebar-go/ego/component"
-	"github.com/ebar-go/ego/protocol/schema"
+	"github.com/ebar-go/ego/server/schema"
 	"github.com/ebar-go/ego/utils/jaeger"
 	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-contrib/pprof"

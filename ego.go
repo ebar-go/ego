@@ -1,8 +1,8 @@
 package ego
 
 import (
-	"github.com/ebar-go/ego/protocol/grpc"
-	"github.com/ebar-go/ego/protocol/http"
+	"github.com/ebar-go/ego/server/grpc"
+	"github.com/ebar-go/ego/server/http"
 )
 
 // New creates a new Aggregator instance with default name.
