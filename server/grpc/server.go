@@ -1,10 +1,12 @@
 package grpc
 
 import (
+	"crypto/tls"
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/server/schema"
 	"github.com/ebar-go/ego/utils/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 	"net"
 	"sync"
@@ -41,6 +43,11 @@ func (server *Server) WithKeepAliveParams(kp keepalive.ServerParameters) *Server
 // WithChainUnaryInterceptor sets the interceptors.It must be called before RegisterService.
 func (server *Server) WithChainUnaryInterceptor(interceptors ...grpc.UnaryServerInterceptor) *Server {
 	return server.WithOptions(grpc.ChainUnaryInterceptor())
+}
+
+// WithTLSConfig set the TLS configuration
+func (server *Server) WithTLSConfig(cert *tls.Certificate) *Server {
+	return server.WithOptions(grpc.Creds(credentials.NewServerTLSFromCert(cert)))
 }
 
 // RegisterService registers grpc service
