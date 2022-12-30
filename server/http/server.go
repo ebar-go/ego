@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"crypto/tls"
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/server/schema"
 	"github.com/ebar-go/ego/utils/jaeger"
@@ -25,6 +26,7 @@ type Server struct {
 	router                    *gin.Engine
 	closeOnce                 sync.Once
 	startHooks, shutdownHooks []func()
+	tlsConfig                 *tls.Config
 }
 
 // Run starts the server.
@@ -131,6 +133,12 @@ func (server *Server) EnableTracing(service, address string) *Server {
 	return server
 }
 
+// WithTLSConfig sets the tls configuration
+func (server *Server) WithTLSConfig(cfg *tls.Config) *Server {
+	server.tlsConfig = cfg
+	return server
+}
+
 // Shutdown shuts down the server.
 func (server *Server) Shutdown() {
 	for _, hook := range server.shutdownHooks {
@@ -144,8 +152,9 @@ func (server *Server) Shutdown() {
 func (server *Server) getInstance() *http.Server {
 	server.initOnce.Do(func() {
 		server.instance = &http.Server{
-			Addr:    server.schema.Bind,
-			Handler: server.router,
+			Addr:      server.schema.Bind,
+			Handler:   server.router,
+			TLSConfig: server.tlsConfig,
 		}
 	})
 	return server.instance
