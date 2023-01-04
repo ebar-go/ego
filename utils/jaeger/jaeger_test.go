@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"testing"
+	"time"
 )
 
 // start jaeger
@@ -51,6 +52,14 @@ func TestServer(t *testing.T) {
 		c.JSON(200, gin.H{
 			"msg": "pong",
 		})
+
+		// new span
+		spanCtx, _ := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(c.Request.Header))
+		span := tracer.StartSpan("redis", ext.RPCServerOption(spanCtx))
+		// 模拟业务执行耗时
+		time.Sleep(time.Millisecond * 100)
+		defer span.Finish()
+
 	})
 	_ = r.Run(":8888")
 }
