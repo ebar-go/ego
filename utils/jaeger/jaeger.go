@@ -9,6 +9,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
 	"io"
 	"net/http"
 	"time"
@@ -84,4 +85,17 @@ func NewOpenTracer(serverName, address string) (opentracing.Tracer, io.Closer, e
 
 	reporter := jaeger.NewRemoteReporter(transport)
 	return cfg.NewTracer(config.Reporter(reporter))
+}
+
+func NewHttpTracer(serverName, address string) (opentracing.Tracer, io.Closer, error) {
+	cfg := config.Configuration{
+		ServiceName: serverName,
+		Sampler: &config.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &config.ReporterConfig{LogSpans: true, BufferFlushInterval: time.Second, CollectorEndpoint: address},
+	}
+
+	return cfg.NewTracer(config.Logger(jaegerlog.StdLogger))
 }

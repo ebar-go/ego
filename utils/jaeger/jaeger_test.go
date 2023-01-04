@@ -29,11 +29,11 @@ import (
 //	 jaegertracing/all-in-one:1.12
 const (
 	ginServerName  = "gin-server-demo"
-	jaegerEndpoint = "127.0.0.1:6831"
+	jaegerEndpoint = "http://127.0.0.1:14268/api/traces"
 )
 
 func TestServer(t *testing.T) {
-	tracer, closer, err := NewOpenTracer(ginServerName, jaegerEndpoint)
+	tracer, closer, err := NewHttpTracer(ginServerName, jaegerEndpoint)
 	if err != nil {
 		panic(err)
 	}
@@ -58,16 +58,16 @@ func TestServer(t *testing.T) {
 const (
 	// 服务名 服务唯一标示，服务指标聚合过滤依据。
 	clientServerName = "demo-gin-client"
-	ginEndpoint      = "http://127.0.0.1:8081"
+	ginEndpoint      = "http://127.0.0.1:8888"
 )
 
 func HandlerError(span opentracing.Span, err error) {
 	span.SetTag(string(ext.Error), true)
 	span.LogKV(otlog.Error(err))
-	//log.Fatal("%v", err)
+	log.Printf("%v", err)
 }
 func TestClient(t *testing.T) {
-	tracer, closer, err := NewOpenTracer(clientServerName, jaegerEndpoint)
+	tracer, closer, err := NewHttpTracer(ginServerName, jaegerEndpoint)
 	if err != nil {
 		panic(err)
 	}
@@ -79,7 +79,7 @@ func TestClient(t *testing.T) {
 	// 构建http请求
 	req, err := http.NewRequest(
 		http.MethodGet,
-		fmt.Sprintf("%s/test", ginEndpoint),
+		fmt.Sprintf("%s/ping", ginEndpoint),
 		nil,
 	)
 	if err != nil {
