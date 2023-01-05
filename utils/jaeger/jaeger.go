@@ -23,7 +23,7 @@ type Tracer struct {
 }
 
 func New(service, addr string) (*Tracer, error) {
-	tracer, closer, err := NewOpenTracer(service, addr)
+	tracer, closer, err := NewHttpTracer(service, addr)
 	if err != nil {
 		return nil, err
 	}
