@@ -1,7 +1,6 @@
 package jaeger
 
 import (
-	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing-contrib/go-gin/ginhttp"
@@ -29,8 +28,9 @@ import (
 //	 -p 9411:9411 \
 //	 jaegertracing/all-in-one:1.12
 const (
-	ginServerName  = "gin-server-demo"
-	jaegerEndpoint = "http://127.0.0.1:14268/api/traces"
+	ginServerName = "gin-server-demo"
+	//jaegerEndpoint = "http://127.0.0.1:14268/api/traces"
+	jaegerEndpoint = "http://127.0.0.1:8001/api/v1/namespaces/istio-system/services/jaeger-collector:14268/proxy/api/traces"
 )
 
 func TestServer(t *testing.T) {
@@ -40,25 +40,23 @@ func TestServer(t *testing.T) {
 	}
 	defer closer.Close()
 
-	r := gin.Default()
+	opentracing.SetGlobalTracer(tracer)
 
-	jaegerMiddle := ginhttp.Middleware(tracer, ginhttp.OperationNameFunc(func(r *http.Request) string {
+	r := gin.Default()
+	r.Use(ginhttp.Middleware(tracer, ginhttp.OperationNameFunc(func(r *http.Request) string {
 		return fmt.Sprintf("HTTP %s %s", r.Method, r.URL.String())
-	}))
-	r.Use(ginhttp.Middleware(tracer))
-	r.Use(jaegerMiddle)
+	})))
 
 	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"msg": "pong",
-		})
-
 		// new span
-		spanCtx, _ := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(c.Request.Header))
-		span := tracer.StartSpan("redis", ext.RPCServerOption(spanCtx))
+		span, _ := opentracing.StartSpanFromContext(c.Request.Context(), "start")
 		// 模拟业务执行耗时
 		time.Sleep(time.Millisecond * 100)
 		defer span.Finish()
+
+		c.JSON(200, gin.H{
+			"msg": "pong",
+		})
 
 	})
 	_ = r.Run(":8888")
@@ -76,43 +74,52 @@ func HandlerError(span opentracing.Span, err error) {
 	log.Printf("%v", err)
 }
 func TestClient(t *testing.T) {
-	tracer, closer, err := NewHttpTracer(ginServerName, jaegerEndpoint)
-	if err != nil {
-		panic(err)
-	}
-	defer closer.Close()
-	span := tracer.StartSpan("CallDemoServer")
-	ctx := opentracing.ContextWithSpan(context.Background(), span)
-	defer span.Finish()
+	//tracer, closer, err := NewHttpTracer(ginServerName, jaegerEndpoint)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer closer.Close()
 
-	// 构建http请求
-	req, err := http.NewRequest(
-		http.MethodGet,
-		fmt.Sprintf("%s/ping", ginEndpoint),
-		nil,
-	)
-	if err != nil {
-		HandlerError(span, err)
-		return
-	}
-	// 构建带tracer的请求
-	req = req.WithContext(ctx)
-	req, ht := nethttp.TraceRequest(tracer, req)
-	defer ht.Finish()
+	fn := func() {
+		//span := tracer.StartSpan("CallDemoServer")
+		//ctx := opentracing.ContextWithSpan(context.Background(), span)
+		//defer span.Finish()
 
-	// 初始化http客户端
-	httpClient := &http.Client{Transport: &nethttp.Transport{}}
-	// 发起请求
-	res, err := httpClient.Do(req)
-	if err != nil {
-		HandlerError(span, err)
-		return
+		// 构建http请求
+		req, err := http.NewRequest(
+			http.MethodGet,
+			fmt.Sprintf("%s/ping", ginEndpoint),
+			nil,
+		)
+		//if err != nil {
+		//	HandlerError(span, err)
+		//	return
+		//}
+		// 构建带tracer的请求
+		//req = req.WithContext(context.Background())
+		//req, ht := nethttp.TraceRequest(tracer, req)
+		//defer ht.Finish()
+
+		// 初始化http客户端
+		httpClient := &http.Client{Transport: &nethttp.Transport{}}
+		// 发起请求
+		res, err := httpClient.Do(req)
+		if err != nil {
+			//HandlerError(span, err)
+			return
+		}
+		defer res.Body.Close()
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			//HandlerError(span, err)
+			return
+		}
+		log.Printf(" %s recevice: %s\n", clientServerName, string(body))
 	}
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		HandlerError(span, err)
-		return
+	for {
+
+		time.Sleep(time.Second * 5)
+		fn()
 	}
-	log.Printf(" %s recevice: %s\n", clientServerName, string(body))
+
 }

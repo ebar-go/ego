@@ -41,7 +41,7 @@ func (tracer *Tracer) Close() error {
 
 // NewSpan return opentracing.Span object, it should call Finish() method.
 func (tracer *Tracer) NewSpan(name string) opentracing.Span {
-	return tracer.instance.StartSpan("CallDemoServer")
+	return tracer.instance.StartSpan(name)
 }
 
 func (tracer *Tracer) NewContext(ctx context.Context, span opentracing.Span) context.Context {
@@ -62,6 +62,8 @@ func (tracer *Tracer) NewHttpRequestWithSpanName(name string, req *http.Request)
 }
 
 func (tracer *Tracer) ListenHttp(router *gin.Engine) {
+	opentracing.SetGlobalTracer(tracer.instance)
+
 	router.Use(ginhttp.Middleware(tracer.instance))
 	router.Use(ginhttp.Middleware(tracer.instance, ginhttp.OperationNameFunc(func(r *http.Request) string {
 		return fmt.Sprintf("HTTP %s %s", r.Method, r.URL.String())

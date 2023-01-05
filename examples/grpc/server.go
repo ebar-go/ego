@@ -2,20 +2,41 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"github.com/ebar-go/ego"
-	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/examples/grpc/pb"
 	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-gonic/gin"
+	"github.com/opentracing-contrib/go-gin/ginhttp"
+	"github.com/opentracing/opentracing-go"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials/insecure"
+	"io"
+	"net/http"
 	"os"
-	"strconv"
+	"time"
 )
 
+var (
+	version string
+	// k8s环境下需要使用dns:///grpc-service:8081才能负载均衡
+	target         string
+	jaegerEndpoint string
+)
+
+func init() {
+	flag.StringVar(&version, "version", "v3", "server version")
+	flag.StringVar(&target, "target", "grpc-service:8081", "grpc server address")
+	flag.StringVar(&jaegerEndpoint, "jaeger-endpoint", "http://jaeger-collector.istio-system:14268/api/traces", "jaeger endpoint")
+}
+
 func main() {
+	flag.Parse()
 	aggregator := ego.New()
 
 	aggregator.Aggregate(httpServer())
@@ -24,13 +45,27 @@ func main() {
 	aggregator.Run()
 }
 
-const (
-	target = "localhost:8081" // 与本地grpc服务建立连接，负载均衡无效
-	//target = "grpc-service:8081" // 与k8s的service建立连接，负载均衡无效
-	//target = "dns:///grpc-service:8081" // 与k8s的headless service建立连接，负载均衡有效
-)
+func NewHttpTracer(serverName, address string) (opentracing.Tracer, io.Closer, error) {
+	cfg := config.Configuration{
+		ServiceName: serverName,
+		Sampler: &config.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1,
+		},
+		Reporter: &config.ReporterConfig{LogSpans: true, BufferFlushInterval: time.Second, CollectorEndpoint: address},
+	}
 
+	return cfg.NewTracer(config.Logger(jaegerlog.StdLogger))
+}
 func httpServer() runtime.Runnable {
+	tracer, closer, err := NewHttpTracer("http-demo", jaegerEndpoint)
+	if err != nil {
+		panic(err)
+	}
+	defer closer.Close()
+
+	opentracing.SetGlobalTracer(tracer)
+
 	cc, err := grpc.Dial(target,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
@@ -46,38 +81,43 @@ func httpServer() runtime.Runnable {
 		EnablePprofHandler().
 		WithDefaultRequestLogMiddleware().
 		RegisterRouteLoader(func(router *gin.Engine) {
+			router.Use(ginhttp.Middleware(tracer, ginhttp.OperationNameFunc(func(r *http.Request) string {
+				return fmt.Sprintf("HTTP %s %s", r.Method, r.URL.String())
+			})))
+
 			router.GET("greeter", func(ctx *gin.Context) {
+				// new span
+				span, traceCtx := opentracing.StartSpanFromContext(ctx.Request.Context(), "greeter")
+				defer span.Finish()
 
-				num, _ := strconv.Atoi(ctx.Query("num"))
-				if num == 0 {
-					num = 10
+				resp, err := client.Greet(traceCtx, &pb.GreetRequest{Name: "foo"})
+				if err != nil {
+					ctx.String(http.StatusInternalServerError, err.Error())
+				} else {
+					ctx.String(http.StatusOK, resp.Name)
 				}
 
-				for i := 0; i < num; i++ {
-					resp, err := client.Greet(ctx, &pb.GreetRequest{Name: "foo"})
-					if err != nil {
-						component.Logger().Errorf("Greet: %v", err)
-						return
-					}
-					component.Logger().Info(resp.Name)
-				}
-
-				//ctx.String(http.StatusOK, resp.Name)
 			})
 		})
 }
 
 type UserService struct {
 	pb.UnimplementedUserServiceServer
+	tracer opentracing.Tracer
 }
 
 func (srv UserService) Greet(ctx context.Context, in *pb.GreetRequest) (*pb.GreetResponse, error) {
 	hostname, _ := os.Hostname()
-	return &pb.GreetResponse{Name: fmt.Sprintf("hostname=%s, in=%s, out=%s", hostname, in.Name, "bar")}, nil
+	return &pb.GreetResponse{Name: fmt.Sprintf("date=%s,hostname=%s, version=%s", time.Now().String(), hostname, version)}, nil
 }
 
 func grpcServer() runtime.Runnable {
+	tracer, closer, err := NewHttpTracer("grpc-demo", jaegerEndpoint)
+	if err != nil {
+		panic(err)
+	}
+	defer closer.Close()
 	return ego.NewGRPCServer(":8081").RegisterService(func(s *grpc.Server) {
-		pb.RegisterUserServiceServer(s, new(UserService))
+		pb.RegisterUserServiceServer(s, &UserService{tracer: tracer})
 	})
 }
