@@ -32,7 +32,7 @@ var (
 func init() {
 	flag.StringVar(&version, "version", "v3", "server version")
 	flag.StringVar(&target, "target", "grpc-service:8081", "grpc server address")
-	flag.StringVar(&jaegerEndpoint, "jaeger-endpoint", "http://jaeger-collector.istio-system:14268/api/traces", "jaeger endpoint")
+	flag.StringVar(&jaegerEndpoint, "jaeger-endpoint", "http://jaeger-collector.istio-system.svc.cluster.local:14268/api/traces", "jaeger endpoint")
 }
 
 func main() {

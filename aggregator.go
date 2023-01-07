@@ -2,7 +2,6 @@ package ego
 
 import (
 	"github.com/ebar-go/ego/utils/runtime"
-	"sync"
 )
 
 // Aggregator define engine with name.
@@ -10,7 +9,6 @@ type Aggregator struct {
 	runners []runtime.Runnable
 	name    string
 
-	once sync.Once
 	done chan struct{}
 }
 
@@ -19,6 +17,7 @@ func NewAggregator(name string) *Aggregator {
 	return &Aggregator{
 		name:    name,
 		runners: make([]runtime.Runnable, 0),
+		done:    make(chan struct{}),
 	}
 }
 
@@ -29,16 +28,12 @@ func (engine *Aggregator) Aggregate(runner ...runtime.Runnable) *Aggregator {
 }
 
 // Run runs the engine with blocking mode.
-func (engine *Aggregator) Run() {
+func (engine *Aggregator) Run(stopCh <-chan struct{}) {
 	for _, runner := range engine.runners {
 		go runner.Run(engine.done)
 	}
 
-	runtime.WaitClose(engine.done)
-}
-
-func (engine *Aggregator) Stop() {
-	engine.once.Do(func() {
+	runtime.WaitClose(stopCh, func() {
 		close(engine.done)
 	})
 }
