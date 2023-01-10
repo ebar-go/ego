@@ -16,6 +16,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/encoding/gzip"
+	_ "google.golang.org/grpc/encoding/gzip"
 	"io"
 	"net/http"
 	"os"
@@ -30,8 +32,8 @@ var (
 )
 
 func init() {
-	flag.StringVar(&version, "version", "v3", "server version")
-	flag.StringVar(&target, "target", "grpc-service:8081", "grpc server address")
+	flag.StringVar(&version, "version", "v1", "server version")
+	flag.StringVar(&target, "target", "localhost:8081", "grpc server address")
 	flag.StringVar(&jaegerEndpoint, "jaeger-endpoint", "http://jaeger-collector.istio-system.svc.cluster.local:14268/api/traces", "jaeger endpoint")
 }
 
@@ -69,6 +71,9 @@ func httpServer() runtime.Runnable {
 	cc, err := grpc.Dial(target,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
+		grpc.WithDefaultCallOptions(
+			grpc.UseCompressor(gzip.Name),
+		),
 	)
 	client := pb.NewUserServiceClient(cc)
 
@@ -108,7 +113,11 @@ type UserService struct {
 
 func (srv UserService) Greet(ctx context.Context, in *pb.GreetRequest) (*pb.GreetResponse, error) {
 	hostname, _ := os.Hostname()
-	return &pb.GreetResponse{Name: fmt.Sprintf("date=%s,hostname=%s, version=%s", time.Now().String(), hostname, version)}, nil
+	name := fmt.Sprintf("hostname=%s, version=%s", hostname, version)
+	for i := 0; i < 10; i++ {
+		name += name
+	}
+	return &pb.GreetResponse{Name: name}, nil
 }
 
 func grpcServer() runtime.Runnable {
