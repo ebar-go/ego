@@ -1,4 +1,4 @@
-package ego
+package server
 
 import (
 	"github.com/ebar-go/ego/utils/runtime"

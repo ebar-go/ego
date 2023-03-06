@@ -1,13 +1,14 @@
 package ego
 
 import (
+	"github.com/ebar-go/ego/server"
 	"github.com/ebar-go/ego/server/grpc"
 	"github.com/ebar-go/ego/server/http"
 )
 
 // New creates a new Aggregator instance with default name.
-func New() *Aggregator {
-	return NewAggregator("default")
+func New() *server.Aggregator {
+	return server.NewAggregator("default")
 }
 
 // NewHttpServer creates a new http server instance.
