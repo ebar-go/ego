@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/server/schema"
-	"github.com/ebar-go/ego/utils/jaeger"
 	"github.com/ebar-go/ego/utils/runtime"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
@@ -122,14 +121,8 @@ func (server *Server) AddShutdownHook(hook func()) *Server {
 }
 
 // EnableTracing enables tracing of jaeger
-func (server *Server) EnableTracing(service, address string) *Server {
-	tracer, err := jaeger.New(service, address)
-	if err != nil {
-		return server
-	}
+func (server *Server) EnableTracing() *Server {
 
-	server.shutdownHooks = append(server.shutdownHooks, runtime.IgnoreErrorCaller(tracer.Close))
-	tracer.ListenHttp(server.router)
 	return server
 }
 

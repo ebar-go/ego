@@ -45,6 +45,7 @@ func (l *Instance) Fatalf(format string, args ...interface{}) { l.Logf(LevelFata
 func (l *Instance) SetPrinter(printer Printer) {
 	l.printer = printer
 }
+
 func New() *Instance {
 	return &Instance{printer: log.Default()}
 }
