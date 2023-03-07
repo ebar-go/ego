@@ -23,10 +23,11 @@ type GRPCServerInterface interface {
 type Server struct {
 	schema schema.Schema
 
-	initOnce  sync.Once
-	instance  GRPCServerInterface
-	closeOnce sync.Once
-	options   []grpc.ServerOption
+	initOnce      sync.Once
+	instance      GRPCServerInterface
+	closeOnce     sync.Once
+	options       []grpc.ServerOption
+	registerHooks []func(s grpc.ServiceRegistrar)
 }
 
 // WithOptions sets the options for the RPC server.It must be called before RegisterService.
@@ -52,7 +53,7 @@ func (server *Server) WithTLSConfig(cert *tls.Certificate) *Server {
 
 // RegisterService registers grpc service
 func (server *Server) RegisterService(register func(s grpc.ServiceRegistrar)) *Server {
-	register(server.getInstance())
+	server.registerHooks = append(server.registerHooks, register)
 	return server
 }
 
@@ -85,6 +86,9 @@ func (server *Server) Shutdown() {
 func (server *Server) getInstance() GRPCServerInterface {
 	server.initOnce.Do(func() {
 		server.instance = grpc.NewServer(server.options...)
+		for _, hook := range server.registerHooks {
+			hook(server.instance)
+		}
 	})
 	return server.instance
 }
