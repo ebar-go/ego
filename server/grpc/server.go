@@ -42,7 +42,7 @@ func (server *Server) WithKeepAliveParams(kp keepalive.ServerParameters) *Server
 
 // WithChainUnaryInterceptor sets the interceptors.It must be called before RegisterService.
 func (server *Server) WithChainUnaryInterceptor(interceptors ...grpc.UnaryServerInterceptor) *Server {
-	return server.WithOptions(grpc.ChainUnaryInterceptor())
+	return server.WithOptions(grpc.ChainUnaryInterceptor(interceptors...))
 }
 
 // WithTLSConfig set the TLS configuration
