@@ -60,8 +60,8 @@ func NewOpenTracer(name string) *OpenTracer {
 		// Always be sure to batch in production.
 		// Record information about this application in an Resource.
 		trace.WithResource(resource.NewSchemaless(
-			attribute.String("name", name),
-		)), trace.WithSampler(trace.NeverSample())}}
+			attribute.String("service.name", name),
+		))}}
 }
 
 func (tracer *OpenTracer) WithOption(options ...trace.TracerProviderOption) *OpenTracer {
@@ -75,6 +75,10 @@ func (tracer *OpenTracer) WithJaeger(endpoint string) *OpenTracer {
 		panic(err)
 	}
 	return tracer.WithOption(trace.WithBatcher(export))
+}
+
+func (tracer *OpenTracer) WithSampler() *OpenTracer {
+	return tracer.WithOption(trace.WithSampler(trace.NeverSample()))
 }
 
 func (tracer *OpenTracer) Init() {
