@@ -13,7 +13,7 @@ type Compressor interface {
 
 var (
 	// Default alias GzipInstance
-	defaultInstance = structure.NewSingleton(New).Get()
+	defaultInstance = structure.NewSingleton(NewGzipCompressor).Get()
 	Compress        = defaultInstance.Compress
 	Decompress      = defaultInstance.Decompress
 )

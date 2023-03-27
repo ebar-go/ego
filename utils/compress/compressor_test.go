@@ -8,35 +8,39 @@ import (
 
 func TestCompress(t *testing.T) {
 	source := []byte("hello,world")
-	input := bytes.NewBuffer([]byte{})
 
-	// test compress
-	err := Compress(input, source)
-	assert.Nil(t, err)
+	t.Run("gzip", func(t *testing.T) {
+		compressor := NewGzipCompressor()
+		input := bytes.NewBuffer([]byte{})
 
-	// test decompress
-	output := bytes.NewBuffer([]byte{})
-	err = Decompress(output, input.Bytes())
-	assert.Nil(t, err)
+		// test compress
+		err := compressor.Compress(input, source)
+		assert.Nil(t, err)
 
-	// compare decompress result by source
-	assert.Equal(t, source, output.Bytes())
-}
+		// test decompress
+		output := bytes.NewBuffer([]byte{})
+		err = compressor.Decompress(output, input.Bytes())
+		assert.Nil(t, err)
 
-func TestBrotli(t *testing.T) {
-	instance := NewBrotliCompressor()
-	source := []byte("hello,world")
-	input := bytes.NewBuffer([]byte{})
+		// compare decompress result by source
+		assert.Equal(t, source, output.Bytes())
+	})
 
-	// test compress
-	err := instance.Compress(input, source)
-	assert.Nil(t, err)
+	t.Run("brotli", func(t *testing.T) {
+		compressor := NewBrotliCompressor()
+		input := bytes.NewBuffer([]byte{})
 
-	// test decompress
-	output := bytes.NewBuffer([]byte{})
-	err = instance.Decompress(output, input.Bytes())
-	assert.Nil(t, err)
+		// test compress
+		err := compressor.Compress(input, source)
+		assert.Nil(t, err)
 
-	// compare decompress result by source
-	assert.Equal(t, source, output.Bytes())
+		// test decompress
+		output := bytes.NewBuffer([]byte{})
+		err = compressor.Decompress(output, input.Bytes())
+		assert.Nil(t, err)
+
+		// compare decompress result by source
+		assert.Equal(t, source, output.Bytes())
+	})
+
 }

@@ -2,12 +2,15 @@ package compress
 
 import (
 	"bytes"
+	"compress/gzip"
+	"github.com/ebar-go/ego/utils/pool"
 	"github.com/ebar-go/ego/utils/runtime"
 	"io"
 )
 
 type GzipCompressor struct {
-	provider CompressorProvider
+	wp pool.Provider[*gzip.Writer]
+	rp pool.Provider[*gzip.Reader]
 }
 
 func (c *GzipCompressor) Compress(dst io.Writer, src []byte) (err error) {
@@ -16,9 +19,9 @@ func (c *GzipCompressor) Compress(dst io.Writer, src []byte) (err error) {
 		return
 	}
 
-	w := c.provider.AcquireGzipWriter()
+	w := c.wp.Acquire()
 	w.Reset(dst)
-	defer c.provider.ReleaseGzipWriter(w)
+	defer c.wp.Release(w)
 
 	return runtime.Call(func() error {
 		_, err := w.Write(src)
@@ -27,8 +30,8 @@ func (c *GzipCompressor) Compress(dst io.Writer, src []byte) (err error) {
 }
 
 func (c *GzipCompressor) Decompress(dst io.Writer, src []byte) (err error) {
-	r := c.provider.AcquireGzipReader()
-	defer c.provider.ReleaseGzipReader(r)
+	r := c.rp.Acquire()
+	defer c.rp.Release(r)
 
 	if err = r.Reset(bytes.NewReader(src)); err != nil {
 		return
@@ -37,6 +40,13 @@ func (c *GzipCompressor) Decompress(dst io.Writer, src []byte) (err error) {
 	return
 }
 
-func New() *GzipCompressor {
-	return &GzipCompressor{provider: NewSyncPoolCompressors()}
+func NewGzipCompressor() *GzipCompressor {
+	return &GzipCompressor{
+		wp: pool.NewSyncPoolProvider[*gzip.Writer](func() interface{} {
+			return &gzip.Writer{}
+		}),
+		rp: pool.NewSyncPoolProvider[*gzip.Reader](func() interface{} {
+			return &gzip.Reader{}
+		}),
+	}
 }
