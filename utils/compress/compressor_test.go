@@ -22,3 +22,21 @@ func TestCompress(t *testing.T) {
 	// compare decompress result by source
 	assert.Equal(t, source, output.Bytes())
 }
+
+func TestBrotli(t *testing.T) {
+	instance := NewBrotliCompressor()
+	source := []byte("hello,world")
+	input := bytes.NewBuffer([]byte{})
+
+	// test compress
+	err := instance.Compress(input, source)
+	assert.Nil(t, err)
+
+	// test decompress
+	output := bytes.NewBuffer([]byte{})
+	err = instance.Decompress(output, input.Bytes())
+	assert.Nil(t, err)
+
+	// compare decompress result by source
+	assert.Equal(t, source, output.Bytes())
+}
