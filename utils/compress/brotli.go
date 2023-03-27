@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/andybalholm/brotli"
 	"github.com/ebar-go/ego/utils/pool"
+	"github.com/ebar-go/ego/utils/runtime"
 	"io"
 )
 
@@ -31,12 +32,10 @@ func (compressor BrotliCompressor) Compress(dst io.Writer, src []byte) (err erro
 	w := compressor.wp.Acquire()
 	defer compressor.wp.Release(w)
 	w.Reset(dst)
-	_, err = w.Write(src)
-	if err != nil {
-		return
-	}
-
-	return w.Close()
+	return runtime.Call(func() error {
+		_, err := w.Write(src)
+		return err
+	}, w.Flush)
 }
 
 func (compressor BrotliCompressor) Decompress(dst io.Writer, src []byte) (err error) {

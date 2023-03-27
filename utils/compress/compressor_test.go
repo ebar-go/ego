@@ -44,3 +44,34 @@ func TestCompress(t *testing.T) {
 	})
 
 }
+
+func BenchmarkCompress(b *testing.B) {
+	//BenchmarkCompress/gzip
+	//BenchmarkCompress/gzip-8                 2603155               488.5 ns/op
+	//             309 B/op          0 allocs/op
+	//BenchmarkCompress/brotli
+	//BenchmarkCompress/brotli-8                 40953             30429 ns/op
+	//             258 B/op          0 allocs/op
+	// gzip is much better than brotli in golang
+	target := []byte("Don't communicate by sharing memory, share memory by communicating.")
+	b.Run("gzip", func(b *testing.B) {
+		b.ReportAllocs()
+		compressor := NewGzipCompressor()
+		input := bytes.NewBuffer([]byte{})
+		for i := 0; i < b.N; i++ {
+			compressor.Compress(input, target)
+		}
+
+	})
+	b.Run("brotli", func(b *testing.B) {
+		b.ReportAllocs()
+		compressor := NewBrotliCompressor()
+
+		input := bytes.NewBuffer([]byte{})
+		for i := 0; i < b.N; i++ {
+			compressor.Compress(input, target)
+		}
+
+	})
+
+}
