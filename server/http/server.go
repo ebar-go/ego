@@ -6,6 +6,7 @@ import (
 	"github.com/ebar-go/ego/component"
 	"github.com/ebar-go/ego/server/schema"
 	"github.com/ebar-go/ego/utils/runtime"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -79,6 +80,11 @@ func (server *Server) WithDefaultRequestLogMiddleware() *Server {
 // EnableTraceMiddleware enables trace middleware with trace header name
 func (server *Server) EnableTraceMiddleware(traceHeader string) *Server {
 	server.router.Use(Trace(traceHeader))
+	return server
+}
+
+func (server *Server) EnableCompress() *Server {
+	server.router.Use(gzip.Gzip(gzip.DefaultCompression))
 	return server
 }
 
