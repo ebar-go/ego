@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ebar-go/ego/utils/jaeger"
+	"github.com/ebar-go/ego/component/tracer"
 	"github.com/ebar-go/ego/utils/serializer"
 	"io"
 	"mime/multipart"
@@ -24,7 +24,7 @@ var (
 type Instance struct {
 	httpClient   *http.Client
 	bufferLength int
-	tracer       *jaeger.Tracer
+	tracer       *tracer.Instance
 }
 
 // Get send get request
@@ -110,8 +110,8 @@ func (c *Instance) PostFile(ctx context.Context, url string, files map[string]st
 // Send return Response by http.Request
 func (c *Instance) Send(ctx context.Context, request *http.Request) (serializer.Serializer, error) {
 	if c.tracer != nil {
-		ht := c.tracer.NewHttpRequestWithContext(ctx, request)
-		defer ht.Finish()
+		c.tracer.Set(c.tracer.Get())
+		defer c.tracer.Release()
 	}
 	resp, err := c.httpClient.Do(request)
 	// close response
@@ -158,7 +158,7 @@ func (c *Instance) WithHttpClient(httpClient *http.Client) *Instance {
 	return c
 }
 
-func (c *Instance) WithTracer(tracer *jaeger.Tracer) *Instance {
+func (c *Instance) WithTracer(tracer *tracer.Instance) *Instance {
 	c.tracer = tracer
 	return c
 }
