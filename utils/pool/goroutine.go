@@ -241,6 +241,7 @@ func NewFixedGoroutinePool(options ...fixedOption) *FixedGoroutinePool {
 	pool := &FixedGoroutinePool{
 		task:  make(chan f, defaultOptions.Num),
 		block: defaultOptions.Block,
+		done:  make(chan struct{}),
 	}
 
 	// 直接启动固定数量的协程
