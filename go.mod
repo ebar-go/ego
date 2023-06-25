@@ -32,7 +32,7 @@ require (
 	golang.org/x/net v0.8.0
 	google.golang.org/grpc v1.50.1
 	gorm.io/driver/mysql v1.4.4
-	gorm.io/gorm v1.24.1
+	gorm.io/gorm v1.25.1
 	gorm.io/plugin/dbresolver v1.3.0
 )
 
