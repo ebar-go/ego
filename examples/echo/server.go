@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/ebar-go/ego"
 	"github.com/ebar-go/ego/utils/runtime"
+	"github.com/ebar-go/ego/utils/runtime/signal"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -12,7 +13,7 @@ func main() {
 
 	aggregator.Aggregate(httpServer())
 
-	aggregator.Run()
+	aggregator.Run(signal.SetupSignalHandler())
 }
 
 func httpServer() runtime.Runnable {
